@@ -49,6 +49,9 @@ var stats: PlayerStats
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _gears: Array[GearPickup] = []
 var _started: bool = false
+var _graphics: GraphicsProfile
+var _static_lights: Array[Light3D] = []
+var _light_timer: float = 0.0
 
 
 func _ready() -> void:
@@ -115,11 +118,64 @@ func player_start_position() -> Vector3:
 	return ($PlayerStart as Node3D).global_position
 
 
-func _process(_delta: float) -> void:
+## Call down: apply a rendering budget (shadows, glow, fog, how many static lights stay on).
+func apply_graphics(profile: GraphicsProfile) -> void:
+	_graphics = profile
+	var env_node: WorldEnvironment = get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if env_node != null and env_node.environment != null:
+		env_node.environment = env_node.environment.duplicate() as Environment
+		env_node.environment.glow_enabled = profile.glow
+		env_node.environment.fog_enabled = profile.fog
+	var moon: DirectionalLight3D = get_node_or_null("Moon") as DirectionalLight3D
+	if moon != null:
+		moon.shadow_enabled = profile.shadows
+	_static_lights.clear()
+	for root_name: String in ["Props", "Hordes", "ExtractionZone"]:
+		var root: Node = get_node_or_null(root_name)
+		if root != null:
+			for node: Node in root.find_children("*", "Light3D", true, false):
+				var light: Light3D = node as Light3D
+				if light != null and not (light is DirectionalLight3D):
+					light.shadow_enabled = light.shadow_enabled and profile.shadows
+					_static_lights.append(light)
+	_light_timer = 0.0
+
+
+## Number of static lights currently switched on (for tests and diagnostics).
+func static_lights_on() -> int:
+	var count: int = 0
+	for light: Light3D in _static_lights:
+		if is_instance_valid(light) and light.is_visible_in_tree():
+			count += 1
+	return count
+
+
+func _process(delta: float) -> void:
 	if not _started or player == null:
 		return
 	_update_objective()
 	_update_occlusion()
+	_update_light_budget(delta)
+
+
+## Keeps only the N static lights nearest to the player on (mobile GPUs cannot afford dozens of dynamic lights).
+func _update_light_budget(delta: float) -> void:
+	if _graphics == null or _graphics.max_static_lights <= 0:
+		return
+	_light_timer -= delta
+	if _light_timer > 0.0:
+		return
+	_light_timer = _graphics.light_refresh_seconds
+	_static_lights = _static_lights.filter(func(l: Light3D) -> bool: return is_instance_valid(l))
+	var origin: Vector3 = player.global_position
+	# Lights under a hidden parent (wrecked car beams, flames not yet burning) do not take a slot.
+	var sorted: Array[Light3D] = _static_lights.filter(func(l: Light3D) -> bool:
+		var parent: Node3D = l.get_parent() as Node3D
+		return parent == null or parent.is_visible_in_tree())
+	sorted.sort_custom(func(a: Light3D, b: Light3D) -> bool:
+		return a.global_position.distance_squared_to(origin) < b.global_position.distance_squared_to(origin))
+	for i: int in sorted.size():
+		sorted[i].visible = i < _graphics.max_static_lights
 
 
 func _update_occlusion() -> void:
