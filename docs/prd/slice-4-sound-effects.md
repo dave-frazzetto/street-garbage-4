@@ -11,6 +11,7 @@ lifecycle: shipped
 owner: [claude]
 decisions:
   - procedural-sound-effects-with-sfxr-style-generator
+  - looping-background-music-from-the-same-synth
   - feature-folder-module-layout
 ---
 
@@ -41,11 +42,12 @@ translate level and rules events into cues played by one `SfxPlayer`.
   change; a new weapon gets a sound via `WeaponData.fire_sound`.
 - The generator re-creates every WAV deterministically with one command.
 - Modules stay decoupled: the level only emits signals, `GameFlow` maps them to sounds, and the level still runs alone.
+- One looping background track plays during a run, fades in at the start and fades out when the run ends.
 - A headless test verifies every cue has audible, non-clipping clips and that each game event triggers its cue.
 
 ## Non-Goals
 
-- Music, ambient loops, zombie groans or footsteps.
+- Zombie groans, footsteps, ambient loops and multi-track or adaptive music.
 - Positional (3D) audio and audio buses or a volume settings menu.
 - Realistic or recorded sound quality.
 

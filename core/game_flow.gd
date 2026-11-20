@@ -22,6 +22,7 @@ signal run_ended(outcome: RunState.Outcome)
 @onready var level_slot: Node = $LevelSlot
 @onready var touch_controls: TouchControls = $TouchControls
 @onready var sfx: SfxPlayer = $SfxPlayer
+@onready var music: MusicPlayer = $MusicPlayer
 
 var run: RunState
 var stats: PlayerStats
@@ -69,6 +70,7 @@ func start_run() -> void:
 	_connect_level()
 	level.start(stats, run.config, rng, func() -> float: return run.elapsed)
 	hud.visible = true
+	music.play_music()
 	_refresh_hud()
 	_runs_started += 1
 	hud.show_banner("DAY %d\nKILL ZOMBIES TO GET XP AND UPGRADE YOUR CHARACTER" % (run.config.day_number + _runs_started - 1), 5.0)
@@ -239,6 +241,7 @@ func _after_choice() -> void:
 # --- End of run ------------------------------------------------------------
 
 func _on_run_ended(outcome: RunState.Outcome) -> void:
+	music.stop_music()
 	perk_select.close()
 	_set_paused(true)
 	var minutes: int = floori(run.elapsed / 60.0)
