@@ -30,14 +30,31 @@ func _run() -> void:
 	flow.start_run()
 	await _wait(0.6)
 	await _shot("2_start_banner")
+	# Top-down overview of the whole map.
+	var rig: IsoCamera = flow.level.camera_rig
+	var follow_target: Node3D = rig.target
+	rig.target = null
+	rig.perspective = false
+	rig.pitch_degrees = 89.0
+	rig.yaw_degrees = 0.0
+	rig.view_size = 128.0
+	rig.distance = 120.0
+	rig.global_position = Vector3(60, 0, 60)
+	await _wait(0.2)
+	await _shot("0_map_overview")
+	rig.perspective = true
+	rig.pitch_degrees = 70.0
+	rig.yaw_degrees = 45.0
+	rig.distance = 44.0
+	rig.target = follow_target
 	# Walk toward the horde at the basketball court and shoot to show combat.
 	flow.level.player.health.max_health = 100000.0
 	flow.level.player.health.current = 100000.0
-	flow.level.player.global_position = Vector3(40.5, 0, 44.0)
+	flow.level.player.global_position = Vector3(49.0, 0, 57.0)
 	flow.level.camera_rig.snap()
 	flow.level.player.stats.add_modifier(PlayerStats.Stat.EXPLOSION, PlayerStats.Mode.FLAT, 0.5)
 	await _wait(0.1)
-	var target_screen: Vector2 = flow.level.camera_rig.camera.unproject_position(Vector3(50, 1, 50))
+	var target_screen: Vector2 = flow.level.camera_rig.camera.unproject_position(Vector3(60, 1, 60))
 	# Aim with the gamepad right stick (the windowed OS cursor cannot be held in place reliably).
 	var player_screen: Vector2 = flow.level.camera_rig.camera.unproject_position(flow.level.player.global_position + Vector3(0, 1, 0))
 	var stick: Vector2 = (target_screen - player_screen).normalized()

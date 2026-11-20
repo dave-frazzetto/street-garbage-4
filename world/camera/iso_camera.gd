@@ -14,8 +14,8 @@ extends Node3D
 	set(value):
 		fov_degrees = value
 		_apply()
-## Downward tilt in degrees (35.26 = true isometric, 60 = the reference video).
-@export_range(10, 89) var pitch_degrees: float = 60.0:
+## Downward tilt in degrees (35.26 = true isometric, about 60-70 like the reference video).
+@export_range(10, 89) var pitch_degrees: float = 70.0:
 	set(value):
 		pitch_degrees = value
 		_apply()
