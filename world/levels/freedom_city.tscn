@@ -1,0 +1,528 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/levels/level.gd" id="1_level"]
+[ext_resource type="PackedScene" path="res://world/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://world/enemies/zombie.tscn" id="3_zombie"]
+[ext_resource type="PackedScene" path="res://world/pickups/gear_pickup.tscn" id="4_gear"]
+[ext_resource type="PackedScene" path="res://world/pickups/health_pickup.tscn" id="5_health"]
+[ext_resource type="Resource" path="res://data/config/run_default.tres" id="6_run"]
+[ext_resource type="Resource" path="res://data/config/player_default.tres" id="7_pcfg"]
+[ext_resource type="Script" path="res://world/props/ground.gd" id="8_ground"]
+[ext_resource type="Script" path="res://world/props/decal_zone.gd" id="9_decal"]
+[ext_resource type="PackedScene" path="res://world/props/building.tscn" id="10_building"]
+[ext_resource type="PackedScene" path="res://world/spawning/horde_spawner.tscn" id="11_horde"]
+[ext_resource type="PackedScene" path="res://world/props/extraction_zone.tscn" id="12_extract"]
+[ext_resource type="Script" path="res://world/spawning/zombie_director.gd" id="13_director"]
+[ext_resource type="Resource" path="res://data/config/director_default.tres" id="14_dircfg"]
+[ext_resource type="Script" path="res://world/levels/objective_arrow.gd" id="15_arrow"]
+[ext_resource type="Resource" path="res://data/enemies/walker.tres" id="16_walker"]
+[ext_resource type="Resource" path="res://data/enemies/armoured.tres" id="17_armoured"]
+[ext_resource type="Script" path="res://data/enemies/enemy_data.gd" id="18_enemydata"]
+
+[node name="FreedomCity" type="Node2D"]
+script = ExtResource("1_level")
+player_scene = ExtResource("2_player")
+zombie_scene = ExtResource("3_zombie")
+gear_scene = ExtResource("4_gear")
+health_scene = ExtResource("5_health")
+default_run_config = ExtResource("6_run")
+default_player_config = ExtResource("7_pcfg")
+bounds = Rect2(0, 0, 4000, 4000)
+
+[node name="Ground" type="Node2D" parent="."]
+script = ExtResource("8_ground")
+
+[node name="Decals" type="Node2D" parent="."]
+
+[node name="BasketballCourt" type="Node2D" parent="Decals"]
+position = Vector2(2000, 2000)
+script = ExtResource("9_decal")
+size = Vector2(640, 380)
+label = "BASKETBALL COURT"
+
+[node name="QuarantineZone" type="Node2D" parent="Decals"]
+position = Vector2(3550, 450)
+script = ExtResource("9_decal")
+size = Vector2(800, 700)
+color = Color(0.35, 0.3, 0.1, 0.45)
+line_color = Color(1, 0.85, 0.1, 0.9)
+label = "QUARANTINE ZONE"
+striped = true
+
+[node name="Garage" type="Node2D" parent="Decals"]
+position = Vector2(350, 3650)
+script = ExtResource("9_decal")
+size = Vector2(260, 200)
+color = Color(0.3, 0.3, 0.32, 0.9)
+line_color = Color(0.9, 0.9, 0.9, 0.6)
+label = "GARAGE"
+
+[node name="Buildings" type="Node2D" parent="."]
+
+[node name="B1_1a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(350, 225)
+size = Vector2(440, 190)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B1_1b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(350, 475)
+size = Vector2(440, 190)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B1_2a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(225, 1000)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B1_2b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(475, 1000)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B1_3a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(350, 1525)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B1_3b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(350, 1775)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B1_4a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(225, 2350)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B1_4b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(475, 2350)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B1_5a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(350, 2875)
+size = Vector2(440, 190)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B1_5b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(350, 3125)
+size = Vector2(440, 190)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B2_1a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(875, 350)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B2_1b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1125, 350)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B2_2a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1000, 875)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B2_2b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1000, 1125)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B2_3a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(875, 1650)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B2_3b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1125, 1650)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B2_4a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1000, 2225)
+size = Vector2(440, 190)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B2_4b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1000, 2475)
+size = Vector2(440, 190)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B2_5a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(875, 3000)
+size = Vector2(190, 440)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B2_5b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1125, 3000)
+size = Vector2(190, 440)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B2_6a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1000, 3525)
+size = Vector2(440, 190)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B2_6b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1000, 3775)
+size = Vector2(440, 190)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B3_1a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1650, 225)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B3_1b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1650, 475)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B3_2a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1525, 1000)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B3_2b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1775, 1000)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B3_5a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1650, 2875)
+size = Vector2(440, 190)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B3_5b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1650, 3125)
+size = Vector2(440, 190)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B3_6a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1525, 3650)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B3_6b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1775, 3650)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B4_1a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2225, 350)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B4_1b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2475, 350)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B4_2a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2350, 875)
+size = Vector2(440, 190)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B4_2b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2350, 1125)
+size = Vector2(440, 190)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B4_5a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2225, 3000)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B4_5b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2475, 3000)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B4_6a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2350, 3525)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B4_6b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2350, 3775)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B5_2a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2875, 1000)
+size = Vector2(190, 440)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B5_2b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3125, 1000)
+size = Vector2(190, 440)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B5_3a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3000, 1525)
+size = Vector2(440, 190)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B5_3b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3000, 1775)
+size = Vector2(440, 190)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B5_4a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2875, 2350)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B5_4b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3125, 2350)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B5_5a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3000, 2875)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B5_5b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3000, 3125)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B5_6a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2875, 3650)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B5_6b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3125, 3650)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B6_3a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3525, 1650)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B6_3b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3775, 1650)
+size = Vector2(190, 440)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B6_4a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3650, 2225)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B6_4b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3650, 2475)
+size = Vector2(440, 190)
+color = Color(0.33, 0.25, 0.22, 1)
+roof_color = Color(0.42, 0.32, 0.28, 1)
+
+[node name="B6_5a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3525, 3000)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B6_5b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3775, 3000)
+size = Vector2(190, 440)
+color = Color(0.22, 0.28, 0.3, 1)
+roof_color = Color(0.29, 0.36, 0.38, 1)
+
+[node name="B6_6a" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3650, 3525)
+size = Vector2(440, 190)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="B6_6b" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3650, 3775)
+size = Vector2(440, 190)
+color = Color(0.28, 0.27, 0.3, 1)
+roof_color = Color(0.36, 0.34, 0.38, 1)
+
+[node name="HighRise" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(3550, 230)
+size = Vector2(520, 300)
+color = Color(0.2, 0.24, 0.32, 1)
+roof_color = Color(0.3, 0.36, 0.48, 1)
+label = "HIGH-RISE"
+
+[node name="GarageWall" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(350, 3530)
+size = Vector2(300, 40)
+
+[node name="WallNorth" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2000, -40)
+size = Vector2(4160, 80)
+color = Color(0.1, 0.1, 0.12, 1)
+roof_color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="WallSouth" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2000, 4040)
+size = Vector2(4160, 80)
+color = Color(0.1, 0.1, 0.12, 1)
+roof_color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="WallWest" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(-40, 2000)
+size = Vector2(80, 4160)
+color = Color(0.1, 0.1, 0.12, 1)
+roof_color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="WallEast" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(4040, 2000)
+size = Vector2(80, 4160)
+color = Color(0.1, 0.1, 0.12, 1)
+roof_color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="CarWreck1" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(1500, 1550)
+size = Vector2(90, 46)
+color = Color(0.5, 0.15, 0.12, 1)
+roof_color = Color(0.4, 0.12, 0.1, 1)
+
+[node name="CarWreck2" parent="Buildings" instance=ExtResource("10_building")]
+position = Vector2(2520, 2480)
+size = Vector2(46, 90)
+color = Color(0.15, 0.3, 0.5, 1)
+roof_color = Color(0.12, 0.25, 0.4, 1)
+
+[node name="GearSpawnPoints" type="Node2D" parent="."]
+
+[node name="Gear0" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(350, 350)
+
+[node name="Gear1" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(350, 1650)
+
+[node name="Gear2" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(350, 3000)
+
+[node name="Gear3" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(1000, 1000)
+
+[node name="Gear4" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(1000, 2350)
+
+[node name="Gear5" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(1000, 3650)
+
+[node name="Gear6" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(1650, 1000)
+
+[node name="Gear7" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(1650, 3650)
+
+[node name="Gear8" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(2350, 1000)
+
+[node name="Gear9" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(2350, 3650)
+
+[node name="Gear10" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(3000, 1650)
+
+[node name="Gear11" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(3000, 3000)
+
+[node name="Gear12" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(3650, 1650)
+
+[node name="Gear13" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(3650, 3000)
+
+[node name="Gear14" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(1500, 2500)
+
+[node name="Gear15" type="Marker2D" parent="GearSpawnPoints"]
+position = Vector2(2500, 1500)
+
+[node name="Hordes" type="Node2D" parent="."]
+
+[node name="HelicopterCrash" parent="Hordes" instance=ExtResource("11_horde")]
+position = Vector2(2000, 2000)
+enemies = Array[ExtResource("18_enemydata")]([ExtResource("16_walker"), ExtResource("16_walker"), ExtResource("16_walker"), ExtResource("17_armoured")])
+count = 40
+scatter_radius = 260.0
+
+[node name="QuarantineGuards" parent="Hordes" instance=ExtResource("11_horde")]
+position = Vector2(3400, 820)
+enemies = Array[ExtResource("18_enemydata")]([ExtResource("16_walker"), ExtResource("17_armoured")])
+count = 18
+scatter_radius = 180.0
+draw_wreck = false
+
+[node name="ExtractionZone" parent="." instance=ExtResource("12_extract")]
+position = Vector2(3550, 490)
+size = Vector2(240, 160)
+
+[node name="PlayerStart" type="Marker2D" parent="."]
+position = Vector2(350, 3650)
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Projectiles" type="Node2D" parent="."]
+
+[node name="ObjectiveArrow" type="Node2D" parent="."]
+script = ExtResource("15_arrow")
+
+[node name="ZombieDirector" type="Node" parent="."]
+script = ExtResource("13_director")
+config = ExtResource("14_dircfg")
+zombie_scene = ExtResource("3_zombie")

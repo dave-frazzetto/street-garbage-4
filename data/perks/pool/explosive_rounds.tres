@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Perk" format=3]
+
+[ext_resource type="Script" path="res://data/perks/effects/perk_effect.gd" id="1_1qaiq"]
+[ext_resource type="Script" path="res://data/perks/effects/stat_modifier_effect.gd" id="2_tuow8"]
+[ext_resource type="Script" path="res://data/perks/perk.gd" id="3_3h8h1"]
+
+[sub_resource type="Resource" id="Resource_kiq1a"]
+script = ExtResource("2_tuow8")
+stat = 12
+mode = 0
+amount = 0.5
+
+[resource]
+script = ExtResource("3_3h8h1")
+id = &"explosive_rounds"
+display_name = "Explosive Rounds"
+category = 6
+rarity = 1
+max_stacks = 2
+flavour = "Every hit explodes."
+effects = Array[ExtResource("1_1qaiq")]([SubResource("Resource_kiq1a")])

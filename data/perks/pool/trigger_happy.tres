@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Perk" format=3]
+
+[ext_resource type="Script" path="res://data/perks/effects/perk_effect.gd" id="1_x4s8v"]
+[ext_resource type="Script" path="res://data/perks/effects/stat_modifier_effect.gd" id="2_0ew7o"]
+[ext_resource type="Script" path="res://data/perks/perk.gd" id="3_meyvk"]
+
+[sub_resource type="Resource" id="Resource_bi386"]
+script = ExtResource("2_0ew7o")
+stat = 8
+amount = 0.125
+
+[resource]
+script = ExtResource("3_meyvk")
+id = &"trigger_happy"
+display_name = "Trigger Happy"
+effects = Array[ExtResource("1_x4s8v")]([SubResource("Resource_bi386")])

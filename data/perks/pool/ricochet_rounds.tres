@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Perk" format=3]
+
+[ext_resource type="Script" path="res://data/perks/effects/perk_effect.gd" id="1_cyaqo"]
+[ext_resource type="Script" path="res://data/perks/effects/stat_modifier_effect.gd" id="2_skwn3"]
+[ext_resource type="Script" path="res://data/perks/perk.gd" id="3_eq27d"]
+
+[sub_resource type="Resource" id="Resource_cij7e"]
+script = ExtResource("2_skwn3")
+stat = 11
+mode = 0
+amount = 1.0
+
+[resource]
+script = ExtResource("3_eq27d")
+id = &"ricochet_rounds"
+display_name = "Ricochet Rounds"
+category = 6
+rarity = 1
+max_stacks = 3
+flavour = "Bullets jump to the next zombie after a hit."
+effects = Array[ExtResource("1_cyaqo")]([SubResource("Resource_cij7e")])

@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/spawning/horde_spawner.gd" id="1_horde"]
+[ext_resource type="PackedScene" path="res://world/enemies/zombie.tscn" id="2_zombie"]
+[ext_resource type="Resource" path="res://data/enemies/walker.tres" id="3_walker"]
+[ext_resource type="Script" path="res://data/enemies/enemy_data.gd" id="4_enemydata"]
+
+[node name="HordeSpawner" type="Marker2D"]
+script = ExtResource("1_horde")
+zombie_scene = ExtResource("2_zombie")
+enemies = Array[ExtResource("4_enemydata")]([ExtResource("3_walker")])

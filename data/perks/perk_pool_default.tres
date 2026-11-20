@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="PerkPool" format=3]
+
+[ext_resource type="Script" path="res://data/perks/perk.gd" id="1_3ymdy"]
+[ext_resource type="Resource" path="res://data/perks/pool/auto_shotgun.tres" id="2_xjwub"]
+[ext_resource type="Resource" path="res://data/perks/pool/micro_smg.tres" id="3_3lrd8"]
+[ext_resource type="Resource" path="res://data/perks/pool/heavy_machine_gun.tres" id="4_7iggu"]
+[ext_resource type="Resource" path="res://data/perks/pool/trigger_happy.tres" id="5_7qhsv"]
+[ext_resource type="Resource" path="res://data/perks/pool/hollow_points.tres" id="6_w66ky"]
+[ext_resource type="Resource" path="res://data/perks/pool/long_barrel.tres" id="7_g85c8"]
+[ext_resource type="Resource" path="res://data/perks/pool/blood_money.tres" id="8_gcnyt"]
+[ext_resource type="Resource" path="res://data/perks/pool/scavenger.tres" id="9_mkhdk"]
+[ext_resource type="Resource" path="res://data/perks/pool/magnet.tres" id="10_kq7oo"]
+[ext_resource type="Resource" path="res://data/perks/pool/health_gains.tres" id="11_kn048"]
+[ext_resource type="Resource" path="res://data/perks/pool/regeneration.tres" id="12_5hb6w"]
+[ext_resource type="Resource" path="res://data/perks/pool/thick_skin.tres" id="13_yqxam"]
+[ext_resource type="Resource" path="res://data/perks/pool/fleet_foot.tres" id="14_c43ef"]
+[ext_resource type="Resource" path="res://data/perks/pool/gear.tres" id="15_wfhex"]
+[ext_resource type="Resource" path="res://data/perks/pool/vampire.tres" id="16_fj7ur"]
+[ext_resource type="Resource" path="res://data/perks/pool/glass_cannon.tres" id="17_buhng"]
+[ext_resource type="Resource" path="res://data/perks/pool/double_sprint.tres" id="18_8u7eb"]
+[ext_resource type="Resource" path="res://data/perks/pool/ricochet_rounds.tres" id="19_502fq"]
+[ext_resource type="Resource" path="res://data/perks/pool/explosive_rounds.tres" id="20_4ln6l"]
+[ext_resource type="Resource" path="res://data/perks/pool/twin_barrel.tres" id="21_bcitr"]
+[ext_resource type="Script" path="res://data/perks/perk_pool.gd" id="22_c4mhc"]
+
+[resource]
+script = ExtResource("22_c4mhc")
+perks = Array[ExtResource("1_3ymdy")]([ExtResource("2_xjwub"), ExtResource("3_3lrd8"), ExtResource("4_7iggu"), ExtResource("5_7qhsv"), ExtResource("6_w66ky"), ExtResource("7_g85c8"), ExtResource("8_gcnyt"), ExtResource("9_mkhdk"), ExtResource("10_kq7oo"), ExtResource("11_kn048"), ExtResource("12_5hb6w"), ExtResource("13_yqxam"), ExtResource("14_c43ef"), ExtResource("15_wfhex"), ExtResource("16_fj7ur"), ExtResource("17_buhng"), ExtResource("18_8u7eb"), ExtResource("19_502fq"), ExtResource("20_4ln6l"), ExtResource("21_bcitr")])

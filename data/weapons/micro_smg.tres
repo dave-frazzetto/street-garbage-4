@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_e2c1g"]
+
+[resource]
+script = ExtResource("1_e2c1g")
+display_name = "Micro SMG"
+shots_per_second = 11.0
+damage = 6.0
+spread_degrees = 12.0
+bullet_speed = 1000.0
+range_pixels = 460.0
+bullet_color = Color(1, 0.75, 0.3, 1)
+bullet_radius = 2.5

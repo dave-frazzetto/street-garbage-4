@@ -1,0 +1,74 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/screens/title_screen.gd" id="1_title"]
+
+[node name="TitleScreen" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_title")
+
+[node name="Bg" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.05, 0.07, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Presents" type="Label" parent="Center/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.65, 1)
+text = "A PLACEHOLDER PRODUCTION"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="Center/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.9, 0.3, 1)
+theme_override_constants/outline_size = 10
+theme_override_colors/font_outline_color = Color(0.25, 0, 0, 1)
+theme_override_font_sizes/font_size = 72
+text = "STREET GARBAGE"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.3, 0.25, 1)
+theme_override_font_sizes/font_size = 36
+text = "DEZOMBIFIER"
+horizontal_alignment = 1
+
+[node name="Story" type="Label" parent="Center/VBox"]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "ZOE (RADIO): \"Anyone who hasn't been turned into a brain-munching freak down there should head to the High-Rise in the quarantine zone. Extraction procedures are now operational.\"
+Find 6 gears and reach the High-Rise before the city gets a nuclear makeover."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Controls" type="Label" parent="Center/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+theme_override_font_sizes/font_size = 15
+text = "KEYBOARD + MOUSE: WASD move · mouse aim · hold LMB shoot · SHIFT toggle sprint
+GAMEPAD: left stick move · right stick aim + shoot (or RT) · L3 toggle sprint"
+horizontal_alignment = 1
+
+[node name="StartButton" type="Button" parent="Center/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 56)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+theme_override_font_sizes/font_size = 24
+text = "START  [ENTER / A]"

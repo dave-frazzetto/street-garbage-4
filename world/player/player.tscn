@@ -1,0 +1,43 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://world/player/player_input.gd" id="2_input"]
+[ext_resource type="Script" path="res://world/player/health_component.gd" id="3_health"]
+[ext_resource type="Script" path="res://world/player/stamina_component.gd" id="4_stamina"]
+[ext_resource type="Script" path="res://world/player/weapon_component.gd" id="5_weapon"]
+[ext_resource type="Resource" path="res://data/weapons/pistol.tres" id="6_pistol"]
+[ext_resource type="PackedScene" path="res://world/projectiles/bullet.tscn" id="7_bullet"]
+[ext_resource type="Resource" path="res://data/config/player_default.tres" id="8_config"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 14.0
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 1
+motion_mode = 1
+script = ExtResource("1_player")
+default_config = ExtResource("8_config")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="PlayerInput" type="Node" parent="." node_paths=PackedStringArray("aim_origin")]
+script = ExtResource("2_input")
+aim_origin = NodePath("..")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("3_health")
+
+[node name="Stamina" type="Node" parent="."]
+script = ExtResource("4_stamina")
+
+[node name="Weapon" type="Node2D" parent="."]
+script = ExtResource("5_weapon")
+base_weapon = ExtResource("6_pistol")
+bullet_scene = ExtResource("7_bullet")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(1.1, 1.1)
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0

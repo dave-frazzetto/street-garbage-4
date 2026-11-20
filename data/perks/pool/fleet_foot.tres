@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Perk" format=3]
+
+[ext_resource type="Script" path="res://data/perks/effects/perk_effect.gd" id="1_lfoym"]
+[ext_resource type="Script" path="res://data/perks/effects/stat_modifier_effect.gd" id="2_74f74"]
+[ext_resource type="Script" path="res://data/perks/perk.gd" id="3_u40hj"]
+
+[sub_resource type="Resource" id="Resource_flru0"]
+script = ExtResource("2_74f74")
+stat = 2
+
+[resource]
+script = ExtResource("3_u40hj")
+id = &"fleet_foot"
+display_name = "Fleet Foot"
+category = 3
+max_stacks = 4
+effects = Array[ExtResource("1_lfoym")]([SubResource("Resource_flru0")])
