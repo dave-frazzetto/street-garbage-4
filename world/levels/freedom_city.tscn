@@ -28,13 +28,14 @@
 [ext_resource type="PackedScene" path="res://world/effects/explosion_effect.tscn" id="26_blast"]
 [ext_resource type="PackedScene" path="res://world/props/barrier.tscn" id="27_barrier"]
 [ext_resource type="PackedScene" path="res://world/props/dumpster.tscn" id="28_dumpster"]
+[ext_resource type="PackedScene" path="res://world/props/traffic_light.tscn" id="29_traffic"]
 
 [sub_resource type="Environment" id="Environment_night"]
 background_mode = 1
 background_color = Color(0.02, 0.02, 0.035, 1)
 ambient_light_source = 2
 ambient_light_color = Color(0.36, 0.36, 0.42, 1)
-ambient_light_energy = 0.22
+ambient_light_energy = 0.34
 tonemap_mode = 2
 glow_enabled = true
 glow_intensity = 0.9
@@ -61,7 +62,7 @@ environment = SubResource("Environment_night")
 [node name="Moon" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.5, 0.65, -0.57, 0, 0.66, 0.75, 0.87, -0.37, 0.33, 60, 30, 60)
 light_color = Color(0.55, 0.62, 0.85, 1)
-light_energy = 0.25
+light_energy = 0.4
 shadow_enabled = true
 directional_shadow_max_distance = 60.0
 
@@ -822,6 +823,198 @@ transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 90.00, 0
 
 [node name="Pole5_5" parent="Props" instance=ExtResource("25_pole")]
 transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 110.00, 0.00, 95.60)
+
+[node name="MLampE1_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 13.50, 0.00, 15.80)
+
+[node name="MLampN1_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 15.80, 0.00, 13.50)
+
+[node name="MLampE1_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 33.50, 0.00, 24.20)
+
+[node name="MLampN1_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 24.20, 0.00, 33.50)
+
+[node name="MLampE1_2" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 53.50, 0.00, 15.80)
+
+[node name="MLampN1_2" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 15.80, 0.00, 53.50)
+
+[node name="MLampE1_3" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 73.50, 0.00, 24.20)
+
+[node name="MLampN1_3" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 24.20, 0.00, 73.50)
+
+[node name="MLampE1_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 93.50, 0.00, 15.80)
+
+[node name="MLampN1_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 15.80, 0.00, 93.50)
+
+[node name="MLampE1_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 113.50, 0.00, 24.20)
+
+[node name="MLampN1_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 24.20, 0.00, 113.50)
+
+[node name="MLampE2_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 13.50, 0.00, 44.20)
+
+[node name="MLampN2_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 44.20, 0.00, 13.50)
+
+[node name="MLampE2_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 33.50, 0.00, 35.80)
+
+[node name="MLampN2_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 35.80, 0.00, 33.50)
+
+[node name="MLampE2_2" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 53.50, 0.00, 44.20)
+
+[node name="MLampN2_2" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 44.20, 0.00, 53.50)
+
+[node name="MLampE2_3" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 73.50, 0.00, 35.80)
+
+[node name="MLampN2_3" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 35.80, 0.00, 73.50)
+
+[node name="MLampE2_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 93.50, 0.00, 44.20)
+
+[node name="MLampN2_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 44.20, 0.00, 93.50)
+
+[node name="MLampE2_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 113.50, 0.00, 35.80)
+
+[node name="MLampN2_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 35.80, 0.00, 113.50)
+
+[node name="MLampE3_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 13.50, 0.00, 55.80)
+
+[node name="MLampN3_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 55.80, 0.00, 13.50)
+
+[node name="MLampE3_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 33.50, 0.00, 64.20)
+
+[node name="MLampN3_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 64.20, 0.00, 33.50)
+
+[node name="MLampE3_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 93.50, 0.00, 55.80)
+
+[node name="MLampN3_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 55.80, 0.00, 93.50)
+
+[node name="MLampE3_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 113.50, 0.00, 64.20)
+
+[node name="MLampN3_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 64.20, 0.00, 113.50)
+
+[node name="MLampE4_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 13.50, 0.00, 84.20)
+
+[node name="MLampN4_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 84.20, 0.00, 13.50)
+
+[node name="MLampE4_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 33.50, 0.00, 75.80)
+
+[node name="MLampN4_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 75.80, 0.00, 33.50)
+
+[node name="MLampE4_2" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 53.50, 0.00, 84.20)
+
+[node name="MLampN4_2" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 84.20, 0.00, 53.50)
+
+[node name="MLampE4_3" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 73.50, 0.00, 75.80)
+
+[node name="MLampN4_3" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 75.80, 0.00, 73.50)
+
+[node name="MLampE4_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 93.50, 0.00, 84.20)
+
+[node name="MLampN4_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 84.20, 0.00, 93.50)
+
+[node name="MLampE4_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 113.50, 0.00, 75.80)
+
+[node name="MLampN4_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 75.80, 0.00, 113.50)
+
+[node name="MLampE5_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 13.50, 0.00, 95.80)
+
+[node name="MLampN5_0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 95.80, 0.00, 13.50)
+
+[node name="MLampE5_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 33.50, 0.00, 104.20)
+
+[node name="MLampN5_1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 104.20, 0.00, 33.50)
+
+[node name="MLampE5_2" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 53.50, 0.00, 95.80)
+
+[node name="MLampN5_2" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 95.80, 0.00, 53.50)
+
+[node name="MLampE5_3" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 73.50, 0.00, 104.20)
+
+[node name="MLampN5_3" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 104.20, 0.00, 73.50)
+
+[node name="MLampE5_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, -1.0000, 93.50, 0.00, 95.80)
+
+[node name="MLampN5_4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 95.80, 0.00, 93.50)
+
+[node name="MLampE5_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 113.50, 0.00, 104.20)
+
+[node name="MLampN5_5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(0.0000, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0000, 104.20, 0.00, 113.50)
+
+[node name="Traffic1_1" parent="Props" instance=ExtResource("29_traffic")]
+transform = Transform3D(-0.7071, 0, -0.7071, 0, 1, 0, 0.7071, 0, -0.7071, 15.80, 0.00, 15.80)
+
+[node name="Traffic1_4" parent="Props" instance=ExtResource("29_traffic")]
+transform = Transform3D(-0.7071, 0, -0.7071, 0, 1, 0, 0.7071, 0, -0.7071, 15.80, 0.00, 75.80)
+
+[node name="Traffic2_2" parent="Props" instance=ExtResource("29_traffic")]
+transform = Transform3D(-0.7071, 0, -0.7071, 0, 1, 0, 0.7071, 0, -0.7071, 35.80, 0.00, 35.80)
+
+[node name="Traffic2_5" parent="Props" instance=ExtResource("29_traffic")]
+transform = Transform3D(-0.7071, 0, -0.7071, 0, 1, 0, 0.7071, 0, -0.7071, 35.80, 0.00, 95.80)
+
+[node name="Traffic4_1" parent="Props" instance=ExtResource("29_traffic")]
+transform = Transform3D(-0.7071, 0, -0.7071, 0, 1, 0, 0.7071, 0, -0.7071, 75.80, 0.00, 15.80)
+
+[node name="Traffic4_4" parent="Props" instance=ExtResource("29_traffic")]
+transform = Transform3D(-0.7071, 0, -0.7071, 0, 1, 0, 0.7071, 0, -0.7071, 75.80, 0.00, 75.80)
+
+[node name="Traffic5_2" parent="Props" instance=ExtResource("29_traffic")]
+transform = Transform3D(-0.7071, 0, -0.7071, 0, 1, 0, 0.7071, 0, -0.7071, 95.80, 0.00, 35.80)
+
+[node name="Traffic5_5" parent="Props" instance=ExtResource("29_traffic")]
+transform = Transform3D(-0.7071, 0, -0.7071, 0, 1, 0, 0.7071, 0, -0.7071, 95.80, 0.00, 95.80)
 
 [node name="GearSpawnPoints" type="Node3D" parent="."]
 

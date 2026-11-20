@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="DirectorConfig" format=3]
+[gd_resource type="Resource" script_class="DirectorConfig" format=3 uid="uid://b8hxorfpwgo5a"]
 
-[ext_resource type="Script" path="res://data/enemies/director_config.gd" id="1_1lrtp"]
-[ext_resource type="Script" path="res://data/enemies/spawn_entry.gd" id="2_y44u2"]
+[ext_resource type="Script" uid="uid://clmtw5tnpnmfj" path="res://data/enemies/director_config.gd" id="1_1lrtp"]
+[ext_resource type="Script" uid="uid://f8ta8cq6d1iw" path="res://data/enemies/spawn_entry.gd" id="2_y44u2"]
 [ext_resource type="Resource" path="res://data/enemies/walker.tres" id="3_b0767"]
 [ext_resource type="Resource" path="res://data/enemies/armoured.tres" id="4_e8652"]
 

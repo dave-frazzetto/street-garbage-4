@@ -16,8 +16,7 @@ signal hit_landed(amount: float)
 
 @export var default_config: PlayerConfig
 @export var camera_scene: PackedScene
-@export var body_color: Color = Color(0.3, 0.6, 1.0)
-@export var sprint_color: Color = Color(0.6, 0.85, 1.0)
+## Colour the model flashes when the player is hit.
 @export var hit_color: Color = Color(1.0, 0.3, 0.3)
 ## Collision radius in metres (zombies use it for contact range).
 @export_range(0.1, 2, 0.05) var body_radius: float = 0.35
@@ -29,23 +28,19 @@ signal hit_landed(amount: float)
 @onready var stamina: StaminaComponent = $Stamina
 @onready var weapon: WeaponComponent = $Weapon
 @onready var visual: Node3D = $Visual
-@onready var _body_mesh: MeshInstance3D = $Visual/Body
+@onready var _model: PlayerModel = $Visual/Model
 
 var stats: PlayerStats
 var sprinting: bool = false
 var _invulnerable: float = 0.0
 var _hit_flash: float = 0.0
-var _material: StandardMaterial3D
 
 
 func _ready() -> void:
-	_material = StandardMaterial3D.new()
-	_material.albedo_color = body_color
-	_body_mesh.material_override = _material
 	input.sprint_toggled.connect(_toggle_sprint)
 	health.changed.connect(func(c: float, m: float) -> void: health_changed.emit(c, m))
 	health.damaged.connect(func(a: float) -> void: damaged.emit(a))
-	health.died.connect(func() -> void: died.emit())
+	health.died.connect(_on_died)
 	stamina.changed.connect(func(c: float, m: float) -> void: stamina_changed.emit(c, m))
 	weapon.weapon_changed.connect(func(n: String, t: float) -> void: weapon_changed.emit(n, t))
 	weapon.damage_dealt.connect(_on_damage_dealt)
@@ -118,7 +113,16 @@ func _physics_process(delta: float) -> void:
 	var regen: float = stats.get_value(PlayerStats.Stat.HEALTH_REGEN)
 	if regen > 0.0:
 		health.heal(regen * delta)
-	_material.albedo_color = hit_color if _hit_flash > 0.0 else (sprint_color if sprinting else body_color)
+	if _hit_flash > 0.0:
+		_model.flash(hit_color)
+	else:
+		_model.clear_flash()
+	_model.update_motion(Vector2(velocity.x, velocity.z).length(), input.is_firing())
+
+
+func _on_died() -> void:
+	_model.play_death()
+	died.emit()
 
 
 func _ensure_camera() -> void:

@@ -94,6 +94,7 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 8 | 2026-11-20 | [unified-player-input-component](docs/adr/unified-player-input-component.md) | Unified player input component |
 | 9 | 2026-11-20 | [single-threaded-web-export-for-itch-io](docs/adr/single-threaded-web-export-for-itch-io.md) | Single-threaded web export for itch.io |
 | 10 | 2026-11-20 | [isometric-3d-world](docs/adr/isometric-3d-world.md) | Isometric 3D world (supersedes 5 and 6) |
+| 11 | 2026-11-20 | [generated-3d-art-with-meshy](docs/adr/generated-3d-art-with-meshy.md) | Generated 3D art with Meshy |
 | 12 | 2026-11-20 | [procedural-sound-effects-with-sfxr-style-generator](docs/adr/procedural-sound-effects-with-sfxr-style-generator.md) | Procedural sound effects with sfxr-style generator |
 | 13 | 2026-11-20 | [looping-background-music-from-the-same-synth](docs/adr/looping-background-music-from-the-same-synth.md) | Looping background music from the same synth |
 
