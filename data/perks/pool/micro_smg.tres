@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="Perk" format=3]
+[gd_resource type="Resource" script_class="Perk" format=3 uid="uid://dq5ejrwvb7qyo"]
 
-[ext_resource type="Script" path="res://data/perks/effects/perk_effect.gd" id="1_gwdfg"]
-[ext_resource type="Script" path="res://data/perks/effects/temp_weapon_effect.gd" id="2_6lua7"]
+[ext_resource type="Script" uid="uid://c3d34w28glsf0" path="res://data/perks/effects/perk_effect.gd" id="1_gwdfg"]
+[ext_resource type="Script" uid="uid://bbibhei378752" path="res://data/perks/effects/temp_weapon_effect.gd" id="2_6lua7"]
 [ext_resource type="Resource" path="res://data/weapons/micro_smg.tres" id="3_sr7oa"]
-[ext_resource type="Script" path="res://data/perks/perk.gd" id="4_shevb"]
+[ext_resource type="Script" uid="uid://c8in12q80v2n0" path="res://data/perks/perk.gd" id="4_shevb"]
 
 [sub_resource type="Resource" id="Resource_02k6v"]
 script = ExtResource("2_6lua7")

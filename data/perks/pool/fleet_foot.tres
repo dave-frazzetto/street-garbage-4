@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="Perk" format=3]
+[gd_resource type="Resource" script_class="Perk" format=3 uid="uid://dfhky36sud5t"]
 
-[ext_resource type="Script" path="res://data/perks/effects/perk_effect.gd" id="1_lfoym"]
-[ext_resource type="Script" path="res://data/perks/effects/stat_modifier_effect.gd" id="2_74f74"]
-[ext_resource type="Script" path="res://data/perks/perk.gd" id="3_u40hj"]
+[ext_resource type="Script" uid="uid://c3d34w28glsf0" path="res://data/perks/effects/perk_effect.gd" id="1_lfoym"]
+[ext_resource type="Script" uid="uid://beiwny1wc3g8b" path="res://data/perks/effects/stat_modifier_effect.gd" id="2_74f74"]
+[ext_resource type="Script" uid="uid://c8in12q80v2n0" path="res://data/perks/perk.gd" id="3_u40hj"]
 
 [sub_resource type="Resource" id="Resource_flru0"]
 script = ExtResource("2_74f74")
