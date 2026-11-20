@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_7f0f5"]
+[ext_resource type="Resource" path="res://audio/cues/shot_shotgun.tres" id="9_fire"]
 
 [resource]
 script = ExtResource("1_7f0f5")
@@ -12,3 +13,4 @@ spread_degrees = 34.0
 bullet_speed = 22.0
 range_meters = 9.0
 bullet_color = Color(1, 0.5, 0.2, 1)
+fire_sound = ExtResource("9_fire")

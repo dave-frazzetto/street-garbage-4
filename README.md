@@ -1,8 +1,8 @@
 # Street Garbage 4
 
 A Godot 4.7 recreation of **Street Trash III: Dezombifier**, the top-down zombie roguelike shooter inside GTA VI,
-in 3D with a high-angle isometric camera over a night-time city. Art and audio are placeholders (primitive meshes);
-the focus is gameplay. Notes on the original, taken from a reference video, are in
+in 3D with a high-angle isometric camera over a night-time city. Art and audio are placeholders (primitive meshes,
+synthesised retro sound effects); the focus is gameplay. Notes on the original, taken from a reference video, are in
 [docs/reference/original-game-video-notes.md](docs/reference/original-game-video-notes.md).
 
 ## Play
@@ -29,6 +29,21 @@ set off nearby props.
 | Perk: redraw / skip | R / Esc or X | Y / B | Tap REDRAW / SKIP |
 | Start / restart | Enter or Space | A or Start | Tap the button |
 
+## Sound
+
+Every gameplay event has a placeholder sound effect, synthesised by `scripts/sfx/generate_sfx.py` (sfxr-style, Python
+standard library only, deterministic) into `audio/sfx/*.wav`:
+
+```sh
+python scripts/sfx/generate_sfx.py                    # re-render every effect
+python scripts/sfx/generate_sfx.py --only shot_pistol # re-render one
+python scripts/sfx/generate_music.py                  # re-render the background loop (audio/music/)
+```
+
+Designers tune sound in the Inspector: each event is an `SfxCue` in `audio/cues/` (clips, volume, pitch variance, minimum
+interval), the non-weapon events are slots on `audio/sfx_bank_default.tres`, and each gun's shot is `fire_sound` on its
+`data/weapons/*.tres`. To change a sound, edit the preset in the generator or drop in your own WAV and point the cue at it.
+
 ## Web build (itch.io)
 
 ```sh
@@ -43,7 +58,7 @@ Leave "SharedArrayBuffer support" off, turn on "Mobile friendly" with landscape 
 ## Tests
 
 ```sh
-tests/run_tests.sh   # headless: rules, keyboard+mouse and gamepad input, touch sticks, game flow, destructibles; ~11 s
+tests/run_tests.sh   # headless: rules, keyboard+mouse and gamepad input, touch sticks, game flow, destructibles, audio; ~13 s
 Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # windowed: saves PNGs to tests/output/
 ```
 
@@ -52,6 +67,7 @@ Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # 
 | Folder | Contents |
 |---|---|
 | `core/` | `game_flow.tscn`: main scene; owns the run rules and wires world and UI |
+| `audio/` | Sound: `SfxCue` and `SfxBank` resources, `SfxPlayer` and `MusicPlayer` scenes, `cues/` (.tres), `sfx/` and `music/` (generated .wav) |
 | `rules/` | Node-free rules: `RunState`, `PlayerStats`, `PerkDeck` |
 | `data/` | Resource scripts and `.tres` content: perks (`data/perks/pool/`), weapons, enemies, run/player/director config |
 | `world/` | 3D world: camera rig, player (and components), zombies, bullets, pickups, props (buildings, cars, lamps, neon, destructibles), spawners, the Freedom City level |
@@ -79,6 +95,9 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 9 | 2026-11-20 | [single-threaded-web-export-for-itch-io](docs/adr/single-threaded-web-export-for-itch-io.md) | Single-threaded web export for itch.io |
 | 10 | 2026-11-20 | [isometric-3d-world](docs/adr/isometric-3d-world.md) | Isometric 3D world (supersedes 5 and 6) |
 | 11 | 2026-11-20 | [generated-3d-art-with-meshy](docs/adr/generated-3d-art-with-meshy.md) | Generated 3D art with Meshy |
+| 12 | 2026-11-20 | [procedural-sound-effects-with-sfxr-style-generator](docs/adr/procedural-sound-effects-with-sfxr-style-generator.md) | Procedural sound effects with sfxr-style generator |
+| 13 | 2026-11-20 | [looping-background-music-from-the-same-synth](docs/adr/looping-background-music-from-the-same-synth.md) | Looping background music from the same synth |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
-[slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md).
+[slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),
+[slice-4-sound-effects](docs/prd/slice-4-sound-effects.md).

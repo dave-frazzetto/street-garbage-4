@@ -55,7 +55,7 @@ func test_2_left_stick_moves() -> void:
 func test_3_both_sticks_at_once() -> void:
 	var p: Player = flow.level.player
 	var shots: Array[int] = [0]
-	p.weapon.fired.connect(func() -> void: shots[0] += 1)
+	p.weapon.fired.connect(func(_w: WeaponData) -> void: shots[0] += 1)
 	_touch(1, Vector2(950, 450), true)
 	_drag(1, Vector2(950, 560))
 	await wait_frames(30)

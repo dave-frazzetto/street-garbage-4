@@ -33,6 +33,7 @@ func _run() -> void:
 	# Top-down overview of the whole map.
 	var rig: IsoCamera = flow.level.camera_rig
 	var follow_target: Node3D = rig.target
+	var game_pitch: float = rig.pitch_degrees
 	rig.target = null
 	rig.perspective = false
 	rig.pitch_degrees = 89.0
@@ -43,7 +44,7 @@ func _run() -> void:
 	await _wait(0.2)
 	await _shot("0_map_overview")
 	rig.perspective = true
-	rig.pitch_degrees = 70.0
+	rig.pitch_degrees = game_pitch
 	rig.yaw_degrees = 45.0
 	rig.distance = 44.0
 	rig.target = follow_target

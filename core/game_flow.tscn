@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" path="res://ui/screens/title_screen.tscn" id="8_title"]
 [ext_resource type="PackedScene" path="res://ui/screens/end_screen.tscn" id="9_end"]
 [ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="10_touch"]
+[ext_resource type="PackedScene" path="res://audio/sfx_player.tscn" id="11_sfx"]
+[ext_resource type="PackedScene" path="res://audio/music_player.tscn" id="12_music"]
 
 [node name="GameFlow" type="Node"]
 script = ExtResource("1_flow")
@@ -19,6 +21,10 @@ player_config = ExtResource("4_player")
 perk_pool = ExtResource("5_pool")
 
 [node name="LevelSlot" type="Node" parent="."]
+
+[node name="SfxPlayer" parent="." instance=ExtResource("11_sfx")]
+
+[node name="MusicPlayer" parent="." instance=ExtResource("12_music")]
 
 [node name="Hud" parent="." instance=ExtResource("6_hud")]
 

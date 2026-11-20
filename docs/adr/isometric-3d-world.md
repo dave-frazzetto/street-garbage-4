@@ -37,7 +37,7 @@ and [placeholder-art-drawn-in-code](placeholder-art-drawn-in-code.md).
   `StaticBody3D` with an exported `size: Vector3`, bullets ray-cast with `PhysicsRayQueryParameters3D`, pickups and
   the extraction zone are `Node3D`/`Area3D`. Collision layers are unchanged (1 world, 2 player, 3 zombies).
 - `IsoCamera` (`world/camera/iso_camera.tscn`) is an orthographic camera rig with exported pitch (45°), yaw (45°),
-  size and follow speed (perspective, pitch 70, yaw 45 by default). It converts screen directions to world directions (so "up" on the stick or W is up on
+  size and follow speed (perspective, pitch 45, yaw 45 by default). It converts screen directions to world directions (so "up" on the stick or W is up on
   screen) and screen points to ground points (mouse aim).
 - Buildings between the camera and the player fade to translucent. The level calls
   `Building.update_occlusion(player, view_dir, pitch)` each frame; no global state.

@@ -9,6 +9,10 @@ signal damaged(amount: float)
 signal died
 signal weapon_changed(weapon_name: String, seconds_left: float)
 signal sprint_changed(sprinting: bool)
+## A shot left the gun.
+signal fired(weapon: WeaponData)
+## One of our bullets damaged a zombie.
+signal hit_landed(amount: float)
 
 @export var default_config: PlayerConfig
 @export var camera_scene: PackedScene
@@ -40,6 +44,7 @@ func _ready() -> void:
 	stamina.changed.connect(func(c: float, m: float) -> void: stamina_changed.emit(c, m))
 	weapon.weapon_changed.connect(func(n: String, t: float) -> void: weapon_changed.emit(n, t))
 	weapon.damage_dealt.connect(_on_damage_dealt)
+	weapon.fired.connect(func(w: WeaponData) -> void: fired.emit(w))
 	if stats == null:
 		setup(PlayerStats.new(default_config), null)
 	_ensure_camera.call_deferred()
@@ -151,6 +156,7 @@ func _apply_stats() -> void:
 
 
 func _on_damage_dealt(amount: float) -> void:
+	hit_landed.emit(amount)
 	var lifesteal: float = stats.get_value(PlayerStats.Stat.LIFESTEAL)
 	if lifesteal > 0.0:
 		health.heal(amount * lifesteal)

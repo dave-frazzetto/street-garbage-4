@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SfxCue" format=3]
+
+[ext_resource type="Script" path="res://audio/sfx_cue.gd" id="1_cue"]
+[ext_resource type="AudioStream" path="res://audio/sfx/shot_hmg_1.wav" id="2_s"]
+[ext_resource type="AudioStream" path="res://audio/sfx/shot_hmg_2.wav" id="3_s"]
+[ext_resource type="AudioStream" path="res://audio/sfx/shot_hmg_3.wav" id="4_s"]
+
+[resource]
+script = ExtResource("1_cue")
+streams = Array[AudioStream]([ExtResource("2_s"), ExtResource("3_s"), ExtResource("4_s")])
+volume_db = -9.0

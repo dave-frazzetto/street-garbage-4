@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_dan6i"]
+[ext_resource type="Resource" path="res://audio/cues/shot_hmg.tres" id="9_fire"]
 
 [resource]
 script = ExtResource("1_dan6i")
@@ -12,3 +13,4 @@ bullet_speed = 28.0
 range_meters = 18.0
 bullet_color = Color(1, 0.8, 0.4, 1)
 bullet_radius = 0.11
+fire_sound = ExtResource("9_fire")
