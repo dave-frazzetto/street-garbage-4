@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/enemies/zombie_model.gd" id="1_model"]
+[ext_resource type="PackedScene" path="res://art/models/enemies/zombie_walker/zombie_walker_rigged.glb" id="2_rigged"]
+[ext_resource type="Animation" path="res://art/models/enemies/zombie_walker/clips/walk.res" id="3_walk"]
+[ext_resource type="Animation" path="res://art/models/enemies/zombie_walker/clips/run.res" id="4_run"]
+[ext_resource type="Animation" path="res://art/models/enemies/zombie_walker/clips/attack.res" id="5_attack"]
+[ext_resource type="Animation" path="res://art/models/enemies/zombie_walker/clips/die.res" id="6_die"]
+
+[node name="ZombieModel" type="Node3D"]
+script = ExtResource("1_model")
+clips = {
+&"attack": ExtResource("5_attack"),
+&"die": ExtResource("6_die"),
+&"run": ExtResource("4_run"),
+&"walk": ExtResource("3_walk")
+}
+
+[node name="Facing" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="Model" parent="Facing" instance=ExtResource("2_rigged")]

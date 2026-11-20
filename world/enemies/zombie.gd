@@ -12,10 +12,11 @@ const GROUP: StringName = &"zombies"
 @export_range(0, 100000) var aggro_radius: float = 100000.0
 @export_range(0, 2, 0.05) var knockback_strength: float = 0.25
 @export var hit_color: Color = Color(1, 1, 1)
+## Seconds a corpse stays on the ground after its death animation ends.
+@export_range(0, 30, 0.5) var corpse_linger: float = 2.0
 
 @onready var _visual: Node3D = $Visual
-@onready var _body: MeshInstance3D = $Visual/Body
-@onready var _band: MeshInstance3D = $Visual/Band
+@onready var _model: ZombieModel = $Visual/Model
 @onready var _bar: Node3D = $HealthBar
 @onready var _bar_fill: Node3D = $HealthBar/Fill
 
@@ -30,7 +31,6 @@ var _flash: float = 0.0
 var _wander: Vector3 = Vector3.ZERO
 var _wander_time: float = 0.0
 var _knockback: Vector3 = Vector3.ZERO
-var _material: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -43,15 +43,7 @@ func _ready() -> void:
 	shape.radius = data.radius
 	var s: float = data.radius / 0.33
 	_visual.scale = Vector3(s, 1.0 + (s - 1.0) * 0.5, s)
-	_material = StandardMaterial3D.new()
-	_material.albedo_color = data.color
-	_body.material_override = _material
-	_band.visible = data.armour > 0.0
-	if _band.visible:
-		var band_mat: StandardMaterial3D = StandardMaterial3D.new()
-		band_mat.albedo_color = data.armour_color
-		band_mat.metallic = 0.6
-		_band.material_override = band_mat
+	_model.set_tint(data.tint)
 	_bar.visible = false
 
 
@@ -69,13 +61,14 @@ func take_damage(amount: float, direction: Vector3 = Vector3.ZERO) -> float:
 	var dealt: float = minf(health, amount * (1.0 - data.armour))
 	health -= dealt
 	_flash = 0.08
-	_material.albedo_color = hit_color
+	_model.flash(hit_color)
 	_aware = true
 	_knockback += direction * amount * knockback_strength * 0.5
 	_bar.visible = true
 	_bar_fill.scale.x = maxf(0.001, health / data.max_health)
 	if health <= 0.0:
 		is_dead = true
+		_leave_corpse()
 		died.emit(self, data.xp, global_position)
 		queue_free()
 	return dealt
@@ -88,7 +81,7 @@ func _physics_process(delta: float) -> void:
 	if _flash > 0.0:
 		_flash = maxf(0.0, _flash - delta)
 		if _flash == 0.0:
-			_material.albedo_color = data.color
+			_model.clear_flash()
 	var dir: Vector3 = Vector3.ZERO
 	if target != null and is_instance_valid(target):
 		var to_target: Vector3 = target.global_position - global_position
@@ -100,6 +93,7 @@ func _physics_process(delta: float) -> void:
 			dir = to_target / maxf(dist, 0.001)
 			if dist <= data.radius + target_radius + 0.15 and _attack_cooldown <= 0.0:
 				_attack_cooldown = data.attack_interval
+				_model.play_attack()
 				attacked.emit(data.contact_damage)
 	if not _aware:
 		_wander_time -= delta
@@ -111,5 +105,16 @@ func _physics_process(delta: float) -> void:
 	_knockback = _knockback.move_toward(Vector3.ZERO, 22.0 * delta)
 	move_and_slide()
 	global_position.y = 0.0
+	_model.set_move_speed(dir.length() * _speed)
 	if dir.length() > 0.05:
 		_visual.rotation.y = lerp_angle(_visual.rotation.y, atan2(-dir.x, -dir.z), 10.0 * delta)
+
+
+## The model outlives the zombie: it is handed to our parent, plays its death clip and is freed afterwards.
+func _leave_corpse() -> void:
+	var holder: Node = get_parent()
+	if holder == null:
+		return
+	_visual.reparent(holder)
+	var clip_length: float = _model.play_death()
+	get_tree().create_timer(clip_length + corpse_linger).timeout.connect(_visual.queue_free)

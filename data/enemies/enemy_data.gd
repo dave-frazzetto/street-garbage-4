@@ -13,8 +13,7 @@ extends Resource
 ## Fraction of incoming damage ignored (armour).
 @export_range(0, 0.95, 0.01) var armour: float = 0.0
 @export_range(0, 100) var xp: float = 1.0
-## Body radius in metres.
+## Body radius in metres. Also scales the model (0.33 is the model's natural size).
 @export_range(0.1, 1.5, 0.01) var radius: float = 0.33
-@export var color: Color = Color(0.42, 0.5, 0.38)
-## Colour of the armour ring (drawn only if armour > 0).
-@export var armour_color: Color = Color(0.6, 0.65, 0.75)
+## Colour mixed over the model's texture to tell variants apart. The alpha is the mix strength (0 = no tint).
+@export var tint: Color = Color(1, 1, 1, 0)

@@ -78,6 +78,7 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 8 | 2026-11-20 | [unified-player-input-component](docs/adr/unified-player-input-component.md) | Unified player input component |
 | 9 | 2026-11-20 | [single-threaded-web-export-for-itch-io](docs/adr/single-threaded-web-export-for-itch-io.md) | Single-threaded web export for itch.io |
 | 10 | 2026-11-20 | [isometric-3d-world](docs/adr/isometric-3d-world.md) | Isometric 3D world (supersedes 5 and 6) |
+| 11 | 2026-11-20 | [generated-3d-art-with-meshy](docs/adr/generated-3d-art-with-meshy.md) | Generated 3D art with Meshy |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md).
