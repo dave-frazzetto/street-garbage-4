@@ -7,520 +7,828 @@
 [ext_resource type="PackedScene" path="res://world/pickups/health_pickup.tscn" id="5_health"]
 [ext_resource type="Resource" path="res://data/config/run_default.tres" id="6_run"]
 [ext_resource type="Resource" path="res://data/config/player_default.tres" id="7_pcfg"]
-[ext_resource type="Script" path="res://world/props/ground.gd" id="8_ground"]
-[ext_resource type="Script" path="res://world/props/decal_zone.gd" id="9_decal"]
+[ext_resource type="PackedScene" path="res://world/props/ground.tscn" id="8_ground"]
+[ext_resource type="PackedScene" path="res://world/props/ground_zone.tscn" id="9_zone"]
 [ext_resource type="PackedScene" path="res://world/props/building.tscn" id="10_building"]
 [ext_resource type="PackedScene" path="res://world/spawning/horde_spawner.tscn" id="11_horde"]
 [ext_resource type="PackedScene" path="res://world/props/extraction_zone.tscn" id="12_extract"]
 [ext_resource type="Script" path="res://world/spawning/zombie_director.gd" id="13_director"]
 [ext_resource type="Resource" path="res://data/config/director_default.tres" id="14_dircfg"]
-[ext_resource type="Script" path="res://world/levels/objective_arrow.gd" id="15_arrow"]
+[ext_resource type="PackedScene" path="res://world/levels/objective_arrow.tscn" id="15_arrow"]
 [ext_resource type="Resource" path="res://data/enemies/walker.tres" id="16_walker"]
 [ext_resource type="Resource" path="res://data/enemies/armoured.tres" id="17_armoured"]
 [ext_resource type="Script" path="res://data/enemies/enemy_data.gd" id="18_enemydata"]
+[ext_resource type="PackedScene" path="res://world/camera/iso_camera.tscn" id="19_camera"]
+[ext_resource type="PackedScene" path="res://world/effects/blood_splat.tscn" id="20_blood"]
+[ext_resource type="PackedScene" path="res://world/props/street_lamp.tscn" id="21_lamp"]
+[ext_resource type="PackedScene" path="res://world/props/neon_sign.tscn" id="22_neon"]
+[ext_resource type="PackedScene" path="res://world/props/car.tscn" id="23_car"]
+[ext_resource type="PackedScene" path="res://world/props/fire.tscn" id="24_fire"]
+[ext_resource type="PackedScene" path="res://world/props/power_pole.tscn" id="25_pole"]
+[ext_resource type="PackedScene" path="res://world/effects/explosion_effect.tscn" id="26_blast"]
 
-[node name="FreedomCity" type="Node2D"]
+[sub_resource type="Environment" id="Environment_night"]
+background_mode = 1
+background_color = Color(0.02, 0.02, 0.035, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.36, 0.36, 0.42, 1)
+ambient_light_energy = 0.22
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.9
+glow_bloom = 0.15
+fog_enabled = true
+fog_light_color = Color(0.08, 0.09, 0.14, 1)
+fog_density = 0.006
+
+[node name="FreedomCity" type="Node3D"]
 script = ExtResource("1_level")
 player_scene = ExtResource("2_player")
 zombie_scene = ExtResource("3_zombie")
 gear_scene = ExtResource("4_gear")
 health_scene = ExtResource("5_health")
+blood_scene = ExtResource("20_blood")
+blast_scene = ExtResource("26_blast")
 default_run_config = ExtResource("6_run")
 default_player_config = ExtResource("7_pcfg")
-bounds = Rect2(0, 0, 4000, 4000)
+bounds = Rect2(0, 0, 100, 100)
 
-[node name="Ground" type="Node2D" parent="."]
-script = ExtResource("8_ground")
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_night")
 
-[node name="Decals" type="Node2D" parent="."]
+[node name="Moon" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.5, 0.65, -0.57, 0, 0.66, 0.75, 0.87, -0.37, 0.33, 50, 30, 50)
+light_color = Color(0.55, 0.62, 0.85, 1)
+light_energy = 0.25
+shadow_enabled = true
+directional_shadow_max_distance = 60.0
 
-[node name="BasketballCourt" type="Node2D" parent="Decals"]
-position = Vector2(2000, 2000)
-script = ExtResource("9_decal")
-size = Vector2(640, 380)
+[node name="IsoCamera" parent="." instance=ExtResource("19_camera")]
+
+[node name="Ground" parent="." instance=ExtResource("8_ground")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 50)
+
+[node name="Zones" type="Node3D" parent="."]
+
+[node name="BasketballCourt" parent="Zones" instance=ExtResource("9_zone")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 50.00, 0.00, 50.00)
+size = Vector2(26, 15)
 label = "BASKETBALL COURT"
-
-[node name="QuarantineZone" type="Node2D" parent="Decals"]
-position = Vector2(3550, 450)
-script = ExtResource("9_decal")
-size = Vector2(800, 700)
-color = Color(0.35, 0.3, 0.1, 0.45)
+[node name="QuarantineZone" parent="Zones" instance=ExtResource("9_zone")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 85.00, 0.00, 14.00)
+size = Vector2(30, 26)
+fill_color = Color(0.3, 0.27, 0.08, 0.5)
 line_color = Color(1, 0.85, 0.1, 0.9)
-label = "QUARANTINE ZONE"
 striped = true
-
-[node name="Garage" type="Node2D" parent="Decals"]
-position = Vector2(350, 3650)
-script = ExtResource("9_decal")
-size = Vector2(260, 200)
-color = Color(0.3, 0.3, 0.32, 0.9)
-line_color = Color(0.9, 0.9, 0.9, 0.6)
+court_markings = false
+label = "QUARANTINE ZONE"
+[node name="Garage" parent="Zones" instance=ExtResource("9_zone")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 91.25)
+size = Vector2(8, 6)
+fill_color = Color(0.3, 0.3, 0.32, 0.9)
+line_color = Color(0.9, 0.9, 0.9, 0.5)
+court_markings = false
 label = "GARAGE"
-
-[node name="Buildings" type="Node2D" parent="."]
+[node name="Buildings" type="Node3D" parent="."]
 
 [node name="B1_1a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(350, 225)
-size = Vector2(440, 190)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 5.65)
+size = Vector3(10.00, 6.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B1_1b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(350, 475)
-size = Vector2(440, 190)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 11.85)
+size = Vector3(10.00, 8.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B1_2a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(225, 1000)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 5.65, 0.00, 25.25)
+size = Vector3(3.80, 5.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B1_2b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(475, 1000)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 11.85, 0.00, 25.25)
+size = Vector3(3.80, 6.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B1_3a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(350, 1525)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 38.65)
+size = Vector3(10.00, 8.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B1_3b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(350, 1775)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 44.85)
+size = Vector3(10.00, 5.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B1_4a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(225, 2350)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 5.65, 0.00, 58.25)
+size = Vector3(3.80, 5.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B1_4b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(475, 2350)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 11.85, 0.00, 58.25)
+size = Vector3(3.80, 7.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B1_5a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(350, 2875)
-size = Vector2(440, 190)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 71.65)
+size = Vector3(10.00, 5.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B1_5b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(350, 3125)
-size = Vector2(440, 190)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 77.85)
+size = Vector3(10.00, 7.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B2_1a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(875, 350)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 22.15, 0.00, 8.75)
+size = Vector3(3.80, 4.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B2_1b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1125, 350)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 28.35, 0.00, 8.75)
+size = Vector3(3.80, 4.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B2_2a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1000, 875)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 22.15)
+size = Vector3(10.00, 5.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B2_2b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1000, 1125)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 28.35)
+size = Vector3(10.00, 8.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B2_3a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(875, 1650)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 22.15, 0.00, 41.75)
+size = Vector3(3.80, 6.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B2_3b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1125, 1650)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 28.35, 0.00, 41.75)
+size = Vector3(3.80, 7.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B2_4a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1000, 2225)
-size = Vector2(440, 190)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 55.15)
+size = Vector3(10.00, 5.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B2_4b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1000, 2475)
-size = Vector2(440, 190)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 61.35)
+size = Vector3(10.00, 4.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B2_5a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(875, 3000)
-size = Vector2(190, 440)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 22.15, 0.00, 74.75)
+size = Vector3(3.80, 5.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B2_5b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1125, 3000)
-size = Vector2(190, 440)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 28.35, 0.00, 74.75)
+size = Vector3(3.80, 8.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B2_6a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1000, 3525)
-size = Vector2(440, 190)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 88.15)
+size = Vector3(10.00, 9.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B2_6b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1000, 3775)
-size = Vector2(440, 190)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 94.35)
+size = Vector3(10.00, 4.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B3_1a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1650, 225)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 41.75, 0.00, 5.65)
+size = Vector3(10.00, 9.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B3_1b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1650, 475)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 41.75, 0.00, 11.85)
+size = Vector3(10.00, 7.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B3_2a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1525, 1000)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 38.65, 0.00, 25.25)
+size = Vector3(3.80, 9.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B3_2b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1775, 1000)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 44.85, 0.00, 25.25)
+size = Vector3(3.80, 9.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B3_5a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1650, 2875)
-size = Vector2(440, 190)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 41.75, 0.00, 71.65)
+size = Vector3(10.00, 6.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B3_5b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1650, 3125)
-size = Vector2(440, 190)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 41.75, 0.00, 77.85)
+size = Vector3(10.00, 5.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B3_6a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1525, 3650)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 38.65, 0.00, 91.25)
+size = Vector3(3.80, 6.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B3_6b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1775, 3650)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 44.85, 0.00, 91.25)
+size = Vector3(3.80, 7.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B4_1a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2225, 350)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 55.15, 0.00, 8.75)
+size = Vector3(3.80, 7.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B4_1b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2475, 350)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 61.35, 0.00, 8.75)
+size = Vector3(3.80, 9.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B4_2a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2350, 875)
-size = Vector2(440, 190)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 22.15)
+size = Vector3(10.00, 6.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B4_2b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2350, 1125)
-size = Vector2(440, 190)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 28.35)
+size = Vector3(10.00, 7.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B4_5a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2225, 3000)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 55.15, 0.00, 74.75)
+size = Vector3(3.80, 5.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B4_5b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2475, 3000)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 61.35, 0.00, 74.75)
+size = Vector3(3.80, 8.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B4_6a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2350, 3525)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 88.15)
+size = Vector3(10.00, 5.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B4_6b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2350, 3775)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 94.35)
+size = Vector3(10.00, 9.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B5_2a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2875, 1000)
-size = Vector2(190, 440)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 71.65, 0.00, 25.25)
+size = Vector3(3.80, 8.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B5_2b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3125, 1000)
-size = Vector2(190, 440)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 77.85, 0.00, 25.25)
+size = Vector3(3.80, 6.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B5_3a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3000, 1525)
-size = Vector2(440, 190)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 74.75, 0.00, 38.65)
+size = Vector3(10.00, 4.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B5_3b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3000, 1775)
-size = Vector2(440, 190)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 74.75, 0.00, 44.85)
+size = Vector3(10.00, 9.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B5_4a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2875, 2350)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 71.65, 0.00, 58.25)
+size = Vector3(3.80, 8.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B5_4b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3125, 2350)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 77.85, 0.00, 58.25)
+size = Vector3(3.80, 7.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B5_5a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3000, 2875)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 74.75, 0.00, 71.65)
+size = Vector3(10.00, 6.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B5_5b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3000, 3125)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 74.75, 0.00, 77.85)
+size = Vector3(10.00, 4.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B5_6a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2875, 3650)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 71.65, 0.00, 91.25)
+size = Vector3(3.80, 5.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B5_6b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3125, 3650)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 77.85, 0.00, 91.25)
+size = Vector3(3.80, 5.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B6_3a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3525, 1650)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 88.15, 0.00, 41.75)
+size = Vector3(3.80, 8.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B6_3b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3775, 1650)
-size = Vector2(190, 440)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 94.35, 0.00, 41.75)
+size = Vector3(3.80, 7.00, 10.00)
+color = Color(0.24, 0.25, 0.28, 1)
+roof_color = Color(0.15, 0.15, 0.17, 1)
 
 [node name="B6_4a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3650, 2225)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 55.15)
+size = Vector3(10.00, 8.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B6_4b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3650, 2475)
-size = Vector2(440, 190)
-color = Color(0.33, 0.25, 0.22, 1)
-roof_color = Color(0.42, 0.32, 0.28, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 61.35)
+size = Vector3(10.00, 6.00, 3.80)
+color = Color(0.33, 0.27, 0.2, 1)
+roof_color = Color(0.18, 0.16, 0.14, 1)
 
 [node name="B6_5a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3525, 3000)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 88.15, 0.00, 74.75)
+size = Vector3(3.80, 5.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B6_5b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3775, 3000)
-size = Vector2(190, 440)
-color = Color(0.22, 0.28, 0.3, 1)
-roof_color = Color(0.29, 0.36, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 94.35, 0.00, 74.75)
+size = Vector3(3.80, 7.00, 10.00)
+color = Color(0.2, 0.24, 0.24, 1)
+roof_color = Color(0.13, 0.15, 0.15, 1)
 
 [node name="B6_6a" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3650, 3525)
-size = Vector2(440, 190)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 88.15)
+size = Vector3(10.00, 7.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="B6_6b" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3650, 3775)
-size = Vector2(440, 190)
-color = Color(0.28, 0.27, 0.3, 1)
-roof_color = Color(0.36, 0.34, 0.38, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 94.35)
+size = Vector3(10.00, 9.00, 3.80)
+color = Color(0.3, 0.2, 0.17, 1)
+roof_color = Color(0.17, 0.14, 0.13, 1)
 
 [node name="HighRise" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(3550, 230)
-size = Vector2(520, 300)
-color = Color(0.2, 0.24, 0.32, 1)
-roof_color = Color(0.3, 0.36, 0.48, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 85.00, 0.00, 4.50)
+size = Vector3(13.00, 16.00, 7.00)
+color = Color(0.17, 0.2, 0.27, 1)
+roof_color = Color(0.1, 0.12, 0.16, 1)
 label = "HIGH-RISE"
 
 [node name="GarageWall" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(350, 3530)
-size = Vector2(300, 40)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 4.40, 0.00, 91.25)
+size = Vector3(1.00, 3.00, 6.50)
 
 [node name="WallNorth" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2000, -40)
-size = Vector2(4160, 80)
-color = Color(0.1, 0.1, 0.12, 1)
-roof_color = Color(0.12, 0.12, 0.14, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 50.00, 0.00, -1.00)
+size = Vector3(104.00, 6.00, 2.00)
+color = Color(0.08, 0.08, 0.1, 1)
+roof_color = Color(0.06, 0.06, 0.08, 1)
 
 [node name="WallSouth" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2000, 4040)
-size = Vector2(4160, 80)
-color = Color(0.1, 0.1, 0.12, 1)
-roof_color = Color(0.12, 0.12, 0.14, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 50.00, 0.00, 101.00)
+size = Vector3(104.00, 6.00, 2.00)
+color = Color(0.08, 0.08, 0.1, 1)
+roof_color = Color(0.06, 0.06, 0.08, 1)
 
 [node name="WallWest" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(-40, 2000)
-size = Vector2(80, 4160)
-color = Color(0.1, 0.1, 0.12, 1)
-roof_color = Color(0.12, 0.12, 0.14, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, -1.00, 0.00, 50.00)
+size = Vector3(2.00, 6.00, 104.00)
+color = Color(0.08, 0.08, 0.1, 1)
+roof_color = Color(0.06, 0.06, 0.08, 1)
 
 [node name="WallEast" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(4040, 2000)
-size = Vector2(80, 4160)
-color = Color(0.1, 0.1, 0.12, 1)
-roof_color = Color(0.12, 0.12, 0.14, 1)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 101.00, 0.00, 50.00)
+size = Vector3(2.00, 6.00, 104.00)
+color = Color(0.08, 0.08, 0.1, 1)
+roof_color = Color(0.06, 0.06, 0.08, 1)
 
-[node name="CarWreck1" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(1500, 1550)
-size = Vector2(90, 46)
-color = Color(0.5, 0.15, 0.12, 1)
-roof_color = Color(0.4, 0.12, 0.1, 1)
+[node name="CourtFenceN" parent="Buildings" instance=ExtResource("10_building")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 50.00, 0.00, 41.50)
+size = Vector3(18.00, 0.90, 0.20)
+color = Color(0.3, 0.32, 0.34, 1)
+roof_color = Color(0.3, 0.32, 0.34, 1)
 
-[node name="CarWreck2" parent="Buildings" instance=ExtResource("10_building")]
-position = Vector2(2520, 2480)
-size = Vector2(46, 90)
-color = Color(0.15, 0.3, 0.5, 1)
-roof_color = Color(0.12, 0.25, 0.4, 1)
+[node name="CourtFenceS" parent="Buildings" instance=ExtResource("10_building")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 50.00, 0.00, 58.50)
+size = Vector3(18.00, 0.90, 0.20)
+color = Color(0.3, 0.32, 0.34, 1)
+roof_color = Color(0.3, 0.32, 0.34, 1)
 
-[node name="GearSpawnPoints" type="Node2D" parent="."]
+[node name="Props" type="Node3D" parent="."]
 
-[node name="Gear0" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(350, 350)
+[node name="Lamp0" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 19.40, 0.00, 19.40)
 
-[node name="Gear1" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(350, 1650)
+[node name="Lamp1" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 19.40, 0.00, 35.90)
 
-[node name="Gear2" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(350, 3000)
+[node name="Lamp2" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 19.40, 0.00, 52.40)
 
-[node name="Gear3" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(1000, 1000)
+[node name="Lamp3" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 19.40, 0.00, 68.90)
 
-[node name="Gear4" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(1000, 2350)
+[node name="Lamp4" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 19.40, 0.00, 85.40)
 
-[node name="Gear5" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(1000, 3650)
+[node name="Lamp5" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 35.90, 0.00, 35.90)
 
-[node name="Gear6" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(1650, 1000)
+[node name="Lamp6" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 35.90, 0.00, 52.40)
 
-[node name="Gear7" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(1650, 3650)
+[node name="Lamp7" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 35.90, 0.00, 68.90)
 
-[node name="Gear8" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(2350, 1000)
+[node name="Lamp8" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 35.90, 0.00, 85.40)
 
-[node name="Gear9" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(2350, 3650)
+[node name="Lamp9" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 52.40, 0.00, 19.40)
 
-[node name="Gear10" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(3000, 1650)
+[node name="Lamp10" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 52.40, 0.00, 85.40)
 
-[node name="Gear11" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(3000, 3000)
+[node name="Lamp11" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 68.90, 0.00, 19.40)
 
-[node name="Gear12" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(3650, 1650)
+[node name="Lamp12" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 68.90, 0.00, 35.90)
 
-[node name="Gear13" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(3650, 3000)
+[node name="Lamp13" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 68.90, 0.00, 52.40)
 
-[node name="Gear14" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(1500, 2500)
+[node name="Lamp14" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 68.90, 0.00, 68.90)
 
-[node name="Gear15" type="Marker2D" parent="GearSpawnPoints"]
-position = Vector2(2500, 1500)
+[node name="Lamp15" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 68.90, 0.00, 85.40)
 
-[node name="Hordes" type="Node2D" parent="."]
+[node name="Lamp16" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 85.40, 0.00, 19.40)
+
+[node name="Lamp17" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 85.40, 0.00, 35.90)
+
+[node name="Lamp18" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 85.40, 0.00, 52.40)
+
+[node name="Lamp19" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 85.40, 0.00, 68.90)
+
+[node name="Lamp20" parent="Props" instance=ExtResource("21_lamp")]
+transform = Transform3D(-0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, -0.7071, 85.40, 0.00, 85.40)
+
+[node name="Neon1" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 6.97, 0.00, 13.80)
+light_color = Color(0.2, 1, 0.85, 1)
+sign_text = "BAKERY"
+[node name="Neon2" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 13.80, 0.00, 60.12)
+light_color = Color(1, 0.75, 0.2, 1)
+sign_text = "COFFEE"
+[node name="Neon3" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 9.16, 0.00, 79.80)
+light_color = Color(0.3, 1, 0.35, 1)
+sign_text = "SMSH BRGR"
+[node name="Neon4" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 30.30, 0.00, 7.24)
+light_color = Color(1, 0.2, 0.2, 1)
+sign_text = "CRAFT BEER"
+[node name="Neon5" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 26.83, 0.00, 30.30)
+light_color = Color(0.4, 0.55, 1, 1)
+sign_text = "VAPES"
+[node name="Neon6" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 23.32, 0.00, 63.30)
+light_color = Color(1, 0.3, 0.6, 1)
+sign_text = "BARBER"
+[node name="Neon7" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 26.74, 0.00, 96.30)
+light_color = Color(0.2, 1, 0.85, 1)
+sign_text = "LIQUOR"
+[node name="Neon8" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 43.24, 0.00, 79.80)
+light_color = Color(1, 0.75, 0.2, 1)
+sign_text = "CLUB"
+[node name="Neon9" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 63.30, 0.00, 9.29)
+light_color = Color(0.3, 1, 0.35, 1)
+sign_text = "DINER"
+[node name="Neon10" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 56.58, 0.00, 30.30)
+light_color = Color(1, 0.2, 0.2, 1)
+sign_text = "PAWN"
+[node name="Neon11" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 63.30, 0.00, 76.00)
+light_color = Color(0.4, 0.55, 1, 1)
+sign_text = "24/7"
+[node name="Neon12" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 76.72, 0.00, 46.80)
+light_color = Color(1, 0.3, 0.6, 1)
+sign_text = "PHARMACY"
+[node name="Neon13" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 79.80, 0.00, 57.20)
+light_color = Color(0.2, 1, 0.85, 1)
+sign_text = "HAPPY HOUR"
+[node name="Neon14" parent="Props" instance=ExtResource("22_neon")]
+transform = Transform3D(0.0000, 0, -1.0000, 0, 1, 0, 1.0000, 0, 0.0000, 79.80, 0.00, 90.18)
+light_color = Color(1, 0.75, 0.2, 1)
+sign_text = "TATTOO"
+[node name="Car0" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(0.9715, 0, 0.2369, 0, 1, 0, -0.2369, 0, 0.9715, 15.60, 0.00, 41.23)
+paint = Color(0.33, 0.17, 0.20, 1)
+lights_on = true
+[node name="Car1" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.0245, 0, -0.9997, 0, 1, 0, 0.9997, 0, -0.0245, 56.48, 0.00, 84.40)
+paint = Color(0.32, 0.29, 0.37, 1)
+lights_on = false
+[node name="Car3" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(0.0185, 0, 0.9998, 0, 1, 0, -0.9998, 0, 0.0185, 27.90, 0.00, 18.40)
+paint = Color(0.55, 0.33, 0.27, 1)
+lights_on = false
+[node name="Car4" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.9839, 0, 0.1789, 0, 1, 0, -0.1789, 0, -0.9839, 32.10, 0.00, 28.67)
+paint = Color(0.23, 0.16, 0.27, 1)
+lights_on = false
+[node name="Car6" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.9811, 0, -0.1935, 0, 1, 0, 0.1935, 0, -0.9811, 65.10, 0.00, 61.18)
+paint = Color(0.30, 0.25, 0.38, 1)
+lights_on = false
+[node name="Car7" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.0102, 0, 0.9999, 0, 1, 0, -0.9999, 0, -0.0102, 74.89, 0.00, 67.90)
+paint = Color(0.22, 0.14, 0.35, 1)
+lights_on = false
+[node name="Car8" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.9981, 0, 0.0610, 0, 1, 0, -0.0610, 0, -0.9981, 18.40, 0.00, 77.49)
+paint = Color(0.34, 0.14, 0.17, 1)
+lights_on = false
+[node name="Car9" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.0274, 0, 0.9996, 0, 1, 0, -0.9996, 0, -0.0274, 90.80, 0.00, 15.60)
+paint = Color(0.46, 0.11, 0.37, 1)
+lights_on = false
+[node name="Car11" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.0541, 0, 0.9985, 0, 1, 0, -0.9985, 0, -0.0541, 90.25, 0.00, 48.60)
+paint = Color(0.50, 0.33, 0.34, 1)
+lights_on = false
+[node name="Car12" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.9997, 0, 0.0228, 0, 1, 0, -0.0228, 0, -0.9997, 81.60, 0.00, 38.79)
+paint = Color(0.20, 0.36, 0.35, 1)
+lights_on = false
+[node name="Car13" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(0.0093, 0, 1.0000, 0, 1, 0, -1.0000, 0, 0.0093, 42.01, 0.00, 81.60)
+paint = Color(0.27, 0.28, 0.24, 1)
+lights_on = false
+[node name="Car14" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(0.9989, 0, -0.0475, 0, 1, 0, 0.0475, 0, 0.9989, 48.60, 0.00, 44.57)
+paint = Color(0.23, 0.25, 0.11, 1)
+lights_on = false
+[node name="Car15" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.0223, 0, 0.9998, 0, 1, 0, -0.9998, 0, -0.0223, 91.79, 0.00, 51.40)
+paint = Color(0.61, 0.17, 0.37, 1)
+lights_on = true
+[node name="Car16" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(0.9891, 0, -0.1473, 0, 1, 0, 0.1473, 0, 0.9891, 65.10, 0.00, 95.12)
+paint = Color(0.37, 0.34, 0.11, 1)
+lights_on = false
+[node name="Car17" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(0.1192, 0, -0.9929, 0, 1, 0, 0.9929, 0, 0.1192, 90.58, 0.00, 51.40)
+paint = Color(0.24, 0.26, 0.16, 1)
+lights_on = false
+[node name="Car18" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(0.9999, 0, 0.0173, 0, 1, 0, -0.0173, 0, 0.9999, 32.10, 0.00, 75.77)
+paint = Color(0.17, 0.40, 0.23, 1)
+lights_on = false
+[node name="Car19" parent="Props" instance=ExtResource("23_car")]
+transform = Transform3D(-0.0659, 0, 0.9978, 0, 1, 0, -0.9978, 0, -0.0659, 89.77, 0.00, 15.60)
+paint = Color(0.63, 0.35, 0.36, 1)
+lights_on = false
+[node name="Fire0" parent="Props" instance=ExtResource("24_fire")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 52.60, 0.00, 70.37)
+
+[node name="Fire1" parent="Props" instance=ExtResource("24_fire")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 62.25, 0.00, 80.40)
+
+[node name="Fire2" parent="Props" instance=ExtResource("24_fire")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 36.10, 0.00, 32.51)
+
+[node name="Fire3" parent="Props" instance=ExtResource("24_fire")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 14.24, 0.00, 30.90)
+
+[node name="Fire4" parent="Props" instance=ExtResource("24_fire")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 69.10, 0.00, 25.59)
+
+[node name="Fire5" parent="Props" instance=ExtResource("24_fire")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 53.17, 0.00, 30.90)
+
+[node name="Fire6" parent="Props" instance=ExtResource("24_fire")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 52.60, 0.00, 21.49)
+
+[node name="Fire7" parent="Props" instance=ExtResource("24_fire")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 27.48, 0.00, 63.90)
+
+[node name="Fire8" parent="Props" instance=ExtResource("24_fire")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 69.10, 0.00, 6.13)
+
+[node name="Pole1_1" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 14.40)
+
+[node name="Pole1_2" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 41.75, 0.00, 14.40)
+
+[node name="Pole1_3" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 14.40)
+
+[node name="Pole1_4" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 74.75, 0.00, 14.40)
+
+[node name="Pole1_5" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 14.40)
+
+[node name="Pole2_0" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 30.90)
+
+[node name="Pole2_2" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 41.75, 0.00, 30.90)
+
+[node name="Pole2_3" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 30.90)
+
+[node name="Pole2_4" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 74.75, 0.00, 30.90)
+
+[node name="Pole2_5" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 30.90)
+
+[node name="Pole3_1" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 47.40)
+
+[node name="Pole3_2" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 41.75, 0.00, 47.40)
+
+[node name="Pole3_3" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 47.40)
+
+[node name="Pole3_5" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 47.40)
+
+[node name="Pole4_0" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 63.90)
+
+[node name="Pole4_1" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 63.90)
+
+[node name="Pole4_3" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 63.90)
+
+[node name="Pole5_0" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 80.40)
+
+[node name="Pole5_1" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 80.40)
+
+[node name="Pole5_4" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 74.75, 0.00, 80.40)
+
+[node name="Pole5_5" parent="Props" instance=ExtResource("25_pole")]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 80.40)
+
+[node name="GearSpawnPoints" type="Node3D" parent="."]
+
+[node name="Gear0" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 8.75)
+
+[node name="Gear1" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 41.75)
+
+[node name="Gear2" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 74.75)
+
+[node name="Gear3" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 25.25)
+
+[node name="Gear4" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 58.25)
+
+[node name="Gear5" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 25.25, 0.00, 91.25)
+
+[node name="Gear6" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 41.75, 0.00, 25.25)
+
+[node name="Gear7" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 41.75, 0.00, 91.25)
+
+[node name="Gear8" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 25.25)
+
+[node name="Gear9" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 58.25, 0.00, 91.25)
+
+[node name="Gear10" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 74.75, 0.00, 41.75)
+
+[node name="Gear11" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 74.75, 0.00, 74.75)
+
+[node name="Gear12" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 41.75)
+
+[node name="Gear13" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 91.25, 0.00, 74.75)
+
+[node name="Gear14" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 37.50, 0.00, 62.50)
+
+[node name="Gear15" type="Marker3D" parent="GearSpawnPoints"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 62.50, 0.00, 37.50)
+
+[node name="Hordes" type="Node3D" parent="."]
 
 [node name="HelicopterCrash" parent="Hordes" instance=ExtResource("11_horde")]
-position = Vector2(2000, 2000)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 50.00, 0.00, 50.00)
 enemies = Array[ExtResource("18_enemydata")]([ExtResource("16_walker"), ExtResource("16_walker"), ExtResource("16_walker"), ExtResource("17_armoured")])
 count = 40
-scatter_radius = 260.0
-
+scatter_radius = 6.5
 [node name="QuarantineGuards" parent="Hordes" instance=ExtResource("11_horde")]
-position = Vector2(3400, 820)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 85.00, 0.00, 20.50)
 enemies = Array[ExtResource("18_enemydata")]([ExtResource("16_walker"), ExtResource("17_armoured")])
 count = 18
-scatter_radius = 180.0
-draw_wreck = false
-
+scatter_radius = 4.5
+show_wreck = false
 [node name="ExtractionZone" parent="." instance=ExtResource("12_extract")]
-position = Vector2(3550, 490)
-size = Vector2(240, 160)
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 85.00, 0.00, 10.00)
 
-[node name="PlayerStart" type="Marker2D" parent="."]
-position = Vector2(350, 3650)
+[node name="PlayerStart" type="Marker3D" parent="."]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 8.75, 0.00, 92.00)
 
-[node name="Entities" type="Node2D" parent="."]
-y_sort_enabled = true
+[node name="Entities" type="Node3D" parent="."]
 
-[node name="Projectiles" type="Node2D" parent="."]
+[node name="Effects" type="Node3D" parent="."]
 
-[node name="ObjectiveArrow" type="Node2D" parent="."]
-script = ExtResource("15_arrow")
+[node name="Projectiles" type="Node3D" parent="."]
+
+[node name="ObjectiveArrow" parent="." instance=ExtResource("15_arrow")]
 
 [node name="ZombieDirector" type="Node" parent="."]
 script = ExtResource("13_director")

@@ -33,19 +33,20 @@ func _run() -> void:
 	# Walk toward the horde at the basketball court and shoot to show combat.
 	flow.level.player.health.max_health = 100000.0
 	flow.level.player.health.current = 100000.0
-	flow.level.player.global_position = Vector2(1700, 1800)
+	flow.level.player.global_position = Vector3(40.5, 0, 44.0)
+	flow.level.camera_rig.snap()
 	flow.level.player.stats.add_modifier(PlayerStats.Stat.EXPLOSION, PlayerStats.Mode.FLAT, 0.5)
-	get_viewport().warp_mouse(Vector2(900, 400))
-	var ev: InputEventMouseButton = InputEventMouseButton.new()
-	ev.button_index = MOUSE_BUTTON_LEFT
-	ev.pressed = true
-	ev.position = Vector2(900, 380)
-	Input.parse_input_event(ev)
+	await _wait(0.1)
+	var target_screen: Vector2 = flow.level.camera_rig.camera.unproject_position(Vector3(50, 1, 50))
+	# Aim with the gamepad right stick (the windowed OS cursor cannot be held in place reliably).
+	var player_screen: Vector2 = flow.level.camera_rig.camera.unproject_position(flow.level.player.global_position + Vector3(0, 1, 0))
+	var stick: Vector2 = (target_screen - player_screen).normalized()
+	_axis(JOY_AXIS_RIGHT_X, stick.x)
+	_axis(JOY_AXIS_RIGHT_Y, stick.y)
 	await _wait(2.5)
 	await _shot("3_combat")
-	ev = ev.duplicate() as InputEventMouseButton
-	ev.pressed = false
-	Input.parse_input_event(ev)
+	_axis(JOY_AXIS_RIGHT_X, 0.0)
+	_axis(JOY_AXIS_RIGHT_Y, 0.0)
 	# Force a rare-containing hand.
 	flow.run.add_xp(flow.run.xp_needed())
 	await _wait(0.4)
@@ -56,3 +57,11 @@ func _run() -> void:
 	await _shot("5_end")
 	print("DONE screenshots")
 	get_tree().quit(0)
+
+
+func _axis(axis: JoyAxis, value: float) -> void:
+	var ev: InputEventJoypadMotion = InputEventJoypadMotion.new()
+	ev.device = 0
+	ev.axis = axis
+	ev.axis_value = value
+	Input.parse_input_event(ev)

@@ -9,8 +9,10 @@ extends Resource
 @export_range(1, 20) var projectiles: int = 1
 ## Total cone in degrees across which projectiles are spread, plus random jitter.
 @export_range(0, 90) var spread_degrees: float = 4.0
-@export_range(100, 3000) var bullet_speed: float = 950.0
-## Distance in pixels a bullet travels before vanishing.
-@export_range(50, 2000) var range_pixels: float = 520.0
-@export var bullet_color: Color = Color(1.0, 0.9, 0.4)
-@export_range(1, 10) var bullet_radius: float = 3.0
+## Metres per second.
+@export_range(5, 100) var bullet_speed: float = 24.0
+## Distance in metres a bullet travels before vanishing.
+@export_range(1, 60, 0.5) var range_meters: float = 13.0
+@export var bullet_color: Color = Color(1.0, 0.6, 0.25)
+## Tracer thickness in metres.
+@export_range(0.02, 0.5, 0.01) var bullet_radius: float = 0.08

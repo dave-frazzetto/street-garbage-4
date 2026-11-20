@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/props/street_light.gd" id="1_light"]
+[ext_resource type="Script" path="res://world/props/destructible.gd" id="2_destructible"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_barrel"]
+top_radius = 0.35
+bottom_radius = 0.35
+height = 0.9
+radial_segments = 10
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_barrel"]
+albedo_color = Color(0.25, 0.15, 0.1, 1)
+metallic = 0.4
+
+[sub_resource type="SphereMesh" id="SphereMesh_flame"]
+radius = 0.4
+height = 1.1
+radial_segments = 10
+rings = 6
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_barrel"]
+height = 1.0
+radius = 0.4
+
+[node name="Fire" type="Node3D"]
+script = ExtResource("1_light")
+light_color = Color(1, 0.45, 0.12, 1)
+energy = 3.5
+light_range = 9.0
+flicker = 0.7
+
+[node name="Barrel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("CylinderMesh_barrel")
+surface_material_override/0 = SubResource("StandardMaterial3D_barrel")
+
+[node name="Bulb" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_flame")
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+light_color = Color(1, 0.45, 0.12, 1)
+light_energy = 3.5
+omni_range = 9.0
+
+[node name="Body" type="StaticBody3D" parent="."]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CylinderShape3D_barrel")
+
+[node name="Destructible" type="Node" parent="Body" node_paths=PackedStringArray("remove_on_destroy")]
+script = ExtResource("2_destructible")
+max_health = 40.0
+explosion_radius = 4.5
+explosion_damage = 70.0
+remove_on_destroy = NodePath("../..")

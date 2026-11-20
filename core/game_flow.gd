@@ -28,6 +28,7 @@ var deck: PerkDeck
 var level: Level
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _hand: Array[Perk] = []
+var _runs_started: int = 0
 
 
 func _ready() -> void:
@@ -67,7 +68,8 @@ func start_run() -> void:
 	level.start(stats, run.config, rng, func() -> float: return run.elapsed)
 	hud.visible = true
 	_refresh_hud()
-	hud.show_banner("DAY %d\nKILL ZOMBIES TO GET XP AND UPGRADE YOUR CHARACTER" % run.config.day_number, 5.0)
+	_runs_started += 1
+	hud.show_banner("DAY %d\nKILL ZOMBIES TO GET XP AND UPGRADE YOUR CHARACTER" % (run.config.day_number + _runs_started - 1), 5.0)
 	touch_controls.set_gameplay_active(_gameplay_active())
 	run_started.emit()
 
@@ -125,7 +127,7 @@ func _refresh_hud() -> void:
 	hud.set_sprinting(false)
 
 
-func _on_zombie_killed(xp: float, _at: Vector2) -> void:
+func _on_zombie_killed(xp: float, _at: Vector3) -> void:
 	run.register_kill()
 	run.add_xp(xp * stats.get_value(PlayerStats.Stat.XP_GAIN))
 

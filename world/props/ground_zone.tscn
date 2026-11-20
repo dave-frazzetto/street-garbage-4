@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/props/ground_zone.gd" id="1_zone"]
+
+[node name="GroundZone" type="Node3D"]
+script = ExtResource("1_zone")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+
+[node name="Label" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.05, -5)
+pixel_size = 0.015
+modulate = Color(1, 1, 1, 0.7)
+font_size = 64
+outline_size = 0
