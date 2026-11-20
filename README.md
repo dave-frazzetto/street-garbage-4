@@ -37,6 +37,7 @@ standard library only, deterministic) into `audio/sfx/*.wav`:
 ```sh
 python scripts/sfx/generate_sfx.py                    # re-render every effect
 python scripts/sfx/generate_sfx.py --only shot_pistol # re-render one
+python scripts/sfx/generate_music.py                  # re-render the background loop (audio/music/)
 ```
 
 Designers tune sound in the Inspector: each event is an `SfxCue` in `audio/cues/` (clips, volume, pitch variance, minimum
@@ -66,7 +67,7 @@ Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # 
 | Folder | Contents |
 |---|---|
 | `core/` | `game_flow.tscn`: main scene; owns the run rules and wires world and UI |
-| `audio/` | Sound: `SfxCue` and `SfxBank` resources, `SfxPlayer` scene, `cues/` (.tres), `sfx/` (generated .wav) |
+| `audio/` | Sound: `SfxCue` and `SfxBank` resources, `SfxPlayer` and `MusicPlayer` scenes, `cues/` (.tres), `sfx/` and `music/` (generated .wav) |
 | `rules/` | Node-free rules: `RunState`, `PlayerStats`, `PerkDeck` |
 | `data/` | Resource scripts and `.tres` content: perks (`data/perks/pool/`), weapons, enemies, run/player/director config |
 | `world/` | 3D world: camera rig, player (and components), zombies, bullets, pickups, props (buildings, cars, lamps, neon, destructibles), spawners, the Freedom City level |
@@ -94,6 +95,7 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 9 | 2026-11-20 | [single-threaded-web-export-for-itch-io](docs/adr/single-threaded-web-export-for-itch-io.md) | Single-threaded web export for itch.io |
 | 10 | 2026-11-20 | [isometric-3d-world](docs/adr/isometric-3d-world.md) | Isometric 3D world (supersedes 5 and 6) |
 | 12 | 2026-11-20 | [procedural-sound-effects-with-sfxr-style-generator](docs/adr/procedural-sound-effects-with-sfxr-style-generator.md) | Procedural sound effects with sfxr-style generator |
+| 13 | 2026-11-20 | [looping-background-music-from-the-same-synth](docs/adr/looping-background-music-from-the-same-synth.md) | Looping background music from the same synth |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),

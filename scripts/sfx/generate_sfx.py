@@ -244,24 +244,24 @@ SOUNDS: dict[str, tuple[int, float, float, list]] = {
     # Gunshots: a noise "crack" over a short pitched thump. Lower and longer for heavier guns.
     "shot_pistol": (3, 0.08, 0.85, [
         layer(0.0, 0.9, wave=NOISE, freq=Hz(2600), sustain=0.02, decay=0.14, punch=0.6, lpf=0.75, hpf=0.1),
-        layer(0.0, 0.8, wave=SAW, freq=Hz(420), ramp=0.45, sustain=0.015, decay=0.12, punch=0.4),
+        layer(0.0, 0.8, wave=SAW, freq=Hz(420), ramp=-0.3, sustain=0.015, decay=0.12, punch=0.4),
     ]),
     "shot_smg": (3, 0.10, 0.8, [
         layer(0.0, 0.9, wave=NOISE, freq=Hz(3200), sustain=0.01, decay=0.08, punch=0.5, lpf=0.8, hpf=0.15),
-        layer(0.0, 0.7, wave=SQUARE, freq=Hz(560), ramp=0.5, sustain=0.01, decay=0.07, duty=0.3),
+        layer(0.0, 0.7, wave=SQUARE, freq=Hz(560), ramp=-0.35, sustain=0.01, decay=0.07, duty=0.3),
     ]),
     "shot_shotgun": (3, 0.07, 0.95, [
         layer(0.0, 1.0, wave=NOISE, freq=Hz(1500), sustain=0.06, decay=0.3, punch=0.8, lpf=0.55, lpf_ramp=-0.2),
-        layer(0.0, 0.9, wave=SAW, freq=Hz(180), ramp=0.35, sustain=0.04, decay=0.22, punch=0.6),
+        layer(0.0, 0.9, wave=SAW, freq=Hz(180), ramp=-0.25, sustain=0.04, decay=0.22, punch=0.6),
     ]),
     "shot_hmg": (3, 0.08, 0.95, [
         layer(0.0, 1.0, wave=NOISE, freq=Hz(1800), sustain=0.03, decay=0.16, punch=0.7, lpf=0.6),
-        layer(0.0, 1.0, wave=SQUARE, freq=Hz(220), ramp=0.4, sustain=0.025, decay=0.14, duty=0.5, punch=0.5),
+        layer(0.0, 1.0, wave=SQUARE, freq=Hz(220), ramp=-0.28, sustain=0.025, decay=0.14, duty=0.5, punch=0.5),
     ]),
     # Zombie hit: wet thud. Kill: a splat plus a falling groan.
     "zombie_hit": (3, 0.15, 0.7, [
         layer(0.0, 1.0, wave=NOISE, freq=Hz(700), sustain=0.01, decay=0.08, punch=0.3, lpf=0.4),
-        layer(0.0, 0.8, wave=SINE, freq=Hz(140), ramp=0.3, sustain=0.015, decay=0.09),
+        layer(0.0, 0.8, wave=SINE, freq=Hz(140), ramp=-0.2, sustain=0.015, decay=0.09),
     ]),
     "zombie_die": (3, 0.12, 0.8, [
         layer(0.0, 0.9, wave=NOISE, freq=Hz(500), sustain=0.03, decay=0.22, punch=0.3, lpf=0.35, lpf_ramp=-0.4),

@@ -69,6 +69,17 @@ func _check_cue(label: String, cue: SfxCue) -> void:
 		check(_peak(wav) < 1.0, "%s: not clipping" % label)
 
 
+func test_2b_music_track_is_a_long_audible_loop() -> void:
+	var player: MusicPlayer = (load("res://audio/music_player.tscn") as PackedScene).instantiate() as MusicPlayer
+	var wav: AudioStreamWAV = player.stream as AudioStreamWAV
+	check(wav != null, "music track is a WAV")
+	if wav != null:
+		check(wav.get_length() > 10.0 and wav.get_length() < 60.0, "music loop length (%.1fs)" % wav.get_length())
+		var peak: float = _peak(wav)
+		check(peak > 0.3 and peak < 1.0, "music audible and not clipping (peak %.2f)" % peak)
+	player.free()
+
+
 func test_3_player_limits_and_mutes() -> void:
 	var player: SfxPlayer = (load("res://audio/sfx_player.tscn") as PackedScene).instantiate() as SfxPlayer
 	add_child(player)
@@ -97,6 +108,7 @@ func test_4_game_events_trigger_cues() -> void:
 	flow.sfx.cue_played.connect(func(c: SfxCue) -> void: played.append(c))
 	flow.start_run()
 	await wait_frames(3)
+	check(flow.music.is_playing(), "music starts with the run")
 	var bank: SfxBank = flow.sfx.bank
 	var level: Level = flow.level
 	var p: Player = level.player
@@ -183,8 +195,12 @@ func test_5_perk_and_end_of_run_cues() -> void:
 	await wait_frames(3)
 	check_eq(flow.run.outcome, RunState.Outcome.KILLED, "run ended by death")
 	check(played.has(bank.run_killed), "death plays run_killed")
+	check(not flow.music.is_playing(), "music fades out when the run ends")
+	await get_tree().create_timer(flow.music.fade_out + 0.3, true, false).timeout
+	check(not flow.music._player.playing, "music has stopped after the fade")
 	flow.start_run()
 	await wait_frames(2)
+	check(flow.music.is_playing(), "music restarts with the next run")
 	played.clear()
 	flow.run.time_left = 0.1
 	await wait_seconds(0.3)
