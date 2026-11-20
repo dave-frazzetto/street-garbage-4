@@ -1,7 +1,7 @@
 class_name Player
-extends CharacterBody2D
+extends CharacterBody3D
 ## The survivor. Moves, sprints, shoots; reports health and deaths upward.
-## Runs on its own (F6) with default stats; the level injects real stats with setup().
+## Runs on its own (F6) with default stats and its own camera; the level injects stats, camera and projectile parent.
 
 signal health_changed(current: float, maximum: float)
 signal stamina_changed(current: float, maximum: float)
@@ -11,9 +11,12 @@ signal weapon_changed(weapon_name: String, seconds_left: float)
 signal sprint_changed(sprinting: bool)
 
 @export var default_config: PlayerConfig
-@export var body_color: Color = Color(0.35, 0.65, 1.0)
+@export var camera_scene: PackedScene
+@export var body_color: Color = Color(0.3, 0.6, 1.0)
 @export var sprint_color: Color = Color(0.6, 0.85, 1.0)
-@export_range(4, 40) var body_radius: float = 14.0
+@export var hit_color: Color = Color(1.0, 0.3, 0.3)
+## Collision radius in metres (zombies use it for contact range).
+@export_range(0.1, 2, 0.05) var body_radius: float = 0.35
 ## Seconds of invulnerability after a hit.
 @export_range(0, 2, 0.05) var hit_invulnerability: float = 0.25
 
@@ -21,14 +24,20 @@ signal sprint_changed(sprinting: bool)
 @onready var health: HealthComponent = $Health
 @onready var stamina: StaminaComponent = $Stamina
 @onready var weapon: WeaponComponent = $Weapon
+@onready var visual: Node3D = $Visual
+@onready var _body_mesh: MeshInstance3D = $Visual/Body
 
 var stats: PlayerStats
 var sprinting: bool = false
 var _invulnerable: float = 0.0
 var _hit_flash: float = 0.0
+var _material: StandardMaterial3D
 
 
 func _ready() -> void:
+	_material = StandardMaterial3D.new()
+	_material.albedo_color = body_color
+	_body_mesh.material_override = _material
 	input.sprint_toggled.connect(_toggle_sprint)
 	health.changed.connect(func(c: float, m: float) -> void: health_changed.emit(c, m))
 	health.damaged.connect(func(a: float) -> void: damaged.emit(a))
@@ -38,6 +47,7 @@ func _ready() -> void:
 	weapon.damage_dealt.connect(_on_damage_dealt)
 	if stats == null:
 		setup(PlayerStats.new(default_config), null)
+	_ensure_camera.call_deferred()
 
 
 ## Call down: inject stats and the node that holds projectiles.
@@ -51,6 +61,11 @@ func setup(player_stats: PlayerStats, projectile_parent: Node) -> void:
 	health.max_health = stats.get_value(PlayerStats.Stat.MAX_HEALTH)
 	health.current = health.max_health
 	_apply_stats()
+
+
+## Call down: the camera that defines screen directions.
+func set_view(camera: IsoCamera) -> void:
+	input.view = camera
 
 
 func get_pickup_radius() -> float:
@@ -75,11 +90,11 @@ func equip_temporary_weapon(data: WeaponData, seconds: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	if health.is_dead:
-		velocity = Vector2.ZERO
+		velocity = Vector3.ZERO
 		return
 	_invulnerable = maxf(0.0, _invulnerable - delta)
 	_hit_flash = maxf(0.0, _hit_flash - delta)
-	var move: Vector2 = input.get_move_vector()
+	var move: Vector3 = input.get_move_vector()
 	var moving: bool = move.length() > 0.1
 	if sprinting and not stamina.update(delta, moving):
 		_set_sprinting(false)
@@ -90,23 +105,25 @@ func _physics_process(delta: float) -> void:
 		speed *= 1.0 + stats.get_value(PlayerStats.Stat.SPRINT_BONUS)
 	velocity = move * speed
 	move_and_slide()
-	var aim: Vector2 = input.get_aim_direction()
-	weapon.rotation = aim.angle()
+	global_position.y = 0.0
+	var aim: Vector3 = input.get_aim_direction()
+	visual.rotation.y = atan2(-aim.x, -aim.z)
+	weapon.rotation.y = visual.rotation.y
 	weapon.tick(delta, input.is_firing(), aim)
 	var regen: float = stats.get_value(PlayerStats.Stat.HEALTH_REGEN)
 	if regen > 0.0:
 		health.heal(regen * delta)
-	queue_redraw()
+	_material.albedo_color = hit_color if _hit_flash > 0.0 else (sprint_color if sprinting else body_color)
 
 
-func _draw() -> void:
-	var col: Color = sprint_color if sprinting else body_color
-	if _hit_flash > 0.0:
-		col = Color(1, 0.3, 0.3)
-	draw_circle(Vector2.ZERO, body_radius, col)
-	draw_arc(Vector2.ZERO, body_radius, 0, TAU, 24, Color(0.05, 0.1, 0.2), 2.0)
-	var aim: Vector2 = Vector2.from_angle(weapon.rotation)
-	draw_line(aim * 6.0, aim * (body_radius + 10.0), Color(0.15, 0.15, 0.15), 6.0)
+func _ensure_camera() -> void:
+	# Standalone (F6 / tests): no camera injected and none in the scene, so bring our own.
+	if input.view == null and get_viewport().get_camera_3d() == null and camera_scene != null:
+		var cam: IsoCamera = camera_scene.instantiate() as IsoCamera
+		cam.target = self
+		get_parent().add_child(cam)
+		cam.snap()
+		set_view(cam)
 
 
 func _toggle_sprint() -> void:

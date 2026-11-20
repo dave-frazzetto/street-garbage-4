@@ -6,17 +6,12 @@ extends Pickup
 ## Seconds before it disappears.
 @export_range(1, 300) var lifetime: float = 25.0
 
+@onready var _visual: Node3D = $Visual
 
-func _physics_process(delta: float) -> void:
-	super(delta)
+
+func _animate(_delta: float) -> void:
+	_visual.rotation.y = _time * 1.5
+	_visual.position.y = 0.4 + sin(_time * 3.0) * 0.08
+	_visual.visible = not (_time > lifetime - 4.0 and int(_time * 6.0) % 2 == 0)
 	if _time >= lifetime:
 		queue_free()
-
-
-func _draw() -> void:
-	var blink: bool = _time > lifetime - 4.0 and int(_time * 6.0) % 2 == 0
-	if blink:
-		return
-	draw_rect(Rect2(-9, -9, 18, 18), Color(0.95, 0.95, 0.95))
-	draw_rect(Rect2(-2.5, -7, 5, 14), Color(0.85, 0.1, 0.15))
-	draw_rect(Rect2(-7, -2.5, 14, 5), Color(0.85, 0.1, 0.15))

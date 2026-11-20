@@ -6,8 +6,9 @@ tags: [art]
 generated:
   by: arkouda/0.8.0
   at: 2026-11-20T15:32:41Z
-status: stable
-lifecycle: accepted
+status: deprecated
+lifecycle: superseded
+superseded_by: isometric-3d-world
 deciders: [claude]
 ---
 
@@ -15,7 +16,7 @@ deciders: [claude]
 
 ## Status
 
-Accepted
+Superseded by isometric-3d-world
 
 ## Context
 

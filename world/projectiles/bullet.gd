@@ -1,28 +1,31 @@
 class_name Bullet
-extends Node2D
-## A bullet: moves, ray-casts against walls and zombies, supports ricochet (jump to next zombie) and explosions.
+extends Node3D
+## A bullet with a glowing tracer: moves, ray-casts against walls and zombies, supports ricochet (jump to the next
+## zombie) and explosions.
 
 signal damage_dealt(amount: float)
 
-## Zombies within this distance can receive a ricochet.
-@export_range(50, 1000) var ricochet_search_radius: float = 320.0
-@export_range(10, 300) var explosion_radius: float = 70.0
+## Zombies within this distance (metres) can receive a ricochet.
+@export_range(1, 30) var ricochet_search_radius: float = 8.0
+@export_range(0.25, 10) var explosion_radius: float = 1.75
 @export var explosion_scene: PackedScene
 
 const WORLD_MASK: int = 1
 const ZOMBIE_MASK: int = 4
 
-var velocity: Vector2
+@onready var _tracer: MeshInstance3D = $Tracer
+
+var velocity: Vector3
 var damage: float
 var range_left: float
 var ricochets_left: int
 var explosion_fraction: float
 var color: Color = Color.YELLOW
-var radius: float = 3.0
+var radius: float = 0.08
 var _excluded: Array[RID] = []
 
 
-func setup(start: Vector2, direction: Vector2, weapon: WeaponData, dmg: float, max_range: float, ricochets: int, explosion: float) -> void:
+func setup(start: Vector3, direction: Vector3, weapon: WeaponData, dmg: float, max_range: float, ricochets: int, explosion: float) -> void:
 	position = start
 	velocity = direction * weapon.bullet_speed
 	damage = dmg
@@ -33,18 +36,29 @@ func setup(start: Vector2, direction: Vector2, weapon: WeaponData, dmg: float, m
 	radius = weapon.bullet_radius
 
 
+func _ready() -> void:
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_color = color
+	mat.emission_enabled = true
+	mat.emission = color
+	mat.emission_energy_multiplier = 4.0
+	_tracer.material_override = mat
+	_tracer.scale = Vector3(radius / 0.08, radius / 0.08, 1.0)
+	_face_velocity()
+
+
 func _physics_process(delta: float) -> void:
-	var step: Vector2 = velocity * delta
-	var from: Vector2 = global_position
-	var to: Vector2 = from + step
-	var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(from, to, WORLD_MASK | ZOMBIE_MASK, _excluded)
-	var hit: Dictionary = get_world_2d().direct_space_state.intersect_ray(query)
+	var step: Vector3 = velocity * delta
+	var from: Vector3 = global_position
+	var to: Vector3 = from + step
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, to, WORLD_MASK | ZOMBIE_MASK, _excluded)
+	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		global_position = to
 		range_left -= step.length()
 		if range_left <= 0.0:
 			queue_free()
-		queue_redraw()
 		return
 	var collider: Object = hit["collider"]
 	global_position = hit["position"]
@@ -55,7 +69,8 @@ func _physics_process(delta: float) -> void:
 
 
 func _hit_zombie(zombie: Zombie) -> void:
-	var dealt: float = zombie.take_damage(damage, velocity.normalized())
+	var flat: Vector3 = Vector3(velocity.x, 0.0, velocity.z).normalized()
+	var dealt: float = zombie.take_damage(damage, flat)
 	if dealt > 0.0:
 		damage_dealt.emit(dealt)
 	if explosion_fraction > 0.0:
@@ -65,8 +80,11 @@ func _hit_zombie(zombie: Zombie) -> void:
 		var next: Zombie = _find_ricochet_target(zombie)
 		if next != null:
 			ricochets_left -= 1
-			velocity = (next.global_position - global_position).normalized() * velocity.length()
+			var to_next: Vector3 = next.global_position - global_position
+			to_next.y = 0.0
+			velocity = to_next.normalized() * velocity.length()
 			range_left = maxf(range_left, ricochet_search_radius)
+			_face_velocity()
 			return
 	queue_free()
 
@@ -77,12 +95,14 @@ func _explode(center_zombie: Zombie) -> void:
 		var z: Zombie = node as Zombie
 		if z == null or z.is_dead or z == center_zombie:
 			continue
-		if z.global_position.distance_to(global_position) <= explosion_radius:
-			var dealt: float = z.take_damage(splash, (z.global_position - global_position).normalized())
+		var offset: Vector3 = z.global_position - global_position
+		offset.y = 0.0
+		if offset.length() <= explosion_radius:
+			var dealt: float = z.take_damage(splash, offset.normalized())
 			if dealt > 0.0:
 				damage_dealt.emit(dealt)
 	if explosion_scene != null:
-		var fx: Node2D = explosion_scene.instantiate() as Node2D
+		var fx: Node3D = explosion_scene.instantiate() as Node3D
 		fx.position = global_position
 		fx.set("radius", explosion_radius)
 		get_parent().add_child(fx)
@@ -102,6 +122,7 @@ func _find_ricochet_target(from_zombie: Zombie) -> Zombie:
 	return best
 
 
-func _draw() -> void:
-	draw_circle(Vector2.ZERO, radius, color)
-	draw_line(Vector2.ZERO, -velocity.normalized() * radius * 3.0, Color(color, 0.5), radius)
+func _face_velocity() -> void:
+	if is_inside_tree() and velocity.length() > 0.01:
+		var flat: Vector3 = Vector3(velocity.x, 0.0, velocity.z)
+		rotation.y = atan2(-flat.x, -flat.z)

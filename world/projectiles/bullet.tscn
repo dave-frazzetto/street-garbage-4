@@ -3,6 +3,14 @@
 [ext_resource type="Script" path="res://world/projectiles/bullet.gd" id="1_bullet"]
 [ext_resource type="PackedScene" path="res://world/effects/explosion_effect.tscn" id="2_fx"]
 
-[node name="Bullet" type="Node2D"]
+[sub_resource type="BoxMesh" id="BoxMesh_tracer"]
+size = Vector3(0.08, 0.08, 0.7)
+
+[node name="Bullet" type="Node3D"]
 script = ExtResource("1_bullet")
 explosion_scene = ExtResource("2_fx")
+
+[node name="Tracer" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.3)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_tracer")
