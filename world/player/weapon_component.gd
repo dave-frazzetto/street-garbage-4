@@ -4,7 +4,7 @@ extends Node3D
 
 signal damage_dealt(amount: float)
 signal weapon_changed(weapon_name: String, seconds_left: float)
-signal fired
+signal fired(weapon: WeaponData)
 
 @export var base_weapon: WeaponData
 @export var bullet_scene: PackedScene
@@ -75,7 +75,7 @@ func _fire(direction: Vector3) -> void:
 		)
 		bullet.damage_dealt.connect(_on_bullet_damage)
 		parent.add_child(bullet)
-	fired.emit()
+	fired.emit(weapon)
 
 
 func _on_bullet_damage(amount: float) -> void:

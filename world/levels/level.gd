@@ -12,6 +12,12 @@ signal player_died
 signal weapon_changed(weapon_name: String, seconds_left: float)
 signal player_sprint_changed(sprinting: bool)
 signal extraction_entered
+signal player_fired(weapon: WeaponData)
+## A player bullet damaged a zombie.
+signal zombie_hit
+signal health_collected
+## A destructible prop was destroyed; `explosive` is true when it blew up.
+signal prop_destroyed(at: Vector3, explosive: bool)
 
 @export var player_scene: PackedScene
 @export var zombie_scene: PackedScene
@@ -145,6 +151,8 @@ func _spawn_player() -> void:
 	player.died.connect(func() -> void: player_died.emit())
 	player.weapon_changed.connect(func(n: String, t: float) -> void: weapon_changed.emit(n, t))
 	player.sprint_changed.connect(func(on: bool) -> void: player_sprint_changed.emit(on))
+	player.fired.connect(func(w: WeaponData) -> void: player_fired.emit(w))
+	player.hit_landed.connect(func(_a: float) -> void: zombie_hit.emit())
 
 
 func _spawn_gears(count: int) -> void:
@@ -191,6 +199,7 @@ func _on_zombie_died(_zombie: Zombie, xp: float, at: Vector3) -> void:
 
 
 func _on_prop_destroyed(at: Vector3, radius: float, damage: float) -> void:
+	prop_destroyed.emit(at, radius > 0.0)
 	if radius > 0.0:
 		_blast.call_deferred(at, radius, damage)
 
@@ -240,7 +249,10 @@ func _spawn_health(at: Vector3) -> void:
 	hp.position = Vector3(at.x, 0.0, at.z)
 	hp.collector = player
 	hp.radius_provider = player.get_pickup_radius
-	hp.collected.connect(func(p: Pickup) -> void: player.heal((p as HealthPickup).heal_amount))
+	hp.collected.connect(func(p: Pickup) -> void:
+		player.heal((p as HealthPickup).heal_amount)
+		health_collected.emit()
+	)
 	entities.add_child(hp)
 
 
