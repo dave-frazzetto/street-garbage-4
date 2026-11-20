@@ -9,6 +9,9 @@
 [ext_resource type="PackedScene" path="res://ui/perks/perk_select.tscn" id="7_perks"]
 [ext_resource type="PackedScene" path="res://ui/screens/title_screen.tscn" id="8_title"]
 [ext_resource type="PackedScene" path="res://ui/screens/end_screen.tscn" id="9_end"]
+[ext_resource type="PackedScene" path="res://ui/debug/error_console.tscn" id="13_console"]
+[ext_resource type="Resource" path="res://data/config/graphics_desktop.tres" id="14_gfx_desktop"]
+[ext_resource type="Resource" path="res://data/config/graphics_mobile.tres" id="15_gfx_mobile"]
 [ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="10_touch"]
 [ext_resource type="PackedScene" path="res://audio/sfx_player.tscn" id="11_sfx"]
 [ext_resource type="PackedScene" path="res://audio/music_player.tscn" id="12_music"]
@@ -19,6 +22,8 @@ level_scene = ExtResource("2_level")
 run_config = ExtResource("3_run")
 player_config = ExtResource("4_player")
 perk_pool = ExtResource("5_pool")
+desktop_graphics = ExtResource("14_gfx_desktop")
+mobile_graphics = ExtResource("15_gfx_mobile")
 
 [node name="LevelSlot" type="Node" parent="."]
 
@@ -35,3 +40,5 @@ perk_pool = ExtResource("5_pool")
 [node name="TitleScreen" parent="." instance=ExtResource("8_title")]
 
 [node name="EndScreen" parent="." instance=ExtResource("9_end")]
+
+[node name="ErrorConsole" parent="." instance=ExtResource("13_console")]

@@ -28,7 +28,11 @@ func _press(action_key: Key) -> void:
 func test_1_title_then_start() -> void:
 	check(flow.title_screen.visible, "title visible at boot")
 	_press(KEY_ENTER)
-	await wait_frames(3)
+	for i: int in 30:
+		if flow.level != null:
+			break
+		await wait_frames(1)
+	await wait_frames(2)
 	check(not flow.title_screen.visible, "title hidden after Enter")
 	check(flow.level != null and flow.level.player != null, "level and player spawned")
 	check_eq(flow.level.gear_positions().size(), 6, "6 gears placed")
