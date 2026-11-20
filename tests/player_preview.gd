@@ -53,6 +53,14 @@ func _wait(s: float) -> void:
 	await get_tree().create_timer(s, true, false, true).timeout
 
 
+## Feeds the model like Player does: one update_motion call per physics frame for the given time.
+func _drive(seconds: float, speed: float, firing: bool) -> void:
+	var frames: int = int(seconds * Engine.physics_ticks_per_second)
+	for i: int in frames:
+		model.update_motion(speed, firing)
+		await get_tree().physics_frame
+
+
 func _run() -> void:
 	model = (load("res://world/player/player_model.tscn") as PackedScene).instantiate() as PlayerModel
 	add_child(model)
@@ -62,14 +70,14 @@ func _run() -> void:
 	# Close-up from the front-right, low angle, to see the pistol.
 	cam.position = Vector3(2.2, 1.5, -3.2)
 	cam.look_at(Vector3(0, 1.0, 0))
-	model.update_motion(0.0, false)
-	await _wait(1.2)
+	await _drive(1.2, 0.0, false)
 	await _shot("player_1_idle")
 	cam.position = Vector3(-2.6, 1.3, -2.6)
 	cam.look_at(Vector3(0, 1.1, -0.6))
-	model.update_motion(5.25, true)
-	await _wait(0.35)
-	await _shot("player_2_shoot")
+	await _drive(0.8, 0.0, true)
+	await _shot("player_2_stand_and_shoot")
+	await _drive(0.6, 5.25, true)
+	await _shot("player_2b_run_and_shoot")
 	# Game camera angle.
 	var rig: IsoCamera = (load("res://world/camera/iso_camera.tscn") as PackedScene).instantiate() as IsoCamera
 	add_child(rig)
@@ -78,8 +86,7 @@ func _run() -> void:
 	cam.current = false
 	rig.get_node("Camera3D").current = true
 	model.rotation.y = 0.6
-	model.update_motion(5.25, true)
-	await _wait(0.4)
+	await _drive(0.5, 5.25, true)
 	await _shot("player_3_game_angle")
 	print("DONE player preview")
 	get_tree().quit(0)
