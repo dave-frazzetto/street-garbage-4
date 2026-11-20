@@ -18,13 +18,17 @@ var device: Device = Device.MOUSE_KEYBOARD
 ## Set by on-screen touch sticks (vectors of length 0..1). Zero when unused.
 var touch_move: Vector2 = Vector2.ZERO
 var touch_aim: Vector2 = Vector2.ZERO
+## Mouse events this soon after touch-stick use are ignored for device switching: browsers and Godot synthesise
+## mouse events from touches (following the first finger only), which would otherwise steal the aim.
+@export_range(0, 5, 0.1) var touch_mouse_grace: float = 1.0
 var _last_aim: Vector2 = Vector2.RIGHT
+var _last_touch_ms: int = -100000
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion or event is InputEventMouseButton:
 		# Mouse events emulated from touch must not steal the aim source from the touch sticks.
-		if event.device != InputEvent.DEVICE_ID_EMULATION:
+		if event.device != InputEvent.DEVICE_ID_EMULATION and not _touch_recent():
 			_set_device(Device.MOUSE_KEYBOARD)
 	elif event is InputEventJoypadMotion:
 		if absf((event as InputEventJoypadMotion).axis_value) > 0.4:
@@ -43,10 +47,11 @@ func request_sprint_toggle() -> void:
 
 
 ## Fed every frame with the on-screen stick vectors (length 0..1). Using a stick switches to touch aim.
-func set_touch(move: Vector2, aim: Vector2) -> void:
+func set_touch(move: Vector2, aim: Vector2, touching: bool = false) -> void:
 	touch_move = move
 	touch_aim = aim
-	if move.length() > 0.05 or aim.length() > 0.05:
+	if touching or move.length() > 0.05 or aim.length() > 0.05:
+		_last_touch_ms = Time.get_ticks_msec()
 		_set_device(Device.TOUCH)
 
 
@@ -90,6 +95,10 @@ func is_firing() -> bool:
 
 func _aim_stick() -> Vector2:
 	return Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
+
+
+func _touch_recent() -> bool:
+	return Time.get_ticks_msec() - _last_touch_ms < int(touch_mouse_grace * 1000.0)
 
 
 func _set_device(value: Device) -> void:

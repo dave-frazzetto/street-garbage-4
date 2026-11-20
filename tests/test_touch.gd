@@ -67,6 +67,37 @@ func test_3_both_sticks_at_once() -> void:
 	check_eq(p.input.device, PlayerInput.Device.TOUCH, "still touch device")
 
 
+func test_3b_browser_mouse_events_do_not_steal_aim() -> void:
+	# Phone browsers synthesise real mouse events that follow the FIRST finger (the left stick).
+	var p: Player = flow.level.player
+	var switches: Array[int] = [0]
+	var count_mouse: Callable = func(d: PlayerInput.Device) -> void:
+		if d == PlayerInput.Device.MOUSE_KEYBOARD:
+			switches[0] += 1
+	p.input.device_changed.connect(count_mouse)
+	for i: int in 10:
+		var mm: InputEventMouseMotion = InputEventMouseMotion.new()
+		mm.device = 0
+		mm.position = _win(Vector2(420, 500))
+		Input.parse_input_event(mm)
+		var mb: InputEventMouseButton = InputEventMouseButton.new()
+		mb.device = 0
+		mb.button_index = MOUSE_BUTTON_LEFT
+		mb.pressed = true
+		mb.position = mm.position
+		Input.parse_input_event(mb)
+		await wait_frames(1)
+	p.input.device_changed.disconnect(count_mouse)
+	check_eq(switches[0], 0, "browser mouse events never switch aim to the mouse")
+	check_eq(p.input.device, PlayerInput.Device.TOUCH, "touch aim kept")
+	check(p.input.get_aim_direction().dot(Vector2.DOWN) > 0.9, "still aims where the right stick points")
+	var up: InputEventMouseButton = InputEventMouseButton.new()
+	up.device = 0
+	up.button_index = MOUSE_BUTTON_LEFT
+	up.pressed = false
+	Input.parse_input_event(up)
+
+
 func test_4_release_stops() -> void:
 	_touch(0, Vector2(420, 500), false)
 	_touch(1, Vector2(950, 560), false)
