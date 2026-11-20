@@ -13,6 +13,8 @@ extends Resource
 @export_range(5, 100) var bullet_speed: float = 24.0
 ## Distance in metres a bullet travels before vanishing.
 @export_range(1, 60, 0.5) var range_meters: float = 13.0
+## Sound played on every shot.
+@export var fire_sound: SfxCue
 @export var bullet_color: Color = Color(1.0, 0.6, 0.25)
 ## Tracer thickness in metres.
 @export_range(0.02, 0.5, 0.01) var bullet_radius: float = 0.08

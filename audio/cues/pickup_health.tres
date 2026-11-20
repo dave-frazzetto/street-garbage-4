@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SfxCue" format=3]
+
+[ext_resource type="Script" path="res://audio/sfx_cue.gd" id="1_cue"]
+[ext_resource type="AudioStream" path="res://audio/sfx/pickup_health.wav" id="2_s"]
+
+[resource]
+script = ExtResource("1_cue")
+streams = Array[AudioStream]([ExtResource("2_s")])
+volume_db = -5.0
+pitch_variance = 0.03
+min_interval = 0.05

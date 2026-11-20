@@ -21,6 +21,7 @@ signal run_ended(outcome: RunState.Outcome)
 @onready var end_screen: EndScreen = $EndScreen
 @onready var level_slot: Node = $LevelSlot
 @onready var touch_controls: TouchControls = $TouchControls
+@onready var sfx: SfxPlayer = $SfxPlayer
 
 var run: RunState
 var stats: PlayerStats
@@ -38,6 +39,7 @@ func _ready() -> void:
 	perk_select.redraw_requested.connect(_on_redraw)
 	perk_select.skipped.connect(_on_skip)
 	touch_controls.sprint_pressed.connect(_on_touch_sprint)
+	title_screen.start_requested.connect(_play.bind(sfx.bank.run_start))
 	touch_controls.first_touch.connect(func() -> void: touch_controls.set_gameplay_active(_gameplay_active()))
 	touch_controls.set_gameplay_active(false)
 	hud.visible = false
@@ -113,7 +115,23 @@ func _connect_level() -> void:
 	level.player_died.connect(func() -> void: run.finish(RunState.Outcome.KILLED))
 	level.weapon_changed.connect(hud.set_weapon)
 	level.extraction_entered.connect(_on_extraction_entered)
+	_connect_level_sfx()
 	level.player_sprint_changed.connect(hud.set_sprinting)
+
+
+func _connect_level_sfx() -> void:
+	var bank: SfxBank = sfx.bank
+	level.player_fired.connect(func(w: WeaponData) -> void: sfx.play_cue(w.fire_sound))
+	level.zombie_hit.connect(_play.bind(bank.zombie_hit))
+	level.zombie_killed.connect(func(_xp: float, _at: Vector3) -> void: sfx.play_cue(bank.zombie_die))
+	level.player_damaged.connect(func(_a: float) -> void: sfx.play_cue(bank.player_hurt))
+	level.gear_collected.connect(_play.bind(bank.pickup_gear))
+	level.health_collected.connect(_play.bind(bank.pickup_health))
+	level.prop_destroyed.connect(func(_at: Vector3, explosive: bool) -> void: sfx.play_cue(bank.prop_explode if explosive else bank.prop_break))
+
+
+func _play(cue: SfxCue) -> void:
+	sfx.play_cue(cue)
 
 
 func _refresh_hud() -> void:
@@ -145,6 +163,7 @@ func _on_extraction_entered() -> void:
 	if run.can_extract():
 		run.finish(RunState.Outcome.EXTRACTED)
 	else:
+		sfx.play_cue(sfx.bank.extraction_denied)
 		hud.show_message("THE HIGH-RISE NEEDS %d MORE GEAR%s" % [run.gears_missing(), "" if run.gears_missing() == 1 else "S"])
 
 
@@ -167,6 +186,7 @@ func _deal_hand() -> void:
 		run.consume_level_up()
 		return
 	_set_paused(true)
+	sfx.play_cue(sfx.bank.level_up)
 	perk_select.open(_cards_for(_hand), run.redraws_left, run.pending_level_ups)
 
 
@@ -189,17 +209,20 @@ func _on_perk_chosen(index: int) -> void:
 		return
 	var perk: Perk = _hand[index]
 	perk.apply(_perk_context())
+	sfx.play_cue(sfx.bank.perk_pick)
 	hud.show_message("%s!" % perk.display_name.to_upper())
 	_after_choice()
 
 
 func _on_redraw() -> void:
 	if run.use_redraw():
+		sfx.play_cue(sfx.bank.perk_redraw)
 		_hand = deck.draw_hand(_perk_context(), run.config.hand_size)
 		perk_select.open(_cards_for(_hand), run.redraws_left, run.pending_level_ups)
 
 
 func _on_skip() -> void:
+	sfx.play_cue(sfx.bank.perk_skip)
 	_after_choice()
 
 
@@ -228,10 +251,13 @@ func _on_run_ended(outcome: RunState.Outcome) -> void:
 	]
 	match outcome:
 		RunState.Outcome.EXTRACTED:
+			sfx.play_cue(sfx.bank.run_extracted)
 			end_screen.show_result("EXTRACTED", "You made it out before the nuclear makeover.", lines, true)
 		RunState.Outcome.NUKED:
+			sfx.play_cue(sfx.bank.run_nuked)
 			end_screen.show_result("NUKED", "Time ran out. Freedom City got a nuclear makeover.", lines, false)
 		_:
+			sfx.play_cue(sfx.bank.run_killed)
 			end_screen.show_result("YOU DIED", "Another brain-munching freak joins the horde.", lines, false)
 	run_ended.emit(outcome)
 
