@@ -14,6 +14,14 @@ signal run_ended(outcome: RunState.Outcome)
 @export var auto_start: bool = false
 ## Fixed RNG seed for reproducible runs; 0 = random.
 @export var seed_value: int = 0
+@export_group("Graphics")
+## Used on desktop.
+@export var desktop_graphics: GraphicsProfile
+## Used in mobile browsers (Android/iOS web) and on touch-only web devices.
+@export var mobile_graphics: GraphicsProfile
+## Use the mobile profile everywhere (to test the phone look on a PC).
+@export var force_mobile_graphics: bool = false
+@export_group("")
 
 @onready var hud: Hud = $Hud
 @onready var perk_select: PerkSelect = $PerkSelect
@@ -23,6 +31,7 @@ signal run_ended(outcome: RunState.Outcome)
 @onready var touch_controls: TouchControls = $TouchControls
 @onready var sfx: SfxPlayer = $SfxPlayer
 @onready var music: MusicPlayer = $MusicPlayer
+@onready var error_console: ErrorConsole = $ErrorConsole
 
 var run: RunState
 var stats: PlayerStats
@@ -31,10 +40,12 @@ var level: Level
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _hand: Array[Perk] = []
 var _runs_started: int = 0
+var graphics: GraphicsProfile
 
 
 func _ready() -> void:
-	title_screen.start_requested.connect(start_run)
+	title_screen.start_requested.connect(_begin_run)
+	graphics = _pick_graphics()
 	end_screen.restart_requested.connect(start_run)
 	perk_select.perk_chosen.connect(_on_perk_chosen)
 	perk_select.redraw_requested.connect(_on_redraw)
@@ -46,6 +57,23 @@ func _ready() -> void:
 	hud.visible = false
 	if auto_start:
 		start_run.call_deferred()
+
+
+## From the title: let the "LOADING..." frame draw before the heavy level build.
+func _begin_run() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	start_run()
+
+
+func _pick_graphics() -> GraphicsProfile:
+	var mobile_web: bool = OS.has_feature("web_android") or OS.has_feature("web_ios")
+	var touch_web: bool = OS.has_feature("web") and DisplayServer.is_touchscreen_available()
+	var mobile: bool = force_mobile_graphics or mobile_web or touch_web
+	var profile: GraphicsProfile = mobile_graphics if mobile else desktop_graphics
+	if profile == null:
+		profile = GraphicsProfile.new()
+	return profile
 
 
 func start_run() -> void:
@@ -69,6 +97,9 @@ func start_run() -> void:
 	level_slot.add_child(level)
 	_connect_level()
 	level.start(stats, run.config, rng, func() -> float: return run.elapsed)
+	if graphics != null:
+		level.apply_graphics(graphics)
+		get_viewport().scaling_3d_scale = graphics.render_scale
 	hud.visible = true
 	music.play_music()
 	_refresh_hud()
