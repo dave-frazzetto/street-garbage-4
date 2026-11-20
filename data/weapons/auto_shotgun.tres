@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_7f0f5"]
+
+[resource]
+script = ExtResource("1_7f0f5")
+display_name = "Auto Shotgun"
+shots_per_second = 2.6
+damage = 8.0
+projectiles = 7
+spread_degrees = 34.0
+bullet_speed = 900.0
+range_pixels = 360.0
+bullet_color = Color(1, 0.55, 0.25, 1)

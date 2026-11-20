@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="Perk" format=3]
+
+[ext_resource type="Script" path="res://data/perks/effects/perk_effect.gd" id="1_i8fhl"]
+[ext_resource type="Script" path="res://data/perks/effects/stat_modifier_effect.gd" id="2_umx14"]
+[ext_resource type="Script" path="res://data/perks/effects/flag_effect.gd" id="3_8815w"]
+[ext_resource type="Script" path="res://data/perks/perk.gd" id="4_0ieim"]
+
+[sub_resource type="Resource" id="Resource_nwu56"]
+script = ExtResource("2_umx14")
+stat = 17
+mode = 0
+amount = 0.25
+
+[sub_resource type="Resource" id="Resource_wmbrh"]
+script = ExtResource("3_8815w")
+
+[resource]
+script = ExtResource("4_0ieim")
+id = &"vampire"
+display_name = "Vampire"
+category = 4
+rarity = 1
+max_stacks = 1
+flavour = "Feed on the horde."
+effects = Array[ExtResource("1_i8fhl")]([SubResource("Resource_nwu56"), SubResource("Resource_wmbrh")])

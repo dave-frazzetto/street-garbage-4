@@ -1,0 +1,28 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://core/game_flow.gd" id="1_flow"]
+[ext_resource type="PackedScene" path="res://world/levels/freedom_city.tscn" id="2_level"]
+[ext_resource type="Resource" path="res://data/config/run_default.tres" id="3_run"]
+[ext_resource type="Resource" path="res://data/config/player_default.tres" id="4_player"]
+[ext_resource type="Resource" path="res://data/perks/perk_pool_default.tres" id="5_pool"]
+[ext_resource type="PackedScene" path="res://ui/hud/hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://ui/perks/perk_select.tscn" id="7_perks"]
+[ext_resource type="PackedScene" path="res://ui/screens/title_screen.tscn" id="8_title"]
+[ext_resource type="PackedScene" path="res://ui/screens/end_screen.tscn" id="9_end"]
+
+[node name="GameFlow" type="Node"]
+script = ExtResource("1_flow")
+level_scene = ExtResource("2_level")
+run_config = ExtResource("3_run")
+player_config = ExtResource("4_player")
+perk_pool = ExtResource("5_pool")
+
+[node name="LevelSlot" type="Node" parent="."]
+
+[node name="Hud" parent="." instance=ExtResource("6_hud")]
+
+[node name="PerkSelect" parent="." instance=ExtResource("7_perks")]
+
+[node name="TitleScreen" parent="." instance=ExtResource("8_title")]
+
+[node name="EndScreen" parent="." instance=ExtResource("9_end")]

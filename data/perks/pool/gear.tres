@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Perk" format=3]
+
+[ext_resource type="Script" path="res://data/perks/effects/perk_effect.gd" id="1_ibhh4"]
+[ext_resource type="Script" path="res://data/perks/effects/grant_gear_effect.gd" id="2_3uet4"]
+[ext_resource type="Script" path="res://data/perks/perk.gd" id="3_gudjk"]
+
+[sub_resource type="Resource" id="Resource_vbtav"]
+script = ExtResource("2_3uet4")
+
+[resource]
+script = ExtResource("3_gudjk")
+id = &"gear"
+display_name = "Gear"
+category = 5
+weight = 0.5
+max_stacks = 6
+flavour = "Saves you a trip."
+effects = Array[ExtResource("1_ibhh4")]([SubResource("Resource_vbtav")])

@@ -1,0 +1,7 @@
+.godot/
+/tools/
+/build/
+*.tmp
+/tests/output/
+export_credentials.cfg
+*.import
