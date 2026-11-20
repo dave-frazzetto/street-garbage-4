@@ -74,6 +74,17 @@ func equip_temporary_weapon(weapon: WeaponData, seconds: float) -> void:
 	player.equip_temporary_weapon(weapon, seconds)
 
 
+## Call down: on-screen stick vectors for this frame.
+func set_touch_input(move: Vector2, aim: Vector2) -> void:
+	if player != null:
+		player.input.set_touch(move, aim)
+
+
+func toggle_sprint() -> void:
+	if player != null:
+		player.input.request_sprint_toggle()
+
+
 func gear_positions() -> Array[Vector2]:
 	var out: Array[Vector2] = []
 	for g: GearPickup in _gears:

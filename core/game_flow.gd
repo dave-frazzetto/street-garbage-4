@@ -20,6 +20,7 @@ signal run_ended(outcome: RunState.Outcome)
 @onready var title_screen: TitleScreen = $TitleScreen
 @onready var end_screen: EndScreen = $EndScreen
 @onready var level_slot: Node = $LevelSlot
+@onready var touch_controls: TouchControls = $TouchControls
 
 var run: RunState
 var stats: PlayerStats
@@ -35,6 +36,9 @@ func _ready() -> void:
 	perk_select.perk_chosen.connect(_on_perk_chosen)
 	perk_select.redraw_requested.connect(_on_redraw)
 	perk_select.skipped.connect(_on_skip)
+	touch_controls.sprint_pressed.connect(_on_touch_sprint)
+	touch_controls.first_touch.connect(func() -> void: touch_controls.set_gameplay_active(_gameplay_active()))
+	touch_controls.set_gameplay_active(false)
 	hud.visible = false
 	if auto_start:
 		start_run.call_deferred()
@@ -42,7 +46,7 @@ func _ready() -> void:
 
 func start_run() -> void:
 	_clear_level()
-	get_tree().paused = false
+	_set_paused(false)
 	title_screen.visible = false
 	end_screen.visible = false
 	perk_select.close()
@@ -64,13 +68,29 @@ func start_run() -> void:
 	hud.visible = true
 	_refresh_hud()
 	hud.show_banner("DAY %d\nKILL ZOMBIES TO GET XP AND UPGRADE YOUR CHARACTER" % run.config.day_number, 5.0)
+	touch_controls.set_gameplay_active(_gameplay_active())
 	run_started.emit()
+
+
+func _on_touch_sprint() -> void:
+	if level != null:
+		level.toggle_sprint()
 
 
 func _process(delta: float) -> void:
 	if run == null or run.is_over() or get_tree().paused:
 		return
+	level.set_touch_input(touch_controls.move_vector, touch_controls.aim_vector)
 	run.tick(delta)
+
+
+func _gameplay_active() -> bool:
+	return run != null and not run.is_over() and not get_tree().paused
+
+
+func _set_paused(paused: bool) -> void:
+	get_tree().paused = paused
+	touch_controls.set_gameplay_active(_gameplay_active())
 
 
 func _connect_run() -> void:
@@ -144,7 +164,7 @@ func _deal_hand() -> void:
 	if _hand.is_empty():
 		run.consume_level_up()
 		return
-	get_tree().paused = true
+	_set_paused(true)
 	perk_select.open(_cards_for(_hand), run.redraws_left, run.pending_level_ups)
 
 
@@ -188,14 +208,14 @@ func _after_choice() -> void:
 		_deal_hand()
 		return
 	perk_select.close()
-	get_tree().paused = false
+	_set_paused(false)
 
 
 # --- End of run ------------------------------------------------------------
 
 func _on_run_ended(outcome: RunState.Outcome) -> void:
 	perk_select.close()
-	get_tree().paused = true
+	_set_paused(true)
 	var minutes: int = floori(run.elapsed / 60.0)
 	var seconds: int = floori(run.elapsed) % 60
 	var lines: PackedStringArray = [

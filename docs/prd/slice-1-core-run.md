@@ -7,7 +7,7 @@ generated:
   by: arkouda/0.8.0
   at: 2026-11-20T15:32:16Z
 status: stable
-lifecycle: approved
+lifecycle: shipped
 owner: [claude]
 decisions:
   - godot-4-7-with-typed-gdscript
@@ -22,7 +22,7 @@ decisions:
 
 ## Status
 
-Approved
+Shipped
 
 ## Problem
 

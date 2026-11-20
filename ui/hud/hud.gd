@@ -56,7 +56,7 @@ func set_time(seconds_left: float) -> void:
 
 
 func set_gears(have: int, need: int) -> void:
-	_gear_label.text = "⚙ %d/%d" % [have, need]
+	_gear_label.text = "GEARS %d/%d" % [have, need]
 	_objective_label.text = "REACH THE HIGH-RISE" if have >= need else "COLLECT %d GEARS" % need
 
 

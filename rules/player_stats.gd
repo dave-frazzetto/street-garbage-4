@@ -32,11 +32,11 @@ enum Flag { NO_HEALTH_PICKUPS }
 
 ## How a stat is written on a perk card.
 enum Format {
-	NUMBER, ## plain number, e.g. "100 → 120"
-	PER_SECOND, ## "0 → 0.5/s"
-	BONUS_PERCENT, ## multiplier shown as bonus over base, e.g. "0% → 12.5%"
-	ABSOLUTE_PERCENT, ## fraction shown as percent, e.g. "6% → 11%"
-	COUNT, ## integer, e.g. "0 → 1"
+	NUMBER, ## plain number, e.g. "100 -> 120"
+	PER_SECOND, ## "0 -> 0.5/s"
+	BONUS_PERCENT, ## multiplier shown as bonus over base, e.g. "0% -> 12.5%"
+	ABSOLUTE_PERCENT, ## fraction shown as percent, e.g. "6% -> 11%"
+	COUNT, ## integer, e.g. "0 -> 1"
 }
 
 const STAT_INFO: Dictionary = {

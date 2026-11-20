@@ -16,20 +16,31 @@ quarantine zone (top right) before the 18:00 countdown ends and the city is nuke
 deals 3 perk cards (redraw 3 times per run, or skip). The arrow next to you points to the nearest gear, then to the
 High-Rise.
 
-| Action | Keyboard + mouse | Gamepad |
-|---|---|---|
-| Move | WASD / arrows | Left stick |
-| Aim | Mouse | Right stick |
-| Shoot | Hold left mouse button | Push right stick (or hold RT) |
-| Toggle sprint (drains stamina) | Shift | L3 |
-| Perk: select / confirm | ←/→, A/D or mouse / Enter or click | D-pad or stick / A |
-| Perk: redraw / skip | R / Esc or X | Y / B |
-| Start / restart | Enter or Space | A or Start |
+| Action | Keyboard + mouse | Gamepad | Touch (mobile browser) |
+|---|---|---|---|
+| Move | WASD / arrows | Left stick | Drag on the left half |
+| Aim | Mouse | Right stick | Drag on the right half |
+| Shoot | Hold left mouse button | Push right stick (or hold RT) | Push the right stick past half |
+| Toggle sprint (drains stamina) | Shift | L3 | SPRINT button |
+| Perk: select / confirm | Left/Right, A/D or mouse / Enter or click | D-pad or stick / A | Tap a card |
+| Perk: redraw / skip | R / Esc or X | Y / B | Tap REDRAW / SKIP |
+| Start / restart | Enter or Space | A or Start | Tap the button |
+
+## Web build (itch.io)
+
+```sh
+scripts/build_web.sh            # exports build/web/ and build/street-garbage-web.zip (single-threaded)
+node scripts/serve_web.js       # serves build/web on http://localhost:8060/ (phones on the LAN: use the PC's IP)
+node scripts/web_smoke.js       # headless Chrome: loads the build, taps START, drives both touch sticks
+```
+
+Upload `build/street-garbage-web.zip` to itch.io as an HTML project ("This file will be played in the browser").
+Leave "SharedArrayBuffer support" off, turn on "Mobile friendly" with landscape orientation, and add a fullscreen button.
 
 ## Tests
 
 ```sh
-tests/run_tests.sh   # headless: rules, player input (keyboard+mouse and gamepad), full game flow; under 10 s total
+tests/run_tests.sh   # headless: rules, keyboard+mouse and gamepad input, touch sticks, full game flow; ~10 s total
 Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # windowed: saves PNGs to tests/output/
 ```
 
@@ -41,8 +52,9 @@ Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # 
 | `rules/` | Node-free rules: `RunState`, `PlayerStats`, `PerkDeck` |
 | `data/` | Resource scripts and `.tres` content: perks (`data/perks/pool/`), weapons, enemies, run/player/director config |
 | `world/` | Player (and components), zombies, bullets, pickups, props, spawners, the Freedom City level |
-| `ui/` | HUD, perk cards, title and end screens |
+| `ui/` | HUD, perk cards, title and end screens, touch sticks |
 | `tests/` | Headless tests and the screenshot scene |
+| `scripts/` | Web build, local web server, browser smoke test |
 | `docs/` | ADRs (`docs/adr/`) and PRDs (`docs/prd/`), managed with arkouda |
 
 Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` and listing them in
@@ -61,5 +73,6 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 6 | 2026-11-20 | [placeholder-art-drawn-in-code](docs/adr/placeholder-art-drawn-in-code.md) | Placeholder art drawn in code |
 | 7 | 2026-11-20 | [pull-requests-through-github-rest-api](docs/adr/pull-requests-through-github-rest-api.md) | Pull requests through GitHub REST API |
 | 8 | 2026-11-20 | [unified-player-input-component](docs/adr/unified-player-input-component.md) | Unified player input component |
+| 9 | 2026-11-20 | [single-threaded-web-export-for-itch-io](docs/adr/single-threaded-web-export-for-itch-io.md) | Single-threaded web export for itch.io |
 
-Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md).
+Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md).

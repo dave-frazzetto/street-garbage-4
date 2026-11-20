@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://ui/perks/perk_select.tscn" id="7_perks"]
 [ext_resource type="PackedScene" path="res://ui/screens/title_screen.tscn" id="8_title"]
 [ext_resource type="PackedScene" path="res://ui/screens/end_screen.tscn" id="9_end"]
+[ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="10_touch"]
 
 [node name="GameFlow" type="Node"]
 script = ExtResource("1_flow")
@@ -20,6 +21,8 @@ perk_pool = ExtResource("5_pool")
 [node name="LevelSlot" type="Node" parent="."]
 
 [node name="Hud" parent="." instance=ExtResource("6_hud")]
+
+[node name="TouchControls" parent="." instance=ExtResource("10_touch")]
 
 [node name="PerkSelect" parent="." instance=ExtResource("7_perks")]
 

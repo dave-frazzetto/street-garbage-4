@@ -30,9 +30,11 @@ with two on-screen touch sticks. Movement and shooting code must not care which 
   `aim_direction`, `is_firing` and a `sprint_toggled` signal. It remembers the last device class used (mouse,
   gamepad, touch) and picks the aim source from it. Gamepad and touch fire while the aim stick is pushed past a dead
   zone, like the original.
-- `TouchSticks` (`ui/touch/touch_sticks.tscn`) is a CanvasLayer with two `VirtualStick` controls (left and right half
-  of the screen) and a sprint button. It is shown only when `DisplayServer.is_touchscreen_available()`, or after the
-  first touch event. Game flow injects it into `PlayerInput`, which reads the sticks' vectors.
+- `TouchControls` (`ui/touch/touch_controls.tscn`) is a CanvasLayer with two floating `VirtualStick` controls (left
+  and right half of the screen) and a SPRINT button. It shows only on touch screens (or after the first touch) and only
+  during gameplay. To keep `world/` independent of `ui/`, game flow copies the stick vectors each frame into
+  `Level.set_touch_input()`, which calls `PlayerInput.set_touch()`; the button calls `Level.toggle_sprint()`.
+- Mouse events emulated from touch (`device == DEVICE_ID_EMULATION`) never switch the aim source to the mouse.
 
 ## Consequences
 
