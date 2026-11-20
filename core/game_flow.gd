@@ -80,7 +80,7 @@ func _on_touch_sprint() -> void:
 func _process(delta: float) -> void:
 	if run == null or run.is_over() or get_tree().paused:
 		return
-	level.set_touch_input(touch_controls.move_vector, touch_controls.aim_vector)
+	level.set_touch_input(touch_controls.move_vector, touch_controls.aim_vector, touch_controls.is_touching())
 	run.tick(delta)
 
 

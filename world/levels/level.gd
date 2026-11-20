@@ -75,9 +75,9 @@ func equip_temporary_weapon(weapon: WeaponData, seconds: float) -> void:
 
 
 ## Call down: on-screen stick vectors for this frame.
-func set_touch_input(move: Vector2, aim: Vector2) -> void:
+func set_touch_input(move: Vector2, aim: Vector2, touching: bool = false) -> void:
 	if player != null:
-		player.input.set_touch(move, aim)
+		player.input.set_touch(move, aim, touching)
 
 
 func toggle_sprint() -> void:
