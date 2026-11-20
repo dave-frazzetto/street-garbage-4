@@ -11,7 +11,7 @@ func apply(ctx: PerkContext) -> void:
 
 
 func describe(ctx: PerkContext) -> String:
-	return "Gears: %d → %d" % [ctx.run.gears, mini(ctx.run.gears + count, ctx.run.config.gears_required)]
+	return "Gears: %d -> %d" % [ctx.run.gears, mini(ctx.run.gears + count, ctx.run.config.gears_required)]
 
 
 func is_available(ctx: PerkContext) -> bool:

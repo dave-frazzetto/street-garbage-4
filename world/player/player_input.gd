@@ -23,7 +23,9 @@ var _last_aim: Vector2 = Vector2.RIGHT
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion or event is InputEventMouseButton:
-		_set_device(Device.MOUSE_KEYBOARD)
+		# Mouse events emulated from touch must not steal the aim source from the touch sticks.
+		if event.device != InputEvent.DEVICE_ID_EMULATION:
+			_set_device(Device.MOUSE_KEYBOARD)
 	elif event is InputEventJoypadMotion:
 		if absf((event as InputEventJoypadMotion).axis_value) > 0.4:
 			_set_device(Device.GAMEPAD)
@@ -38,6 +40,14 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Called by touch controls' sprint button.
 func request_sprint_toggle() -> void:
 	sprint_toggled.emit()
+
+
+## Fed every frame with the on-screen stick vectors (length 0..1). Using a stick switches to touch aim.
+func set_touch(move: Vector2, aim: Vector2) -> void:
+	touch_move = move
+	touch_aim = aim
+	if move.length() > 0.05 or aim.length() > 0.05:
+		_set_device(Device.TOUCH)
 
 
 func get_move_vector() -> Vector2:

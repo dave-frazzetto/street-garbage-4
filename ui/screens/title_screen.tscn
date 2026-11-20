@@ -61,7 +61,8 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
 theme_override_font_sizes/font_size = 15
 text = "KEYBOARD + MOUSE: WASD move · mouse aim · hold LMB shoot · SHIFT toggle sprint
-GAMEPAD: left stick move · right stick aim + shoot (or RT) · L3 toggle sprint"
+GAMEPAD: left stick move · right stick aim + shoot (or RT) · L3 toggle sprint
+TOUCH: drag left half to move · drag right half to aim + shoot · SPRINT button"
 horizontal_alignment = 1
 
 [node name="StartButton" type="Button" parent="Center/VBox"]
@@ -71,4 +72,4 @@ layout_mode = 2
 size_flags_horizontal = 4
 focus_mode = 0
 theme_override_font_sizes/font_size = 24
-text = "START  [ENTER / A]"
+text = "START  [ENTER / A / TAP]"

@@ -1,0 +1,69 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/touch/touch_controls.gd" id="1_tc"]
+[ext_resource type="Script" path="res://ui/touch/virtual_stick.gd" id="2_stick"]
+
+[node name="TouchControls" type="CanvasLayer"]
+layer = 3
+script = ExtResource("1_tc")
+
+[node name="MoveStick" type="Control" parent="."]
+unique_name_in_owner = true
+anchors_preset = 9
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_top = 90.0
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_stick")
+
+[node name="AimStick" type="Control" parent="."]
+unique_name_in_owner = true
+anchors_preset = 11
+anchor_left = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 90.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_stick")
+knob_color = Color(1, 0.55, 0.45, 0.5)
+rest_anchor = Vector2(0.7, 0.7)
+
+[node name="SprintButton" type="Button" parent="."]
+unique_name_in_owner = true
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -360.0
+offset_right = 144.0
+offset_bottom = -300.0
+grow_vertical = 0
+focus_mode = 0
+theme_override_font_sizes/font_size = 20
+text = "SPRINT"
+
+[node name="RotateOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.92)
+
+[node name="Label" type="Label" parent="RotateOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 36
+text = "ROTATE YOUR DEVICE
+TO LANDSCAPE"
+horizontal_alignment = 1
+vertical_alignment = 1

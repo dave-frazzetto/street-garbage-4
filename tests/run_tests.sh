@@ -6,7 +6,7 @@ GODOT="${GODOT:-/d/Programs/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_wi
 cd "$(dirname "$0")/.."
 "$GODOT" --headless --path . --import >/dev/null 2>&1
 fail=0
-for t in test_rules test_player_input test_game_flow; do
+for t in test_rules test_player_input test_game_flow test_touch; do
   out=$(timeout 60 "$GODOT" --headless --path . "res://tests/$t.tscn" 2>&1)
   code=$?
   line=$(echo "$out" | grep "DONE:")

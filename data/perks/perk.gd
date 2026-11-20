@@ -48,7 +48,7 @@ func is_available(ctx: PerkContext) -> bool:
 	return true
 
 
-## Lines describing what taking this perk now would do, e.g. "Rate of Fire: 0% → 12.5%".
+## Lines describing what taking this perk now would do, e.g. "Rate of Fire: 0% -> 12.5%".
 func describe(ctx: PerkContext) -> PackedStringArray:
 	var lines: PackedStringArray = []
 	for effect: PerkEffect in effects:

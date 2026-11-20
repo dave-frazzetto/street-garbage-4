@@ -102,8 +102,8 @@ func test_pool_has_twenty_valid_perks() -> void:
 
 func test_trigger_happy_card_text_matches_original() -> void:
 	var ctx: PerkContext = PerkContext.new(RunState.new(RunConfig.new()), PlayerStats.new())
-	check_eq(_perk("trigger_happy").describe(ctx)[0], "Rate of Fire: 0% → 12.5%", "trigger happy text")
-	check_eq(_perk("blood_money").describe(ctx)[0], "XP from Kills: 0% → 5%", "blood money text")
+	check_eq(_perk("trigger_happy").describe(ctx)[0], "Rate of Fire: 0% -> 12.5%", "trigger happy text")
+	check_eq(_perk("blood_money").describe(ctx)[0], "XP from Kills: 0% -> 5%", "blood money text")
 
 
 func test_every_perk_applies() -> void:

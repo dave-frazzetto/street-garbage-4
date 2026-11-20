@@ -52,7 +52,7 @@ alignment = 1
 [node name="Hint" type="Label" parent="Center/VBox/Buttons"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "SELECT: ←/→ D-PAD   CONFIRM: ENTER / A / CLICK"
+text = "SELECT: A/D, ARROWS, D-PAD   CONFIRM: ENTER / A / CLICK"
 
 [node name="RedrawButton" type="Button" parent="Center/VBox/Buttons"]
 unique_name_in_owner = true
