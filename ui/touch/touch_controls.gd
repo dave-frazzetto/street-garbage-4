@@ -47,6 +47,11 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+## True while a finger is on either stick.
+func is_touching() -> bool:
+	return move_stick.is_active() or aim_stick.is_active()
+
+
 ## Shown during gameplay only (game flow calls this when menus open/close).
 func set_gameplay_active(active: bool) -> void:
 	visible = active and touch_seen
