@@ -74,3 +74,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
 script = ExtResource("5_weapon")
 base_weapon = ExtResource("6_pistol")
 bullet_scene = ExtResource("7_bullet")
+
+[node name="Flashlight" type="SpotLight3D" parent="Weapon"]
+transform = Transform3D(1, 0, 0, 0, 0.97, 0.24, 0, -0.24, 0.97, 0, 0.3, -0.3)
+light_color = Color(1, 0.96, 0.88, 1)
+light_energy = 4.0
+spot_range = 16.0
+spot_angle = 24.0
+spot_angle_attenuation = 0.6
+
+[node name="Glow" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+light_color = Color(0.7, 0.8, 1, 1)
+light_energy = 0.6
+omni_range = 4.0

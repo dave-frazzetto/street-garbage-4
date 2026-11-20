@@ -7,9 +7,10 @@ signal zombie_spawned(zombie: Zombie)
 @export var config: DirectorConfig
 @export var zombie_scene: PackedScene
 
-var target: Node2D
-var container: Node2D
-var bounds: Rect2 = Rect2(0, 0, 4000, 4000)
+var target: Node3D
+var container: Node3D
+## Playable area on the ground plane: x = world X, y = world Z.
+var bounds: Rect2 = Rect2(0, 0, 100, 100)
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Callable() -> float giving run time elapsed (drives the ramp).
 var elapsed_provider: Callable
@@ -18,7 +19,7 @@ var _timer: float = 0.0
 var _alive: Array[Zombie] = []
 
 
-func start(chase_target: Node2D, zombie_container: Node2D, level_bounds: Rect2, random: RandomNumberGenerator, elapsed: Callable) -> void:
+func start(chase_target: Node3D, zombie_container: Node3D, level_bounds: Rect2, random: RandomNumberGenerator, elapsed: Callable) -> void:
 	target = chase_target
 	container = zombie_container
 	bounds = level_bounds
@@ -54,12 +55,13 @@ func _spawn_one() -> void:
 	var data: EnemyData = config.pick(_elapsed(), rng)
 	if data == null:
 		return
-	var pos: Vector2 = Vector2.ZERO
+	var pos: Vector3 = Vector3.ZERO
 	var found: bool = false
 	for attempt: int in 8:
 		var dist: float = rng.randf_range(config.spawn_distance_min, config.spawn_distance_max)
-		pos = target.global_position + Vector2.from_angle(rng.randf() * TAU) * dist
-		if bounds.grow(-40.0).has_point(pos) and _is_free(pos, data.radius):
+		pos = target.global_position + Vector3.FORWARD.rotated(Vector3.UP, rng.randf() * TAU) * dist
+		pos.y = 0.0
+		if _in_bounds(pos, 1.0) and _is_free(pos, data.radius):
 			found = true
 			break
 	if not found:
@@ -76,19 +78,26 @@ func _recycle_far() -> void:
 	for z: Zombie in _alive:
 		if z.global_position.distance_to(target.global_position) > config.despawn_distance:
 			# Move it back near the player rather than deleting it, so pressure stays constant.
-			var dir: Vector2 = (z.global_position - target.global_position).normalized().rotated(rng.randf_range(-1.5, 1.5))
-			var pos: Vector2 = target.global_position + dir * config.spawn_distance_max
-			if bounds.has_point(pos) and _is_free(pos, z.data.radius):
+			var away: Vector3 = z.global_position - target.global_position
+			away.y = 0.0
+			var dir: Vector3 = away.normalized().rotated(Vector3.UP, rng.randf_range(-1.5, 1.5))
+			var pos: Vector3 = target.global_position + dir * config.spawn_distance_max
+			pos.y = 0.0
+			if _in_bounds(pos, 0.0) and _is_free(pos, z.data.radius):
 				z.global_position = pos
 
 
-func _is_free(pos: Vector2, radius: float) -> bool:
-	var space: PhysicsDirectSpaceState2D = container.get_world_2d().direct_space_state
-	var shape: CircleShape2D = CircleShape2D.new()
-	shape.radius = radius + 4.0
-	var q: PhysicsShapeQueryParameters2D = PhysicsShapeQueryParameters2D.new()
+func _in_bounds(pos: Vector3, margin: float) -> bool:
+	return bounds.grow(-margin).has_point(Vector2(pos.x, pos.z))
+
+
+func _is_free(pos: Vector3, radius: float) -> bool:
+	var space: PhysicsDirectSpaceState3D = container.get_world_3d().direct_space_state
+	var shape: SphereShape3D = SphereShape3D.new()
+	shape.radius = radius + 0.1
+	var q: PhysicsShapeQueryParameters3D = PhysicsShapeQueryParameters3D.new()
 	q.shape = shape
-	q.transform = Transform2D(0.0, pos)
+	q.transform = Transform3D(Basis.IDENTITY, pos + Vector3(0, 0.9, 0))
 	q.collision_mask = 1
 	return space.intersect_shape(q, 1).is_empty()
 

@@ -7,7 +7,7 @@ generated:
   by: arkouda/0.8.0
   at: 2026-11-20T16:35:37Z
 status: stable
-lifecycle: approved
+lifecycle: shipped
 owner: [claude]
 decisions:
   - isometric-3d-world
@@ -18,7 +18,7 @@ decisions:
 
 ## Status
 
-Approved
+Shipped
 
 ## Problem
 
@@ -47,6 +47,10 @@ as in slices 1 and 2.
   fires, cars with headlights as props, blood decals where zombies die, glowing bullet tracers.
 - I9 HUD laid out like the original: top-left portrait with level badge and health / stamina / XP bars; countdown top
   centre; top-right gear icon with "x/6" and a framed current-weapon panel.
+- I10 Destructible world elements (owner request): cars and fire barrels have health, take bullet damage, start
+  burning when badly damaged, and explode at zero, damaging zombies and the survivor inside the blast radius
+  (falloff from the centre) and chaining into nearby destructibles. Cars leave a burnt wreck. Health, radius and
+  damage are tunable per prop (`Destructible` component).
 
 ## Non-Goals
 

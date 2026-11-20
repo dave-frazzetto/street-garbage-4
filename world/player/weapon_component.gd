@@ -9,7 +9,7 @@ signal fired
 @export var base_weapon: WeaponData
 @export var bullet_scene: PackedScene
 ## Distance in metres from the owner's centre where bullets appear.
-@export_range(0, 3, 0.05) var muzzle_distance: float = 0.6
+@export_range(0, 3, 0.05) var muzzle_distance: float = 0.15
 
 ## Where bullets are added. Injected by the level; falls back to the owner's parent.
 var projectile_parent: Node

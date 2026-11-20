@@ -10,8 +10,8 @@ extends Resource
 @export_range(0, 20) var redraws: int = 3
 ## Number of perk cards dealt at each level-up.
 @export_range(1, 5) var hand_size: int = 3
-## Day shown on the opening banner.
-@export var day_number: int = 54
+## Day shown on the opening banner of the first run; each new run in a session adds one.
+@export var day_number: int = 1
 
 @export_group("XP curve")
 ## XP needed to go from level 1 to level 2.

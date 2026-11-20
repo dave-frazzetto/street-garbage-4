@@ -109,13 +109,13 @@ func test_7_extraction_needs_gears() -> void:
 	await wait_frames(4)
 	check_eq(flow.run.outcome, RunState.Outcome.NONE, "cannot extract without gears")
 	check(flow.hud.message_text().contains("MORE GEAR"), "hud says gears missing: '%s'" % flow.hud.message_text())
-	p.global_position = Vector2(350, 3650)
+	p.global_position = flow.level.player_start_position()
 	await wait_frames(4)
 
 
 func test_8_collect_gears_and_extract() -> void:
 	var p: Player = flow.level.player
-	for pos: Vector2 in flow.level.gear_positions():
+	for pos: Vector3 in flow.level.gear_positions():
 		p.global_position = pos
 		await wait_frames(3)
 	check_eq(flow.run.gears, 6, "all gears collected")

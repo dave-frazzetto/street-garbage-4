@@ -5,3 +5,6 @@
 /tests/output/
 export_credentials.cfg
 *.import
+
+# third-party reference art (copyrighted, not for redistribution)
+/art/concept art/

@@ -14,11 +14,11 @@ extends Resource
 @export_range(1, 500) var max_alive_end: int = 140
 ## Seconds of run time until full ramp.
 @export_range(1, 3600) var ramp_seconds: float = 720.0
-## Spawn distance from the player (just off-screen).
-@export_range(100, 3000) var spawn_distance_min: float = 760.0
-@export_range(100, 3000) var spawn_distance_max: float = 950.0
+## Spawn distance from the player in metres (just off-screen).
+@export_range(5, 80, 0.5) var spawn_distance_min: float = 24.0
+@export_range(5, 80, 0.5) var spawn_distance_max: float = 28.0
 ## Zombies farther than this from the player are recycled.
-@export_range(500, 6000) var despawn_distance: float = 1700.0
+@export_range(10, 150) var despawn_distance: float = 48.0
 
 
 ## 0 at run start, 1 at full ramp.

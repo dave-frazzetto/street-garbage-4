@@ -4,8 +4,18 @@ extends Node3D
 ## Orthographic isometric camera rig that follows a target. Converts screen directions and points to the ground.
 
 @export var target: Node3D
-## Downward tilt in degrees (35.26 = true isometric, 45 = classic game isometric).
-@export_range(10, 89) var pitch_degrees: float = 45.0:
+## Perspective like the reference video; off = orthographic (true isometric when pitch is 35.26).
+@export var perspective: bool = true:
+	set(value):
+		perspective = value
+		_apply()
+## Field of view in degrees (perspective only).
+@export_range(10, 90) var fov_degrees: float = 40.0:
+	set(value):
+		fov_degrees = value
+		_apply()
+## Downward tilt in degrees (35.26 = true isometric, 60 = the reference video).
+@export_range(10, 89) var pitch_degrees: float = 60.0:
 	set(value):
 		pitch_degrees = value
 		_apply()
@@ -14,12 +24,12 @@ extends Node3D
 	set(value):
 		yaw_degrees = value
 		_apply()
-## Vertical extent of the view in metres (zoom).
+## Vertical extent of the view in metres (orthographic zoom).
 @export_range(5, 120) var view_size: float = 24.0:
 	set(value):
 		view_size = value
 		_apply()
-@export_range(10, 200) var distance: float = 60.0:
+@export_range(10, 200) var distance: float = 44.0:
 	set(value):
 		distance = value
 		_apply()
@@ -40,7 +50,8 @@ func _apply() -> void:
 	rotation_degrees = Vector3(-pitch_degrees, yaw_degrees, 0.0)
 	var cam: Camera3D = get_node_or_null("Camera3D") as Camera3D
 	if cam != null:
-		cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+		cam.projection = Camera3D.PROJECTION_PERSPECTIVE if perspective else Camera3D.PROJECTION_ORTHOGONAL
+		cam.fov = fov_degrees
 		cam.size = view_size
 		cam.position = Vector3(0, 0, distance)
 		cam.near = 0.5

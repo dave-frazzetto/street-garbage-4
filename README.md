@@ -1,7 +1,9 @@
 # Street Garbage 4
 
-A Godot 4.7 recreation of **Street Trash III: Dezombifier**, the top-down zombie roguelike shooter inside GTA VI.
-Art and audio are placeholders; the focus is gameplay.
+A Godot 4.7 recreation of **Street Trash III: Dezombifier**, the top-down zombie roguelike shooter inside GTA VI,
+in 3D with a high-angle isometric camera over a night-time city. Art and audio are placeholders (primitive meshes);
+the focus is gameplay. Notes on the original, taken from a reference video, are in
+[docs/reference/original-game-video-notes.md](docs/reference/original-game-video-notes.md).
 
 ## Play
 
@@ -14,7 +16,8 @@ Godot_v4.7.2-stable_win64.exe --path .
 **Goal:** find the 6 blue gears scattered through the alleys of Freedom City, then reach the High-Rise in the
 quarantine zone (top right) before the 18:00 countdown ends and the city is nuked. Kill zombies for XP; each level
 deals 3 perk cards (redraw 3 times per run, or skip). The arrow next to you points to the nearest gear, then to the
-High-Rise.
+High-Rise. Cars and burning barrels can be shot until they explode: the blast hurts zombies and you, and can
+set off nearby props.
 
 | Action | Keyboard + mouse | Gamepad | Touch (mobile browser) |
 |---|---|---|---|
@@ -40,7 +43,7 @@ Leave "SharedArrayBuffer support" off, turn on "Mobile friendly" with landscape 
 ## Tests
 
 ```sh
-tests/run_tests.sh   # headless: rules, keyboard+mouse and gamepad input, touch sticks, full game flow; ~10 s total
+tests/run_tests.sh   # headless: rules, keyboard+mouse and gamepad input, touch sticks, game flow, destructibles; ~11 s
 Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # windowed: saves PNGs to tests/output/
 ```
 
@@ -51,7 +54,7 @@ Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # 
 | `core/` | `game_flow.tscn`: main scene; owns the run rules and wires world and UI |
 | `rules/` | Node-free rules: `RunState`, `PlayerStats`, `PerkDeck` |
 | `data/` | Resource scripts and `.tres` content: perks (`data/perks/pool/`), weapons, enemies, run/player/director config |
-| `world/` | Player (and components), zombies, bullets, pickups, props, spawners, the Freedom City level |
+| `world/` | 3D world: camera rig, player (and components), zombies, bullets, pickups, props (buildings, cars, lamps, neon, destructibles), spawners, the Freedom City level |
 | `ui/` | HUD, perk cards, title and end screens, touch sticks |
 | `tests/` | Headless tests and the screenshot scene |
 | `scripts/` | Web build, local web server, browser smoke test |
@@ -69,10 +72,12 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 2 | 2026-11-20 | [feature-folder-module-layout](docs/adr/feature-folder-module-layout.md) | Feature folder module layout |
 | 3 | 2026-11-20 | [perk-effects-as-composable-resources](docs/adr/perk-effects-as-composable-resources.md) | Perk effects as composable resources |
 | 4 | 2026-11-20 | [node-free-rules-layer](docs/adr/node-free-rules-layer.md) | Node-free rules layer |
-| 5 | 2026-11-20 | [level-authored-as-scene-of-prefab-instances](docs/adr/level-authored-as-scene-of-prefab-instances.md) | Level authored as scene of prefab instances |
-| 6 | 2026-11-20 | [placeholder-art-drawn-in-code](docs/adr/placeholder-art-drawn-in-code.md) | Placeholder art drawn in code |
+| 5 | 2026-11-20 | [level-authored-as-scene-of-prefab-instances](docs/adr/level-authored-as-scene-of-prefab-instances.md) | Level authored as scene of prefab instances (superseded by 10) |
+| 6 | 2026-11-20 | [placeholder-art-drawn-in-code](docs/adr/placeholder-art-drawn-in-code.md) | Placeholder art drawn in code (superseded by 10) |
 | 7 | 2026-11-20 | [pull-requests-through-github-rest-api](docs/adr/pull-requests-through-github-rest-api.md) | Pull requests through GitHub REST API |
 | 8 | 2026-11-20 | [unified-player-input-component](docs/adr/unified-player-input-component.md) | Unified player input component |
 | 9 | 2026-11-20 | [single-threaded-web-export-for-itch-io](docs/adr/single-threaded-web-export-for-itch-io.md) | Single-threaded web export for itch.io |
+| 10 | 2026-11-20 | [isometric-3d-world](docs/adr/isometric-3d-world.md) | Isometric 3D world (supersedes 5 and 6) |
 
-Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md).
+Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
+[slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md).

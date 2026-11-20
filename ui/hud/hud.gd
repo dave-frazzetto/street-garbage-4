@@ -1,22 +1,35 @@
 class_name Hud
 extends CanvasLayer
-## Heads-up display. Pure view: game flow pushes values in.
+## Heads-up display laid out like the original: portrait, level badge and bars top-left with the kill streak below,
+## countdown top centre, gears and weapon panel top-right. Pure view: game flow pushes values in.
+
+## Streaks below this are not shown.
+@export_range(1, 50) var streak_min_shown: int = 5
 
 @onready var _health_bar: ProgressBar = %HealthBar
 @onready var _stamina_bar: ProgressBar = %StaminaBar
 @onready var _xp_bar: ProgressBar = %XpBar
-@onready var _level_label: Label = %LevelLabel
+@onready var _level_badge: Label = %LevelBadge
+@onready var _xp_level: Label = %XpLevel
 @onready var _timer_label: Label = %TimerLabel
 @onready var _gear_label: Label = %GearLabel
-@onready var _streak_label: Label = %StreakLabel
+@onready var _streak_box: Control = %StreakBox
+@onready var _streak_number: Label = %StreakNumber
 @onready var _weapon_label: Label = %WeaponLabel
+@onready var _weapon_time: Label = %WeaponTime
 @onready var _message_label: Label = %MessageLabel
 @onready var _banner_label: Label = %BannerLabel
 @onready var _objective_label: Label = %ObjectiveLabel
-@onready var _sprint_label: Label = %SprintLabel
 
 var _message_time: float = 0.0
 var _banner_time: float = 0.0
+var _stamina_style: StyleBoxFlat
+
+
+func _ready() -> void:
+	_stamina_style = (_stamina_bar.get_theme_stylebox("fill") as StyleBoxFlat).duplicate() as StyleBoxFlat
+	_stamina_bar.add_theme_stylebox_override("fill", _stamina_style)
+	_streak_box.visible = false
 
 
 func _process(delta: float) -> void:
@@ -31,7 +44,6 @@ func _process(delta: float) -> void:
 func set_health(current: float, maximum: float) -> void:
 	_health_bar.max_value = maximum
 	_health_bar.value = current
-	(_health_bar.get_node("Text") as Label).text = "%d / %d" % [ceili(current), roundi(maximum)]
 
 
 func set_stamina(current: float, maximum: float) -> void:
@@ -40,13 +52,14 @@ func set_stamina(current: float, maximum: float) -> void:
 
 
 func set_sprinting(on: bool) -> void:
-	_sprint_label.text = "SPRINT ON" if on else ""
+	_stamina_style.bg_color = Color(1.0, 0.95, 0.45) if on else Color(0.9, 0.78, 0.15)
 
 
 func set_xp(xp: int, needed: int, level: int) -> void:
 	_xp_bar.max_value = needed
 	_xp_bar.value = xp
-	_level_label.text = "LV %d" % level
+	_level_badge.text = "LV\n%d" % level
+	_xp_level.text = "LV.%d" % (level + 1)
 
 
 func set_time(seconds_left: float) -> void:
@@ -56,19 +69,18 @@ func set_time(seconds_left: float) -> void:
 
 
 func set_gears(have: int, need: int) -> void:
-	_gear_label.text = "GEARS %d/%d" % [have, need]
+	_gear_label.text = "%d/%d" % [have, need]
 	_objective_label.text = "REACH THE HIGH-RISE" if have >= need else "COLLECT %d GEARS" % need
 
 
-func set_kills(kills: int, streak: int) -> void:
-	_streak_label.text = "KILLS %d   STREAK %d" % [kills, streak]
+func set_kills(_kills: int, streak: int) -> void:
+	_streak_box.visible = streak >= streak_min_shown
+	_streak_number.text = str(streak)
 
 
 func set_weapon(weapon_name: String, seconds_left: float) -> void:
-	if seconds_left > 0.0:
-		_weapon_label.text = "%s  %ds" % [weapon_name.to_upper(), ceili(seconds_left)]
-	else:
-		_weapon_label.text = weapon_name.to_upper()
+	_weapon_label.text = weapon_name.to_upper()
+	_weapon_time.text = "%ds" % ceili(seconds_left) if seconds_left > 0.0 else ""
 
 
 func show_message(text: String, seconds: float = 2.5) -> void:

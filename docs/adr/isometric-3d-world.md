@@ -52,3 +52,8 @@ and [placeholder-art-drawn-in-code](placeholder-art-drawn-in-code.md).
 - Tests move to Vector3 positions and check movement along the camera's screen axes.
 - 3D costs more than 2D in the browser; keep meshes simple and the zombie cap modest, and re-check the web build.
 - Real art later means swapping the primitive meshes inside each entity scene; gameplay code does not change.
+- Bullet rays use `hit_from_inside` so zombies hugging the player are still hit. Obstacles lower than the 1 m bullet
+  height (fences, railings) block movement but not shots; cars are tall enough to stop bullets (and get destroyed).
+- Destructible props use a `Destructible` component that only reports `destroyed(at, radius, damage)`; the level
+  applies blasts to zombies, the player and other destructibles (signal up, no cross-scene reaching).
+- The compatibility renderer limits lights per mesh, so the ground is a shader plane and light ranges stay short.

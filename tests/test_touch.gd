@@ -43,12 +43,12 @@ func test_1_hidden_until_gameplay() -> void:
 
 func test_2_left_stick_moves() -> void:
 	var p: Player = flow.level.player
-	var x0: float = p.global_position.x
+	var p0: Vector3 = p.global_position
 	_touch(0, Vector2(300, 500), true)
 	_drag(0, Vector2(420, 500))
 	await wait_frames(20)
 	check(flow.touch_controls.move_vector.x > 0.9, "move stick vector right (%s)" % str(flow.touch_controls.move_vector))
-	check(p.global_position.x > x0 + 30.0, "player moved right by touch")
+	check((p.global_position - p0).dot(p.input.screen_to_world(Vector2.RIGHT)) > 0.5, "player moved screen-right by touch")
 	check_eq(p.input.device, PlayerInput.Device.TOUCH, "touch device (emulated mouse ignored)")
 
 
@@ -62,7 +62,7 @@ func test_3_both_sticks_at_once() -> void:
 	check(flow.touch_controls.move_vector.length() > 0.9, "move stick still held")
 	check(flow.touch_controls.aim_vector.y > 0.9, "aim stick down")
 	check(p.input.is_firing(), "aim stick past threshold fires")
-	check(p.input.get_aim_direction().dot(Vector2.DOWN) > 0.9, "aims down")
+	check(p.input.get_aim_direction().dot(p.input.screen_to_world(Vector2.DOWN)) > 0.9, "aims down")
 	check(shots[0] > 0, "shots fired by touch (%d)" % shots[0])
 	check_eq(p.input.device, PlayerInput.Device.TOUCH, "still touch device")
 
@@ -90,7 +90,7 @@ func test_3b_browser_mouse_events_do_not_steal_aim() -> void:
 	p.input.device_changed.disconnect(count_mouse)
 	check_eq(switches[0], 0, "browser mouse events never switch aim to the mouse")
 	check_eq(p.input.device, PlayerInput.Device.TOUCH, "touch aim kept")
-	check(p.input.get_aim_direction().dot(Vector2.DOWN) > 0.9, "still aims where the right stick points")
+	check(p.input.get_aim_direction().dot(p.input.screen_to_world(Vector2.DOWN)) > 0.9, "still aims where the right stick points")
 	var up: InputEventMouseButton = InputEventMouseButton.new()
 	up.device = 0
 	up.button_index = MOUSE_BUTTON_LEFT

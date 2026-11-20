@@ -53,6 +53,8 @@ func _physics_process(delta: float) -> void:
 	var from: Vector3 = global_position
 	var to: Vector3 = from + step
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, to, WORLD_MASK | ZOMBIE_MASK, _excluded)
+	# Zombies hugging the player overlap the spawn point; still count them as hit.
+	query.hit_from_inside = true
 	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		global_position = to
@@ -64,8 +66,11 @@ func _physics_process(delta: float) -> void:
 	global_position = hit["position"]
 	if collider is Zombie:
 		_hit_zombie(collider as Zombie)
-	else:
-		queue_free()
+		return
+	var prop: Destructible = Destructible.of(collider)
+	if prop != null:
+		prop.take_damage(damage)
+	queue_free()
 
 
 func _hit_zombie(zombie: Zombie) -> void:

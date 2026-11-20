@@ -5,8 +5,8 @@ extends Resource
 @export_range(1, 500) var max_health: float = 100.0
 ## Health regenerated per second.
 @export_range(0, 20, 0.1) var health_regen: float = 0.0
-## Walking speed in pixels per second.
-@export_range(50, 600) var move_speed: float = 210.0
+## Walking speed in metres per second.
+@export_range(1, 15, 0.05) var move_speed: float = 5.25
 ## Extra speed while sprinting, as a fraction of walk speed (0.6 = 60% faster).
 @export_range(0, 3, 0.05) var sprint_bonus: float = 0.6
 @export_range(10, 500) var max_stamina: float = 100.0
@@ -18,8 +18,8 @@ extends Resource
 @export_range(0, 1, 0.01) var lifesteal: float = 0.0
 ## Chance that a killed zombie drops a health pickup.
 @export_range(0, 1, 0.01) var health_drop_chance: float = 0.06
-## Radius in pixels at which pickups start flying to the player.
-@export_range(10, 400) var pickup_radius: float = 70.0
+## Radius in metres at which pickups start flying to the player.
+@export_range(0.25, 10, 0.05) var pickup_radius: float = 1.75
 
 
 func to_base_stats() -> Dictionary:
