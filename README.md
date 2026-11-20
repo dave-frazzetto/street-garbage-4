@@ -97,6 +97,7 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 11 | 2026-11-20 | [generated-3d-art-with-meshy](docs/adr/generated-3d-art-with-meshy.md) | Generated 3D art with Meshy |
 | 12 | 2026-11-20 | [procedural-sound-effects-with-sfxr-style-generator](docs/adr/procedural-sound-effects-with-sfxr-style-generator.md) | Procedural sound effects with sfxr-style generator |
 | 13 | 2026-11-20 | [looping-background-music-from-the-same-synth](docs/adr/looping-background-music-from-the-same-synth.md) | Looping background music from the same synth |
+| 14 | 2026-11-20 | [mobile-graphics-profile-and-on-screen-errors](docs/adr/mobile-graphics-profile-and-on-screen-errors.md) | Mobile graphics profile and on-screen errors |
 $row
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
