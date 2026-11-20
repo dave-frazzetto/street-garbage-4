@@ -21,7 +21,7 @@ func test_1_setup_scene() -> void:
 	p.health.max_health = 1000.0
 	p.health.current = 1000.0
 	# Stage a car in an open spot of the street, with a barrel next to it.
-	var at: Vector3 = Vector3(17.0, 0.0, 60.0)
+	var at: Vector3 = Vector3(44.0, 0.0, 48.0)
 	car = (load("res://world/props/car.tscn") as PackedScene).instantiate() as Car
 	car.position = at
 	flow.level.get_node("Props").add_child(car)

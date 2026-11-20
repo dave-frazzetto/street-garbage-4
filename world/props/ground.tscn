@@ -3,7 +3,7 @@
 [ext_resource type="Shader" path="res://world/props/ground.gdshader" id="1_shader"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
-size = Vector2(110, 110)
+size = Vector2(132, 132)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ground"]
 shader = ExtResource("1_shader")

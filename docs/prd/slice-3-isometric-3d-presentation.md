@@ -31,7 +31,7 @@ as in slices 1 and 2.
 ## Requirements
 
 - I1 The whole world renders in 3D through a high-angle camera that follows the survivor smoothly: perspective by
-  default like the reference video (pitch about 60 degrees), with an orthographic (true isometric) option on the rig.
+  default like the reference video (pitch 70 degrees after owner feedback), with an orthographic (true isometric) option on the rig.
 - I2 Same map layout as slice 1 (alleys, basketball court with helicopter horde, quarantine zone, High-Rise, garage
   start), now with buildings that have height.
 - I3 Buildings that hide the survivor turn translucent.
@@ -51,6 +51,9 @@ as in slices 1 and 2.
   burning when badly damaged, and explode at zero, damaging zombies and the survivor inside the blast radius
   (falloff from the centre) and chaining into nearby destructibles. Cars leave a burnt wreck. Health, radius and
   damage are tunable per prop (`Destructible` component).
+- I11 (owner feedback) Streets are about 10 m wide and alleys 4 m, on a 120 m city. Street segments are partly
+  blocked by roadblocks of wrecked cars, concrete barriers and dumpsters with a gap to pass through. The camera looks
+  down at 70 degrees.
 
 ## Non-Goals
 
