@@ -129,6 +129,9 @@ func apply_graphics(profile: GraphicsProfile) -> void:
 	var moon: DirectionalLight3D = get_node_or_null("Moon") as DirectionalLight3D
 	if moon != null:
 		moon.shadow_enabled = profile.shadows
+	var ground: Ground = get_node_or_null("Ground") as Ground
+	if ground != null:
+		ground.set_detail(profile.detailed_ground)
 	_static_lights.clear()
 	for root_name: String in ["Props", "Hordes", "ExtractionZone"]:
 		var root: Node = get_node_or_null(root_name)
