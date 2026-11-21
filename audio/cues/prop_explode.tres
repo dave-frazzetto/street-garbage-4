@@ -8,5 +8,6 @@
 [resource]
 script = ExtResource("1_cue")
 streams = Array[AudioStream]([ExtResource("2_s"), ExtResource("3_s"), ExtResource("4_s")])
-volume_db = 0.0
+volume_db = 3.0
+pitch_variance = 0.06
 min_interval = 0.08

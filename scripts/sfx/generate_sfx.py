@@ -240,34 +240,9 @@ def notes(hzs: list[float], step: float, wave_type: int = SQUARE, sustain: float
 
 
 # Times (offset, attack, sustain, decay) are in seconds.
+# Gunshots, zombie hit/die/groans, explosions and footsteps are NOT here any more: they are built from CC0
+# recordings by scripts/sfx/process_real_samples.py (see audio/CREDITS.md). Ambience is synthesised below.
 SOUNDS: dict[str, tuple[int, float, float, list]] = {
-    # Gunshots: a noise "crack" over a short pitched thump. Lower and longer for heavier guns.
-    "shot_pistol": (3, 0.08, 0.85, [
-        layer(0.0, 0.9, wave=NOISE, freq=Hz(2600), sustain=0.02, decay=0.14, punch=0.6, lpf=0.75, hpf=0.1),
-        layer(0.0, 0.8, wave=SAW, freq=Hz(420), ramp=-0.3, sustain=0.015, decay=0.12, punch=0.4),
-    ]),
-    "shot_smg": (3, 0.10, 0.8, [
-        layer(0.0, 0.9, wave=NOISE, freq=Hz(3200), sustain=0.01, decay=0.08, punch=0.5, lpf=0.8, hpf=0.15),
-        layer(0.0, 0.7, wave=SQUARE, freq=Hz(560), ramp=-0.35, sustain=0.01, decay=0.07, duty=0.3),
-    ]),
-    "shot_shotgun": (3, 0.07, 0.95, [
-        layer(0.0, 1.0, wave=NOISE, freq=Hz(1500), sustain=0.06, decay=0.3, punch=0.8, lpf=0.55, lpf_ramp=-0.2),
-        layer(0.0, 0.9, wave=SAW, freq=Hz(180), ramp=-0.25, sustain=0.04, decay=0.22, punch=0.6),
-    ]),
-    "shot_hmg": (3, 0.08, 0.95, [
-        layer(0.0, 1.0, wave=NOISE, freq=Hz(1800), sustain=0.03, decay=0.16, punch=0.7, lpf=0.6),
-        layer(0.0, 1.0, wave=SQUARE, freq=Hz(220), ramp=-0.28, sustain=0.025, decay=0.14, duty=0.5, punch=0.5),
-    ]),
-    # Zombie hit: wet thud. Kill: a splat plus a falling groan.
-    "zombie_hit": (3, 0.15, 0.7, [
-        layer(0.0, 1.0, wave=NOISE, freq=Hz(700), sustain=0.01, decay=0.08, punch=0.3, lpf=0.4),
-        layer(0.0, 0.8, wave=SINE, freq=Hz(140), ramp=-0.2, sustain=0.015, decay=0.09),
-    ]),
-    "zombie_die": (3, 0.12, 0.8, [
-        layer(0.0, 0.9, wave=NOISE, freq=Hz(500), sustain=0.03, decay=0.22, punch=0.3, lpf=0.35, lpf_ramp=-0.4),
-        layer(0.02, 0.7, wave=SAW, freq=Hz(210), ramp=-0.22, vib_strength=0.35, vib_speed=0.55,
-              sustain=0.08, decay=0.25, lpf=0.5),
-    ]),
     # Player takes damage: falling buzz with a bite.
     "player_hurt": (2, 0.08, 0.9, [
         layer(0.0, 1.0, wave=SQUARE, freq=Hz(330), ramp=-0.3, duty=0.3, vib_strength=0.2, vib_speed=0.6,
@@ -283,12 +258,6 @@ SOUNDS: dict[str, tuple[int, float, float, list]] = {
     "pickup_health": (1, 0.0, 0.8, [
         layer(0.0, 1.0, wave=SINE, freq=Hz(440), ramp=-0.15, sustain=0.1, decay=0.25, vib_strength=0.1, vib_speed=0.4),
         layer(0.08, 0.8, wave=SINE, freq=Hz(660), sustain=0.08, decay=0.28),
-    ]),
-    # Props.
-    "explosion": (3, 0.1, 1.0, [
-        layer(0.0, 1.0, wave=NOISE, freq=Hz(120), ramp=0.1, sustain=0.25, decay=0.7, punch=0.9, lpf=0.5, lpf_ramp=-0.1),
-        layer(0.0, 1.0, wave=SINE, freq=Hz(60), ramp=-0.1, sustain=0.2, decay=0.55, punch=0.8),
-        layer(0.05, 0.4, wave=NOISE, freq=Hz(1200), sustain=0.04, decay=0.4, lpf=0.4),
     ]),
     "prop_break": (2, 0.1, 0.9, [
         layer(0.0, 1.0, wave=NOISE, freq=Hz(1400), sustain=0.04, decay=0.28, punch=0.5, lpf=0.7, repeat_speed=0.7),
@@ -321,18 +290,172 @@ SOUNDS: dict[str, tuple[int, float, float, list]] = {
 }
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# Ambience (synthesised). Rendered at a lower rate to keep the files small: it is all low-frequency.
+# ---------------------------------------------------------------------------------------------------------------
+
+AMB_RATE = 22050
+
+
+def one_pole_lp(x: list[float], cutoff: float, rate: int) -> list[float]:
+    a = math.exp(-2.0 * math.pi * cutoff / rate)
+    out, acc = [], 0.0
+    for v in x:
+        acc = (1.0 - a) * v + a * acc
+        out.append(acc)
+    return out
+
+
+def lp2(x: list[float], cutoff: float, rate: int) -> list[float]:
+    return one_pole_lp(one_pole_lp(x, cutoff, rate), cutoff, rate)
+
+
+def white(n: int, rng: random.Random) -> list[float]:
+    return [rng.uniform(-1.0, 1.0) for _ in range(n)]
+
+
+def normalised(x: list[float], peak: float) -> list[float]:
+    top = max(abs(v) for v in x) or 1.0
+    return [v * peak / top for v in x]
+
+
+def comb_reverb(x: list[float], rate: int, wet: float = 0.35) -> list[float]:
+    """Cheap Schroeder-style echo tail: four feedback combs, used to make far-away sounds feel distant."""
+    out = list(x)
+    for delay_s, fb in ((0.0297, 0.62), (0.0371, 0.58), (0.0411, 0.55), (0.0437, 0.5)):
+        d = int(delay_s * rate)
+        buf = [0.0] * len(x)
+        for i in range(len(x)):
+            buf[i] = x[i] + (buf[i - d] * fb if i >= d else 0.0)
+        out = [o + b * wet / 4.0 for o, b in zip(out, buf)]
+    return out
+
+
+def city_bed(seconds: int = 24, seed: int = 11) -> list[float]:
+    """Seamless loop: distant traffic rumble, passing-car swells, wind gusts and a faint electrical hum.
+    Every modulator completes a whole number of cycles in `seconds`, and the noise seam is cross-faded."""
+    rate = AMB_RATE
+    rng = random.Random(seed)
+    pad = 2 * rate
+    n = seconds * rate + pad
+    t = [i / rate for i in range(n)]
+    cyc = 1.0 / seconds
+    # Traffic rumble: low-passed noise whose level breathes slowly.
+    rumble = lp2(white(n, rng), 140.0, rate)
+    rumble = [r * (0.75 + 0.25 * math.sin(2 * math.pi * cyc * 3 * ti + 1.0) + 0.1 * math.sin(2 * math.pi * cyc * 7 * ti))
+              for r, ti in zip(rumble, t)]
+    # Road hiss: mid noise with a few car-pass swells.
+    hiss = lp2(white(n, rng), 1100.0, rate)
+    swell = [0.0] * n
+    for centre, width, level in ((4.0, 1.6, 0.9), (9.5, 2.2, 0.7), (14.0, 1.4, 1.0), (19.0, 2.0, 0.6)):
+        for i in range(n):
+            swell[i] += level * math.exp(-(((t[i] - centre) / width) ** 2))
+    hiss = [h * (0.12 + 0.9 * sw) for h, sw in zip(hiss, swell)]
+    # Wind: band-limited noise with gusts.
+    wind_lo = lp2(white(n, rng), 650.0, rate)
+    wind_hi = lp2(wind_lo, 160.0, rate)
+    wind = [(a - b) * (0.55 + 0.45 * math.sin(2 * math.pi * cyc * 5 * ti + 0.4) * math.sin(2 * math.pi * cyc * 2 * ti + 2.0))
+            for a, b, ti in zip(wind_lo, wind_hi, t)]
+    hum = [0.04 * math.sin(2 * math.pi * 50.0 * ti) + 0.025 * math.sin(2 * math.pi * 100.0 * ti) for ti in t]
+    mixed = [1.0 * r + 0.55 * h + 1.0 * w + hm for r, h, w, hm in zip(rumble, hiss, wind, hum)]
+    # Seamless: the last `pad` samples fade into the first ones.
+    body = mixed[:seconds * rate]
+    for i in range(pad):
+        k = i / pad
+        body[i] = body[i] * k + mixed[seconds * rate + i] * (1.0 - k)
+    mean = sum(body) / len(body)
+    return normalised([v - mean for v in body], 0.6)
+
+
+def siren_far(variant: int) -> list[float]:
+    """A distant wail / yelp siren drifting past, with echo."""
+    rate = AMB_RATE
+    seconds = 7.0 + variant
+    n = int(seconds * rate)
+    out, phase = [], 0.0
+    for i in range(n):
+        ti = i / rate
+        if variant == 0:  # slow wail
+            f = 700.0 + 350.0 * (0.5 - 0.5 * math.cos(2 * math.pi * ti / 2.4))
+        else:  # yelp: faster, steeper
+            f = 650.0 + 450.0 * (ti * 3.2 % 1.0)
+        phase += 2 * math.pi * f / rate
+        v = math.sin(phase) + 0.5 * math.sin(2 * phase) + 0.25 * math.sin(3 * phase)
+        env = math.sin(math.pi * ti / seconds) ** 2  # swells up and fades: it drives by
+        out.append(v * env)
+    out = lp2(out, 1800.0, rate)
+    return normalised(comb_reverb(out, rate, 0.7), 0.5)
+
+
+def dog_far(variant: int) -> list[float]:
+    """Three muffled distant barks."""
+    rate = AMB_RATE
+    rng = random.Random(30 + variant)
+    n = int(2.2 * rate)
+    out = [0.0] * n
+    for k in range(3):
+        start = int((0.1 + k * (0.42 + 0.05 * variant)) * rate)
+        base = 470.0 - 60.0 * variant
+        phase = 0.0
+        for i in range(int(0.2 * rate)):
+            ti = i / rate
+            f = base * (1.0 - 0.35 * ti / 0.2) * (1.0 - 0.08 * k)
+            phase += 2 * math.pi * f / rate
+            v = (math.sin(phase) + 0.6 * math.sin(2 * phase) + 0.4 * math.sin(3 * phase)) * (0.7 + 0.3 * rng.uniform(-1, 1))
+            env = math.sin(math.pi * min(1.0, ti / 0.2)) ** 0.7 * math.exp(-ti * 5.0)
+            if start + i < n:
+                out[start + i] += v * env
+    out = lp2(out, 1500.0, rate)
+    return normalised(comb_reverb(out, rate, 0.9), 0.5)
+
+
+def thud_far() -> list[float]:
+    """A far-off boom rolling across the city."""
+    rate = AMB_RATE
+    rng = random.Random(77)
+    n = int(3.5 * rate)
+    noise = lp2(white(n, rng), 120.0, rate)
+    out = [noise[i] * math.exp(-i / rate * 1.6) * min(1.0, i / (0.05 * rate)) for i in range(n)]
+    for i in range(int(0.5 * rate)):
+        ti = i / rate
+        out[i] += 0.8 * math.sin(2 * math.pi * 45.0 * ti) * math.exp(-ti * 6.0)
+    return normalised(out, 0.7)
+
+
+# name -> renderers (one file per entry: name_1, name_2 ...; a single one is just name.wav).
+AMBIENT = {
+    "city_bed": [city_bed],
+    "siren_far": [lambda: siren_far(0), lambda: siren_far(1)],
+    "dog_far": [lambda: dog_far(0), lambda: dog_far(1)],
+    "thud_far": [thud_far],
+}
+
+
+def write_wav_rate(path: Path, samples: list[float], rate: int) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(b"".join(struct.pack("<h", int(max(-1.0, min(1.0, s)) * 32767)) for s in samples))
+
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", default="audio/sfx", help="output directory (default audio/sfx)")
     ap.add_argument("--only", default="", help="comma-separated effect names to render")
+    ap.add_argument("--ambient-out", default="audio/ambient", help="output directory for the ambience clips")
     ap.add_argument("--list", action="store_true", help="list effect names and exit")
     args = ap.parse_args()
     if args.list:
         for name, (variants, *_rest) in SOUNDS.items():
             print(name, f"x{variants}" if variants > 1 else "")
+        for name, renderers in AMBIENT.items():
+            print(name, f"x{len(renderers)}" if len(renderers) > 1 else "", "(ambient)")
         return
     wanted = {n for n in args.only.split(",") if n}
-    unknown = wanted - set(SOUNDS)
+    unknown = wanted - set(SOUNDS) - set(AMBIENT)
     if unknown:
         raise SystemExit(f"unknown effects: {', '.join(sorted(unknown))}")
     out = Path(args.out)
@@ -344,6 +467,14 @@ def main() -> None:
             file = f"{name}_{v + 1}.wav" if variants > 1 else f"{name}.wav"
             write_wav(out / file, samples)
             print(f"{file:28s} {len(samples) / RATE:5.2f}s  peak {max(abs(s) for s in samples):.2f}")
+    for name, renderers in AMBIENT.items():
+        if wanted and name not in wanted:
+            continue
+        for v, render in enumerate(renderers):
+            samples = render()
+            file = f"{name}_{v + 1}.wav" if len(renderers) > 1 else f"{name}.wav"
+            write_wav_rate(Path(args.ambient_out) / file, samples, AMB_RATE)
+            print(f"{file:28s} {len(samples) / AMB_RATE:5.2f}s  peak {max(abs(s) for s in samples):.2f}")
 
 
 if __name__ == "__main__":

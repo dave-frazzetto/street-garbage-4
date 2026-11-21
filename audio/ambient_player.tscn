@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://audio/ambient_player.gd" id="1_amb"]
+[ext_resource type="AudioStream" path="res://audio/ambient/city_bed.wav" id="2_bed"]
+[ext_resource type="AudioStream" path="res://audio/ambient/siren_far_1.wav" id="3_s1"]
+[ext_resource type="AudioStream" path="res://audio/ambient/siren_far_2.wav" id="4_s2"]
+[ext_resource type="AudioStream" path="res://audio/ambient/dog_far_1.wav" id="5_d1"]
+[ext_resource type="AudioStream" path="res://audio/ambient/dog_far_2.wav" id="6_d2"]
+[ext_resource type="AudioStream" path="res://audio/ambient/thud_far.wav" id="7_t"]
+
+[node name="AmbientPlayer" type="Node"]
+script = ExtResource("1_amb")
+bed = ExtResource("2_bed")
+one_shots = Array[AudioStream]([ExtResource("3_s1"), ExtResource("4_s2"), ExtResource("5_d1"), ExtResource("6_d2"), ExtResource("7_t")])

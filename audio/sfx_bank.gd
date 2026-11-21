@@ -10,6 +10,12 @@ extends Resource
 @export var prop_explode: SfxCue
 @export var prop_break: SfxCue
 
+@export_group("Movement and voices")
+## One footstep of the player on asphalt (several clips picked at random).
+@export var footstep: SfxCue
+## A zombie groaning somewhere near the player.
+@export var zombie_groan: SfxCue
+
 @export_group("Pickups")
 @export var pickup_gear: SfxCue
 @export var pickup_health: SfxCue

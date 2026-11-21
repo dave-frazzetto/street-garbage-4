@@ -6,6 +6,9 @@ extends Node
 signal run_started
 signal run_ended(outcome: RunState.Outcome)
 
+## Sprinting footsteps are this much louder than walking ones.
+const SPRINT_STEP_BOOST_DB: float = 2.5
+
 @export var level_scene: PackedScene
 @export var run_config: RunConfig
 @export var player_config: PlayerConfig
@@ -31,6 +34,9 @@ signal run_ended(outcome: RunState.Outcome)
 @onready var touch_controls: TouchControls = $TouchControls
 @onready var sfx: SfxPlayer = $SfxPlayer
 @onready var music: MusicPlayer = $MusicPlayer
+@onready var ambient: AmbientPlayer = $AmbientPlayer
+@onready var footsteps: FootstepStepper = $FootstepStepper
+@onready var groaner: ZombieGroaner = $ZombieGroaner
 @onready var error_console: ErrorConsole = $ErrorConsole
 
 var run: RunState
@@ -51,6 +57,8 @@ func _ready() -> void:
 	perk_select.redraw_requested.connect(_on_redraw)
 	perk_select.skipped.connect(_on_skip)
 	touch_controls.sprint_pressed.connect(_on_touch_sprint)
+	footsteps.step_taken.connect(func(sprinting: bool) -> void: sfx.play_cue(sfx.bank.footstep, SPRINT_STEP_BOOST_DB if sprinting else 0.0))
+	groaner.groan_requested.connect(func(offset_db: float) -> void: sfx.play_cue(sfx.bank.zombie_groan, offset_db))
 	title_screen.start_requested.connect(_play.bind(sfx.bank.run_start))
 	touch_controls.first_touch.connect(func() -> void: touch_controls.set_gameplay_active(_gameplay_active()))
 	touch_controls.set_gameplay_active(false)
@@ -102,6 +110,8 @@ func start_run() -> void:
 		get_viewport().scaling_3d_scale = graphics.render_scale
 	hud.visible = true
 	music.play_music()
+	ambient.play_ambient()
+	footsteps.reset()
 	_refresh_hud()
 	_runs_started += 1
 	hud.show_banner("DAY %d\nKILL ZOMBIES TO GET XP AND UPGRADE YOUR CHARACTER" % (run.config.day_number + _runs_started - 1), 5.0)
@@ -119,6 +129,8 @@ func _process(delta: float) -> void:
 		return
 	level.set_touch_input(touch_controls.move_vector, touch_controls.aim_vector, touch_controls.is_touching())
 	run.tick(delta)
+	footsteps.track(level.player.global_position, delta, level.player.sprinting)
+	groaner.update(delta, level.player.global_position)
 
 
 func _gameplay_active() -> bool:
@@ -273,6 +285,7 @@ func _after_choice() -> void:
 
 func _on_run_ended(outcome: RunState.Outcome) -> void:
 	music.stop_music()
+	ambient.stop_ambient()
 	perk_select.close()
 	_set_paused(true)
 	var minutes: int = floori(run.elapsed / 60.0)

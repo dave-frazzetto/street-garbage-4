@@ -17,9 +17,13 @@
 [ext_resource type="Resource" path="res://audio/cues/run_extracted.tres" id="15_c"]
 [ext_resource type="Resource" path="res://audio/cues/run_killed.tres" id="16_c"]
 [ext_resource type="Resource" path="res://audio/cues/run_nuked.tres" id="17_c"]
+[ext_resource type="Resource" path="res://audio/cues/footstep.tres" id="18_c"]
+[ext_resource type="Resource" path="res://audio/cues/zombie_groan.tres" id="19_c"]
 
 [resource]
 script = ExtResource("1_bank")
+footstep = ExtResource("18_c")
+zombie_groan = ExtResource("19_c")
 zombie_hit = ExtResource("2_c")
 zombie_die = ExtResource("3_c")
 player_hurt = ExtResource("4_c")
