@@ -12,3 +12,4 @@ export_credentials.cfg
 # generated-art working files: Meshy task sidecars hold signed URLs, reference images are the (re-creatable) prompts inputs
 /art/models/**/reference/
 /art/models/**/*_meta.json
+/art/tools/.tasks/

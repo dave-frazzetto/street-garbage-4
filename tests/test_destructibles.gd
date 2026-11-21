@@ -63,7 +63,7 @@ func test_3_explosion_hurts_zombies_and_player_and_chains() -> void:
 	Destructible.of(car).take_damage(10000.0)
 	await wait_frames(4)
 	check(Destructible.of(car).is_destroyed, "car destroyed")
-	check(not (car.get_node("Glass") as Node3D).visible, "car became a wreck")
+	check(car.wrecked, "car became a wreck")
 	check(not is_instance_valid(zombie) or zombie.health < z_hp0, "zombie in blast damaged")
 	check_eq(far_zombie.health, far_zombie.data.max_health, "zombie outside blast untouched")
 	check(p.health.current < hp0, "player in blast damaged (%.0f -> %.0f)" % [hp0, p.health.current])

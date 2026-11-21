@@ -15,5 +15,7 @@ extends Resource
 @export_range(0, 100) var xp: float = 1.0
 ## Body radius in metres. Also scales the model (0.33 is the model's natural size).
 @export_range(0.1, 1.5, 0.01) var radius: float = 0.33
+## Model for this zombie type (a ZombieModel scene). Empty = the walker model already in the zombie scene.
+@export var model_scene: PackedScene
 ## Colour mixed over the model's texture to tell variants apart. The alpha is the mix strength (0 = no tint).
 @export var tint: Color = Color(1, 1, 1, 0)

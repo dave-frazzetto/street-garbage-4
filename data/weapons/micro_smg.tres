@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_e2c1g"]
 [ext_resource type="Resource" path="res://audio/cues/shot_smg.tres" id="9_fire"]
 
+[ext_resource type="PackedScene" path="res://art/models/weapons/micro_smg/micro_smg.glb" id="10_held"]
+
 [resource]
 script = ExtResource("1_e2c1g")
 display_name = "Micro SMG"
@@ -14,3 +16,5 @@ range_meters = 11.5
 bullet_color = Color(1, 0.75, 0.3, 1)
 bullet_radius = 0.07
 fire_sound = ExtResource("9_fire")
+held_model = ExtResource("10_held")
+held_length = 0.45

@@ -70,6 +70,7 @@ func _run() -> void:
 	# Close-up from the front-right, low angle, to see the pistol.
 	cam.position = Vector3(2.2, 1.5, -3.2)
 	cam.look_at(Vector3(0, 1.0, 0))
+	model.hold_weapon(load("res://data/weapons/pistol.tres") as WeaponData)
 	await _drive(1.2, 0.0, false)
 	await _shot("player_1_idle")
 	cam.position = Vector3(-2.6, 1.3, -2.6)
@@ -78,6 +79,12 @@ func _run() -> void:
 	await _shot("player_2_stand_and_shoot")
 	await _drive(0.6, 5.25, true)
 	await _shot("player_2b_run_and_shoot")
+	# Every weapon in the aiming pose, from the same side.
+	for weapon_name: String in ["micro_smg", "auto_shotgun", "heavy_machine_gun"]:
+		model.hold_weapon(load("res://data/weapons/%s.tres" % weapon_name) as WeaponData)
+		await _drive(0.5, 0.0, true)
+		await _shot("player_4_%s" % weapon_name)
+	model.hold_weapon(load("res://data/weapons/pistol.tres") as WeaponData)
 	# Game camera angle.
 	var rig: IsoCamera = (load("res://world/camera/iso_camera.tscn") as PackedScene).instantiate() as IsoCamera
 	add_child(rig)

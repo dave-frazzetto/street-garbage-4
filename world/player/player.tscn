@@ -15,6 +15,16 @@
 height = 1.8
 radius = 0.35
 
+[sub_resource type="TorusMesh" id="TorusMesh_ring"]
+inner_radius = 0.52
+outer_radius = 0.6
+rings = 32
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ring"]
+shading_mode = 0
+albedo_color = Color(1, 0.3, 0.85, 1)
+
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
 collision_mask = 1
@@ -57,6 +67,12 @@ spot_angle_attenuation = 0.6
 
 [node name="Glow" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
-light_color = Color(0.7, 0.8, 1, 1)
-light_energy = 0.6
-omni_range = 4.0
+light_color = Color(1, 0.45, 0.9, 1)
+light_energy = 1.4
+omni_range = 5.0
+
+[node name="Ring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+cast_shadow = 0
+mesh = SubResource("TorusMesh_ring")
+surface_material_override/0 = SubResource("StandardMaterial3D_ring")

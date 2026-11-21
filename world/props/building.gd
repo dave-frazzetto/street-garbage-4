@@ -21,6 +21,18 @@ extends StaticBody3D
 	set(value):
 		label = value
 		_refresh()
+## Show generated facade models instead of the plain box (the box stays as collision). Walls and fences leave this off.
+@export var generated_facades: bool = false:
+	set(value):
+		generated_facades = value
+		_refresh()
+## Facade models by building height: below low_height, from tall_height up, and in between. A long building repeats the
+## model along its length so a 10 m strip is not one stretched facade.
+@export var low_facade: PackedScene
+@export var mid_facade: PackedScene
+@export var tall_facade: PackedScene
+@export_range(1, 20, 0.5) var low_height: float = 5.5
+@export_range(1, 30, 0.5) var tall_height: float = 8.0
 ## Alpha used while the building hides the player.
 @export_range(0, 1, 0.05) var faded_alpha: float = 0.22
 ## Buildings lower than this never fade (walls, cars).
@@ -29,6 +41,7 @@ extends StaticBody3D
 var _body_mat: StandardMaterial3D
 var _roof_mat: StandardMaterial3D
 var _faded: bool = false
+var _tiles: Array[FitModel] = []
 
 
 func _ready() -> void:
@@ -68,7 +81,44 @@ func _refresh() -> void:
 		text.text = label
 		text.visible = label != ""
 		text.position = Vector3(0, size.y + 0.2, 0)
+	_build_facades()
 	_faded = false
+
+
+func _build_facades() -> void:
+	var old: Node = get_node_or_null("Facades")
+	if old != null:
+		remove_child(old)
+		old.queue_free()
+	_tiles.clear()
+	var scene: PackedScene = mid_facade
+	if size.y < low_height and low_facade != null:
+		scene = low_facade
+	elif size.y >= tall_height and tall_facade != null:
+		scene = tall_facade
+	var use: bool = generated_facades and scene != null
+	for part: String in ["Body", "Roof"]:
+		var node: Node3D = get_node_or_null(part) as Node3D
+		if node != null:
+			node.visible = not use
+	if not use:
+		return
+	var holder: Node3D = Node3D.new()
+	holder.name = "Facades"
+	add_child(holder)
+	var along_x: bool = size.x >= size.z
+	var long_len: float = size.x if along_x else size.z
+	var short_len: float = size.z if along_x else size.x
+	var count: int = maxi(1, roundi(long_len / maxf(short_len * 1.15, 0.1)))
+	var step: float = long_len / float(count)
+	for i: int in count:
+		var tile: FitModel = FitModel.new()
+		tile.model_scene = scene
+		tile.target_size = Vector3(step, size.y, short_len) if along_x else Vector3(short_len, size.y, step)
+		var offset: float = -long_len / 2.0 + step * (float(i) + 0.5)
+		tile.position = Vector3(offset, 0.0, 0.0) if along_x else Vector3(0.0, 0.0, offset)
+		holder.add_child(tile)
+		_tiles.append(tile)
 
 
 ## Call down from the level: fade if this building stands between the camera and `focus`.
@@ -98,6 +148,8 @@ func _set_faded(on: bool) -> void:
 			continue
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if on else BaseMaterial3D.TRANSPARENCY_DISABLED
 		mat.albedo_color.a = faded_alpha if on else 1.0
+	for tile: FitModel in _tiles:
+		tile.set_alpha(faded_alpha if on else 1.0)
 	var body: GeometryInstance3D = get_node_or_null("Body") as GeometryInstance3D
 	if body != null:
 		body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if on else GeometryInstance3D.SHADOW_CASTING_SETTING_ON

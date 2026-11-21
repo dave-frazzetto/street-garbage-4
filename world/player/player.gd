@@ -43,6 +43,8 @@ func _ready() -> void:
 	health.died.connect(_on_died)
 	stamina.changed.connect(func(c: float, m: float) -> void: stamina_changed.emit(c, m))
 	weapon.weapon_changed.connect(func(n: String, t: float) -> void: weapon_changed.emit(n, t))
+	weapon.weapon_changed.connect(func(_n: String, _t: float) -> void: _model.hold_weapon(weapon.current_weapon()))
+	_model.hold_weapon(weapon.current_weapon())
 	weapon.damage_dealt.connect(_on_damage_dealt)
 	weapon.fired.connect(func(w: WeaponData) -> void: fired.emit(w))
 	if stats == null:

@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://world/player/player_model.gd" id="1_model"]
 [ext_resource type="PackedScene" path="res://art/models/characters/player/player_rigged.glb" id="2_rigged"]
-[ext_resource type="PackedScene" path="res://art/models/weapons/pistol/pistol.glb" id="3_pistol"]
 [ext_resource type="Animation" path="res://art/models/characters/player/clips/idle.res" id="4_idle"]
 [ext_resource type="Animation" path="res://art/models/characters/player/clips/run.res" id="5_run"]
 [ext_resource type="Animation" path="res://art/models/characters/player/clips/run_and_shoot.res" id="6_shoot"]
@@ -11,7 +10,6 @@
 
 [node name="PlayerModel" type="Node3D"]
 script = ExtResource("1_model")
-weapon_scene = ExtResource("3_pistol")
 weapon_rotation_degrees = Vector3(21, -136, -94)
 clips = {
 &"die": ExtResource("8_die"),
