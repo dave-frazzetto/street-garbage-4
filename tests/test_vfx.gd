@@ -95,6 +95,10 @@ func test_4_spawner_caps_live_effects() -> void:
 	await wait_frames(2)
 	check(not is_instance_valid(first), "replace_oldest frees the oldest")
 	check_eq(sp2.live_count(), 2, "replace keeps the cap")
+	# Effects that freed themselves earlier must not break the next spawn (regression: typed filter lambda).
+	for n: Node in root3d.get_children():
+		n.free()
+	check(sp.spawn(scene, root3d, Vector3.ZERO) != null, "spawner copes with freed effects")
 
 
 func test_5_level_hit_and_death_blood() -> void:
