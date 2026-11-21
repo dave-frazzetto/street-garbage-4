@@ -147,19 +147,27 @@ func test_4_game_events_trigger_cues() -> void:
 	flow.footsteps.reset()
 	await wait_frames(2)
 	played.clear()
+	# Count the stepper's own events: the footstep cue is rate limited by game time, which depends on frame speed.
+	var step_events: Array[int] = [0]
+	var on_step: Callable = func(_sprinting: bool) -> void: step_events[0] += 1
+	flow.footsteps.step_taken.connect(on_step)
 	for i: int in 12:
 		p.global_position += Vector3(0.5, 0.0, 0.0)
 		await wait_frames(1)
-	check(played.has(bank.footstep), "moving plays footsteps")
-	var steps: int = played.count(bank.footstep)
+	flow.footsteps.step_taken.disconnect(on_step)
+	check(step_events[0] > 0, "moving produces footstep events")
+	var steps: int = step_events[0]
 	check(steps >= 2 and steps <= 7, "footstep count follows distance (6 m, got %d)" % steps)
 	played.clear()
 	await wait_frames(6)
 	check(not played.has(bank.footstep), "standing still plays no footsteps")
 
 	# A zombie close to the player groans, quieter when farther away.
-	var near: Zombie = get_tree().get_nodes_in_group(Zombie.GROUP)[0] as Zombie
-	p.global_position = near.global_position + Vector3(4.0, 0.0, 0.0)
+	# Hordes are dormant far from the player, so put a zombie next to the player instead of looking one up.
+	var near: Zombie = (load("res://world/enemies/zombie.tscn") as PackedScene).instantiate() as Zombie
+	near.position = p.global_position + Vector3(-4.0, 0.0, 0.0)
+	level.entities.add_child(near)
+	await wait_frames(1)
 	flow.groaner._cooldown = 0.0
 	played.clear()
 	await wait_frames(3)
