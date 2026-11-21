@@ -26,6 +26,7 @@
 [ext_resource type="PackedScene" path="res://world/props/fire.tscn" id="24_fire"]
 [ext_resource type="PackedScene" path="res://world/props/power_pole.tscn" id="25_pole"]
 [ext_resource type="PackedScene" path="res://world/effects/explosion_effect.tscn" id="26_blast"]
+[ext_resource type="PackedScene" path="res://world/effects/blood_hit.tscn" id="99_bloodhit"]
 [ext_resource type="PackedScene" path="res://world/props/barrier.tscn" id="27_barrier"]
 [ext_resource type="PackedScene" path="res://world/props/dumpster.tscn" id="28_dumpster"]
 [ext_resource type="PackedScene" path="res://world/props/traffic_light.tscn" id="29_traffic"]
@@ -53,6 +54,7 @@ zombie_scene = ExtResource("3_zombie")
 gear_scene = ExtResource("4_gear")
 health_scene = ExtResource("5_health")
 blood_scene = ExtResource("20_blood")
+blood_hit_scene = ExtResource("99_bloodhit")
 blast_scene = ExtResource("26_blast")
 default_run_config = ExtResource("6_run")
 default_player_config = ExtResource("7_pcfg")

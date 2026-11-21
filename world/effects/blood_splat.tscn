@@ -1,18 +1,19 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://world/effects/blood_splat.gd" id="1_blood"]
+[ext_resource type="PackedScene" path="res://world/effects/blood_burst.tscn" id="2_burst"]
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_splat"]
-top_radius = 0.7
-bottom_radius = 0.7
-height = 0.01
-radial_segments = 10
-rings = 1
+[sub_resource type="QuadMesh" id="QuadMesh_splat"]
+size = Vector2(2, 2)
+orientation = 1
 
 [node name="BloodSplat" type="Node3D"]
 script = ExtResource("1_blood")
 
 [node name="Splat" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.6, 0, 0.015, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
 cast_shadow = 0
-mesh = SubResource("CylinderMesh_splat")
+mesh = SubResource("QuadMesh_splat")
+
+[node name="Burst" parent="." instance=ExtResource("2_burst")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)

@@ -4,12 +4,7 @@
 [ext_resource type="Script" path="res://world/props/destructible.gd" id="2_destructible"]
 [ext_resource type="Script" path="res://world/props/fit_model.gd" id="fit_script"]
 [ext_resource type="PackedScene" path="res://art/models/props/barrel/barrel.glb" id="model_glb"]
-
-[sub_resource type="SphereMesh" id="SphereMesh_flame"]
-radius = 0.4
-height = 1.1
-radial_segments = 10
-rings = 6
+[ext_resource type="PackedScene" path="res://world/effects/flame_effect.tscn" id="flame_fx"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_barrel"]
 height = 1.0
@@ -22,10 +17,8 @@ energy = 3.5
 light_range = 9.0
 flicker = 0.7
 
-[node name="Bulb" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
-cast_shadow = 0
-mesh = SubResource("SphereMesh_flame")
+[node name="Flame" parent="." instance=ExtResource("flame_fx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
 
 [node name="Light" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
