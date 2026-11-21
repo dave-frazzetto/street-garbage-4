@@ -109,6 +109,7 @@ func test_4_game_events_trigger_cues() -> void:
 	flow.start_run()
 	await wait_frames(3)
 	check(flow.music.is_playing(), "music starts with the run")
+	check(flow.ambient.is_playing(), "ambience starts with the run")
 	var bank: SfxBank = flow.sfx.bank
 	var level: Level = flow.level
 	var p: Player = level.player
@@ -140,6 +141,37 @@ func test_4_game_events_trigger_cues() -> void:
 	p.global_position = level.gear_positions()[0]
 	await wait_frames(4)
 	check(played.has(bank.pickup_gear), "gear pickup plays pickup_gear")
+
+	# Footsteps follow movement at a stride cadence; walking 6 m must give several steps, standing still none.
+	played.clear()
+	flow.footsteps.reset()
+	await wait_frames(2)
+	played.clear()
+	# Count the stepper's own events: the footstep cue is rate limited by game time, which depends on frame speed.
+	var step_events: Array[int] = [0]
+	var on_step: Callable = func(_sprinting: bool) -> void: step_events[0] += 1
+	flow.footsteps.step_taken.connect(on_step)
+	for i: int in 12:
+		p.global_position += Vector3(0.5, 0.0, 0.0)
+		await wait_frames(1)
+	flow.footsteps.step_taken.disconnect(on_step)
+	check(step_events[0] > 0, "moving produces footstep events")
+	var steps: int = step_events[0]
+	check(steps >= 2 and steps <= 7, "footstep count follows distance (6 m, got %d)" % steps)
+	played.clear()
+	await wait_frames(6)
+	check(not played.has(bank.footstep), "standing still plays no footsteps")
+
+	# A zombie close to the player groans, quieter when farther away.
+	# Hordes are dormant far from the player, so put a zombie next to the player instead of looking one up.
+	var near: Zombie = (load("res://world/enemies/zombie.tscn") as PackedScene).instantiate() as Zombie
+	near.position = p.global_position + Vector3(-4.0, 0.0, 0.0)
+	level.entities.add_child(near)
+	await wait_frames(1)
+	flow.groaner._cooldown = 0.0
+	played.clear()
+	await wait_frames(3)
+	check(played.has(bank.zombie_groan), "a nearby zombie groans")
 
 	played.clear()
 	var boom: Destructible = null
@@ -196,6 +228,7 @@ func test_5_perk_and_end_of_run_cues() -> void:
 	check_eq(flow.run.outcome, RunState.Outcome.KILLED, "run ended by death")
 	check(played.has(bank.run_killed), "death plays run_killed")
 	check(not flow.music.is_playing(), "music fades out when the run ends")
+	check(not flow.ambient.is_playing(), "ambience fades out when the run ends")
 	await get_tree().create_timer(flow.music.fade_out + 0.3, true, false).timeout
 	check(not flow.music._player.playing, "music has stopped after the fade")
 	flow.start_run()
@@ -215,3 +248,67 @@ func test_5_perk_and_end_of_run_cues() -> void:
 	await wait_frames(4)
 	check_eq(flow.run.outcome, RunState.Outcome.EXTRACTED, "extracted")
 	check(played.has(bank.run_extracted), "extraction plays run_extracted")
+
+
+func test_6_footstep_cadence_is_node_free() -> void:
+	var stepper: FootstepStepper = FootstepStepper.new()
+	var count: Array[int] = [0]
+	var last_sprint: Array[bool] = [false]
+	stepper.step_taken.connect(func(sprinting: bool) -> void:
+		count[0] += 1
+		last_sprint[0] = sprinting
+	)
+	check_eq(stepper.advance(stepper.walk_stride * 0.5, false), 0, "half a stride is no step")
+	check_eq(stepper.advance(stepper.walk_stride * 0.6, false), 1, "completing the stride steps once")
+	check_eq(stepper.advance(stepper.walk_stride * 3.0, false), 3, "three strides give three steps")
+	check_eq(count[0], 4, "signal fired per step")
+	count[0] = 0
+	var walk_steps: int = stepper.advance(10.0, false)
+	stepper.reset()
+	var sprint_steps: int = stepper.advance(10.0, true)
+	check(sprint_steps < walk_steps, "sprint stride is longer: fewer steps for the same distance (%d < %d)" % [sprint_steps, walk_steps])
+	check(last_sprint[0], "step_taken reports sprinting")
+	stepper.reset()
+	check_eq(stepper.track(Vector3.ZERO, 0.016, false), 0, "first sample only anchors")
+	check_eq(stepper.track(Vector3(100.0, 0.0, 0.0), 0.016, false), 0, "a teleport gives no steps")
+	check_eq(stepper.track(Vector3(100.0, 0.0, 0.0), 0.016, false), 0, "no movement, no steps")
+	check_eq(stepper.track(Vector3(100.0 + stepper.walk_stride + 0.01, 0.0, 0.0), 0.2, false), 1, "walking one stride steps once")
+	stepper.free()
+
+
+func test_7_groan_falloff_and_limits() -> void:
+	var g: ZombieGroaner = ZombieGroaner.new()
+	check_eq(g.volume_offset_for(0.0), 0.0, "no attenuation at zero distance")
+	check_eq(g.volume_offset_for(g.hearing_range), -g.range_attenuation_db, "full attenuation at the edge of hearing")
+	check(g.volume_offset_for(g.hearing_range * 0.5) > g.volume_offset_for(g.hearing_range), "farther is quieter")
+	check_eq(g.nearest_distance(Vector3.ZERO, [] as Array[Node]), -1.0, "no zombies, nobody to groan")
+	g.free()
+
+
+func test_8_ambient_player_loops_and_stops() -> void:
+	var amb: AmbientPlayer = (load("res://audio/ambient_player.tscn") as PackedScene).instantiate() as AmbientPlayer
+	amb.fade_in = 0.1
+	amb.fade_out = 0.1
+	add_child(amb)
+	var bed: AudioStreamWAV = amb.bed as AudioStreamWAV
+	check(bed != null, "ambient bed is a WAV")
+	if bed != null:
+		check(bed.get_length() > 10.0 and bed.get_length() < 60.0, "ambient bed length (%.1fs)" % bed.get_length())
+		var peak: float = _peak(bed)
+		check(peak > 0.2 and peak < 1.0, "ambient bed audible, not clipping (peak %.2f)" % peak)
+	check(amb.one_shots.size() >= 3, "ambient has random one-shots (%d)" % amb.one_shots.size())
+	for stream: AudioStream in amb.one_shots:
+		var wav: AudioStreamWAV = stream as AudioStreamWAV
+		check(wav != null and _peak(wav) > 0.2, "one-shot is audible")
+	amb.play_ambient()
+	await wait_frames(2)
+	check(amb.is_playing(), "ambient plays")
+	check(amb._bed_player.stream is AudioStreamWAV and (amb._bed_player.stream as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_FORWARD, "bed loops")
+	var shots: Array[int] = [0]
+	amb.one_shot_played.connect(func(_s: AudioStream) -> void: shots[0] += 1)
+	check(amb.play_one_shot(), "a one-shot can be triggered")
+	check_eq(shots[0], 1, "one_shot_played fired")
+	amb.stop_ambient()
+	await get_tree().create_timer(0.4, true, false).timeout
+	check(not amb.is_playing() and not amb._bed_player.playing, "ambient stops after fade-out")
+	amb.queue_free()

@@ -15,6 +15,9 @@
 [ext_resource type="PackedScene" path="res://ui/touch/touch_controls.tscn" id="10_touch"]
 [ext_resource type="PackedScene" path="res://audio/sfx_player.tscn" id="11_sfx"]
 [ext_resource type="PackedScene" path="res://audio/music_player.tscn" id="12_music"]
+[ext_resource type="PackedScene" path="res://audio/ambient_player.tscn" id="16_ambient"]
+[ext_resource type="Script" path="res://audio/footstep_stepper.gd" id="17_steps"]
+[ext_resource type="Script" path="res://audio/zombie_groaner.gd" id="18_groan"]
 
 [node name="GameFlow" type="Node"]
 script = ExtResource("1_flow")
@@ -30,6 +33,14 @@ mobile_graphics = ExtResource("15_gfx_mobile")
 [node name="SfxPlayer" parent="." instance=ExtResource("11_sfx")]
 
 [node name="MusicPlayer" parent="." instance=ExtResource("12_music")]
+
+[node name="AmbientPlayer" parent="." instance=ExtResource("16_ambient")]
+
+[node name="FootstepStepper" type="Node" parent="."]
+script = ExtResource("17_steps")
+
+[node name="ZombieGroaner" type="Node" parent="."]
+script = ExtResource("18_groan")
 
 [node name="Hud" parent="." instance=ExtResource("6_hud")]
 

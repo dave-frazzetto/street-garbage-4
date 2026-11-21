@@ -34,8 +34,9 @@ func _process(delta: float) -> void:
 	_clock += delta
 
 
-## Play a cue. Returns true if it started; false when muted, empty, rate-limited or all voices are busy.
-func play_cue(cue: SfxCue) -> bool:
+## Play a cue. `volume_offset_db` is added to the cue's own volume (distance falloff, sprinting steps).
+## Returns true if it started; false when muted, empty, rate-limited or all voices are busy.
+func play_cue(cue: SfxCue, volume_offset_db: float = 0.0) -> bool:
 	if cue == null or muted:
 		return false
 	var stream: AudioStream = cue.pick_stream(_rng)
@@ -48,7 +49,7 @@ func play_cue(cue: SfxCue) -> bool:
 		return false
 	_last_played[cue] = _clock
 	voice.stream = stream
-	voice.volume_db = cue.volume_db + master_db
+	voice.volume_db = cue.volume_db + master_db + volume_offset_db
 	voice.pitch_scale = cue.pick_pitch(_rng)
 	voice.play()
 	cue_played.emit(cue)
