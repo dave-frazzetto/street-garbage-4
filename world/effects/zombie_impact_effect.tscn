@@ -1,0 +1,29 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/effects/impact_effect.gd" id="1_fx"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_spark"]
+shading_mode = 0
+albedo_color = Color(1, 0.7, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_spark"]
+size = Vector3(0.08, 0.08, 0.08)
+
+[node name="ZombieImpactEffect" type="Node3D"]
+script = ExtResource("1_fx")
+lifetime = 0.15
+color = Color(1, 0.9, 0.7, 1)
+
+[node name="Sparks" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 4
+lifetime = 0.15
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("Mesh_spark")
+material_override = SubResource("Mat_spark")
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -9, 0)
+initial_velocity_min = 0.5
+initial_velocity_max = 1.5
