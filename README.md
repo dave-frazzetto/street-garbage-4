@@ -100,7 +100,13 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 14 | 2026-11-20 | [mobile-graphics-profile-and-on-screen-errors](docs/adr/mobile-graphics-profile-and-on-screen-errors.md) | Mobile graphics profile and on-screen errors |
 | 15 | 2026-11-21 | [cyberpunk-world-and-female-protagonist](docs/adr/cyberpunk-world-and-female-protagonist.md) | Cyberpunk world and female protagonist |
 | 16 | 2026-11-21 | [one-git-worktree-per-claude-session](docs/adr/one-git-worktree-per-claude-session.md) | One git worktree per Claude session |
-$row
+| 17 | 2026-11-21 | [bullet-hits-go-through-a-zombie-hurtbox-layer](docs/adr/bullet-hits-go-through-a-zombie-hurtbox-layer.md) | Bullet hits go through a zombie hurtbox layer |
+| 18 | 2026-11-21 | [beam-bullets-drawn-as-fading-stretched-boxes](docs/adr/beam-bullets-drawn-as-fading-stretched-boxes.md) | Beam bullets drawn as fading stretched boxes |
+| 19 | 2026-11-21 | [difficulty-ramp-and-bosses-as-data-in-directorconfig](docs/adr/difficulty-ramp-and-bosses-as-data-in-directorconfig.md) | Difficulty ramp and bosses as data in DirectorConfig |
+| 20 | 2026-11-21 | [lazy-horde-activation-and-far-zombie-despawn](docs/adr/lazy-horde-activation-and-far-zombie-despawn.md) | Lazy horde activation and far zombie despawn |
+| 21 | 2026-11-21 | [procedural-street-ground-fences-and-skyline-backdrop](docs/adr/procedural-street-ground-fences-and-skyline-backdrop.md) | Procedural street ground, fences and skyline backdrop |
+| 22 | 2026-11-21 | [cpuparticles3d-effects-with-capped-effect-spawner](docs/adr/cpuparticles3d-effects-with-capped-effect-spawner.md) | CPUParticles3D effects with capped effect spawner |
+| 23 | 2026-11-21 | [real-cc0-audio-samples-with-synthesised-layers](docs/adr/real-cc0-audio-samples-with-synthesised-layers.md) | Real CC0 audio samples with synthesised layers (refines 12) |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),
