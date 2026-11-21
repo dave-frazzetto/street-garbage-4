@@ -14,3 +14,5 @@ extends Resource
 @export_range(0, 128) var max_static_lights: int = 0
 ## Seconds between re-picking the nearest static lights.
 @export_range(0.05, 2.0, 0.05) var light_refresh_seconds: float = 0.3
+## Full street detail (cracks, patches, puddles, manholes). Off keeps just grain, markings and slabs.
+@export var detailed_ground: bool = true

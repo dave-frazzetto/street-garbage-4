@@ -1,7 +1,7 @@
 class_name Bullet
 extends Node3D
-## A bullet with a glowing tracer: moves, ray-casts against walls and zombies, supports ricochet (jump to the next
-## zombie) and explosions.
+## A bullet drawn as a bright beam from the muzzle to the hit point: moves, ray-casts against walls and zombie
+## hurtboxes, supports ricochet (jump to the next zombie) and explosions. The beam fades out after the bullet is spent.
 
 signal damage_dealt(amount: float)
 
@@ -9,11 +9,16 @@ signal damage_dealt(amount: float)
 @export_range(1, 30) var ricochet_search_radius: float = 8.0
 @export_range(0.25, 10) var explosion_radius: float = 1.75
 @export var explosion_scene: PackedScene
+## Spark burst spawned where the bullet hits a wall or prop (gets `color` set to the bullet colour).
+@export var impact_scene: PackedScene
+## Burst spawned where the bullet hits a zombie. Hook for blood: swap this scene.
+@export var zombie_impact_scene: PackedScene
 
 const WORLD_MASK: int = 1
-const ZOMBIE_MASK: int = 4
+## Bullets test zombies through their ZombieHurtbox areas (more forgiving than the body), never the body itself.
+const HURTBOX_MASK: int = ZombieHurtbox.HURTBOX_LAYER
 
-@onready var _tracer: MeshInstance3D = $Tracer
+@onready var _beam: MeshInstance3D = $Beam
 
 var velocity: Vector3
 var damage: float
@@ -22,7 +27,14 @@ var ricochets_left: int
 var explosion_fraction: float
 var color: Color = Color.YELLOW
 var radius: float = 0.08
+var beam_length: float = 4.0
+var beam_fade_seconds: float = 0.18
 var _excluded: Array[RID] = []
+var _hit_zombies: Array[Zombie] = []
+var _trail_start: Vector3
+var _spent: bool = false
+var _fade_left: float = 0.0
+var _beam_material: StandardMaterial3D
 
 
 func setup(start: Vector3, direction: Vector3, weapon: WeaponData, dmg: float, max_range: float, ricochets: int, explosion: float) -> void:
@@ -34,25 +46,35 @@ func setup(start: Vector3, direction: Vector3, weapon: WeaponData, dmg: float, m
 	explosion_fraction = explosion
 	color = weapon.bullet_color
 	radius = weapon.bullet_radius
+	beam_length = weapon.beam_length
+	beam_fade_seconds = weapon.beam_fade_seconds
+	_trail_start = start
 
 
 func _ready() -> void:
-	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = color
-	mat.emission_enabled = true
-	mat.emission = color
-	mat.emission_energy_multiplier = 4.0
-	_tracer.material_override = mat
-	_tracer.scale = Vector3(radius / 0.08, radius / 0.08, 1.0)
+	_beam_material = StandardMaterial3D.new()
+	_beam_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_beam_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_beam_material.albedo_color = color
+	_beam.material_override = _beam_material
+	_trail_start = global_position
 	_face_velocity()
+	_update_beam(1.0)
 
 
 func _physics_process(delta: float) -> void:
+	if _spent:
+		_fade_left -= delta
+		if _fade_left <= 0.0:
+			queue_free()
+		else:
+			_update_beam(_fade_left / maxf(0.001, beam_fade_seconds))
+		return
 	var step: Vector3 = velocity * delta
 	var from: Vector3 = global_position
 	var to: Vector3 = from + step
-	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, to, WORLD_MASK | ZOMBIE_MASK, _excluded)
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, to, WORLD_MASK | HURTBOX_MASK, _excluded)
+	query.collide_with_areas = true
 	# Zombies hugging the player overlap the spawn point; still count them as hit.
 	query.hit_from_inside = true
 	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
@@ -60,27 +82,72 @@ func _physics_process(delta: float) -> void:
 		global_position = to
 		range_left -= step.length()
 		if range_left <= 0.0:
-			queue_free()
+			_finish()
+		else:
+			_update_beam(1.0)
 		return
 	var collider: Object = hit["collider"]
 	global_position = hit["position"]
-	if collider is Zombie:
-		_hit_zombie(collider as Zombie)
+	if collider is ZombieHurtbox:
+		var zombie: Zombie = (collider as ZombieHurtbox).get_zombie()
+		if zombie != null and not zombie.is_dead:
+			_spawn_impact(zombie_impact_scene, hit["normal"])
+			_hit_zombie(zombie, (collider as ZombieHurtbox).get_rid())
+		else:
+			_excluded.append((collider as ZombieHurtbox).get_rid())
 		return
 	var prop: Destructible = Destructible.of(collider)
 	if prop != null:
 		prop.take_damage(damage)
-	queue_free()
+	_spawn_impact(impact_scene, hit["normal"])
+	_finish()
 
 
-func _hit_zombie(zombie: Zombie) -> void:
+## The bullet is spent: stop moving and let the beam fade out where it ended.
+func _finish() -> void:
+	_spent = true
+	_fade_left = beam_fade_seconds
+	_update_beam(1.0)
+
+
+## Stretches the beam from the trail start to the bullet (at most beam_length long).
+func _update_beam(alpha: float) -> void:
+	var tip: Vector3 = global_position
+	var along: Vector3 = tip - _trail_start
+	var length: float = minf(along.length(), beam_length)
+	if length < 0.02:
+		_beam.visible = false
+		return
+	_beam.visible = true
+	var dir: Vector3 = along.normalized()
+	var width: float = radius * (0.4 + 0.6 * alpha)
+	var basis: Basis = Basis.looking_at(dir, Vector3.UP if absf(dir.y) < 0.99 else Vector3.RIGHT)
+	basis = basis.scaled_local(Vector3(width, width, length))
+	_beam.global_transform = Transform3D(basis, tip - dir * length * 0.5)
+	_beam_material.albedo_color = Color(color, alpha)
+
+
+func _spawn_impact(scene: PackedScene, normal: Vector3) -> void:
+	if scene == null:
+		return
+	var fx: Node3D = scene.instantiate() as Node3D
+	fx.set("color", color)
+	fx.position = global_position
+	get_parent().add_child(fx)
+	if normal.length() > 0.1:
+		fx.look_at(fx.position + normal, Vector3.UP if absf(normal.y) < 0.99 else Vector3.RIGHT)
+		fx.rotate_object_local(Vector3.RIGHT, PI * 0.5)
+
+
+func _hit_zombie(zombie: Zombie, hurtbox: RID) -> void:
 	var flat: Vector3 = Vector3(velocity.x, 0.0, velocity.z).normalized()
 	var dealt: float = zombie.take_damage(damage, flat)
 	if dealt > 0.0:
 		damage_dealt.emit(dealt)
 	if explosion_fraction > 0.0:
 		_explode(zombie)
-	_excluded.append(zombie.get_rid())
+	_excluded.append(hurtbox)
+	_hit_zombies.append(zombie)
 	if ricochets_left > 0:
 		var next: Zombie = _find_ricochet_target(zombie)
 		if next != null:
@@ -89,9 +156,10 @@ func _hit_zombie(zombie: Zombie) -> void:
 			to_next.y = 0.0
 			velocity = to_next.normalized() * velocity.length()
 			range_left = maxf(range_left, ricochet_search_radius)
+			_trail_start = global_position
 			_face_velocity()
 			return
-	queue_free()
+	_finish()
 
 
 func _explode(center_zombie: Zombie) -> void:
@@ -118,7 +186,7 @@ func _find_ricochet_target(from_zombie: Zombie) -> Zombie:
 	var best_d: float = ricochet_search_radius
 	for node: Node in get_tree().get_nodes_in_group(Zombie.GROUP):
 		var z: Zombie = node as Zombie
-		if z == null or z.is_dead or z == from_zombie or _excluded.has(z.get_rid()):
+		if z == null or z.is_dead or z == from_zombie or _hit_zombies.has(z):
 			continue
 		var d: float = z.global_position.distance_to(global_position)
 		if d < best_d:

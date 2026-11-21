@@ -36,7 +36,11 @@ func test_1_title_then_start() -> void:
 	check(not flow.title_screen.visible, "title hidden after Enter")
 	check(flow.level != null and flow.level.player != null, "level and player spawned")
 	check_eq(flow.level.gear_positions().size(), 6, "6 gears placed")
-	check(get_tree().get_nodes_in_group(Zombie.GROUP).size() >= 50, "hordes spawned")
+	var horde: int = 0
+	for node: Node in flow.level.get_node("Hordes").get_children():
+		if node is HordeSpawner:
+			horde += (node as HordeSpawner).remaining()
+	check(horde >= 50, "hordes planned (%d, lazily instanced)" % horde)
 
 
 func test_2_time_and_director() -> void:

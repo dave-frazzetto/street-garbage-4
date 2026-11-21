@@ -24,6 +24,14 @@ signal prop_destroyed(at: Vector3, explosive: bool)
 @export var gear_scene: PackedScene
 @export var health_scene: PackedScene
 @export var blood_scene: PackedScene
+## Small droplet burst spawned where a zombie is hit.
+@export var blood_hit_scene: PackedScene
+## Height above the zombie origin where hit blood appears.
+@export_range(0, 3, 0.1) var blood_hit_height: float = 1.0
+## Most hit bursts alive at once (extra hits in a big fight are skipped).
+@export_range(1, 200) var max_hit_effects: int = 24
+## Most blood splats (decal + burst) alive at once; the oldest is replaced.
+@export_range(1, 500) var max_blood_splats: int = 80
 ## Visual effect spawned when a destructible prop explodes.
 @export var blast_scene: PackedScene
 ## Fraction of a blast's damage passed on to nearby destructibles (chain reactions).
@@ -54,7 +62,18 @@ var _static_lights: Array[Light3D] = []
 var _light_timer: float = 0.0
 
 
+var _hit_spawner: EffectSpawner
+var _splat_spawner: EffectSpawner
+
+
 func _ready() -> void:
+	_hit_spawner = EffectSpawner.new()
+	_hit_spawner.max_live = max_hit_effects
+	add_child(_hit_spawner)
+	_splat_spawner = EffectSpawner.new()
+	_splat_spawner.max_live = max_blood_splats
+	_splat_spawner.replace_oldest = true
+	add_child(_splat_spawner)
 	extraction.player_entered.connect(func() -> void: extraction_entered.emit())
 	if get_parent() == get_tree().root:
 		# Launched on its own: run with defaults.
@@ -69,12 +88,15 @@ func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumbe
 	stats = player_stats
 	rng = random
 	var cfg: RunConfig = run_config if run_config != null else RunConfig.new()
+	Zombie.max_corpses = director.config.max_corpses
 	_spawn_player()
 	_spawn_gears(cfg.gears_required)
 	for node: Node in $Hordes.get_children():
 		var spawner: HordeSpawner = node as HordeSpawner
 		if spawner != null:
 			spawner.zombie_spawned.connect(_on_zombie_spawned)
+			spawner.activation_radius = director.config.horde_activation_radius
+			spawner.deactivation_radius = director.config.horde_deactivation_radius
 			spawner.spawn(player, entities, rng)
 	for node: Node in find_children("Destructible", "", true, false):
 		var prop: Destructible = node as Destructible
@@ -129,6 +151,9 @@ func apply_graphics(profile: GraphicsProfile) -> void:
 	var moon: DirectionalLight3D = get_node_or_null("Moon") as DirectionalLight3D
 	if moon != null:
 		moon.shadow_enabled = profile.shadows
+	var ground: Ground = get_node_or_null("Ground") as Ground
+	if ground != null:
+		ground.set_detail(profile.detailed_ground)
 	_static_lights.clear()
 	for root_name: String in ["Props", "Hordes", "ExtractionZone"]:
 		var root: Node = get_node_or_null(root_name)
@@ -237,7 +262,13 @@ func _on_gear_collected(pickup: Pickup) -> void:
 func _on_zombie_spawned(zombie: Zombie) -> void:
 	zombie.target_radius = player.body_radius
 	zombie.died.connect(_on_zombie_died)
+	zombie.damaged.connect(_on_zombie_damaged)
 	zombie.attacked.connect(_on_zombie_attacked)
+
+
+func _on_zombie_damaged(at: Vector3, direction: Vector3, _amount: float) -> void:
+	var dir: Vector3 = Vector3(direction.x, 0.0, direction.z)
+	_hit_spawner.spawn(blood_hit_scene, effects, at + Vector3(0, blood_hit_height, 0), dir.normalized() + Vector3(0, 0.35, 0))
 
 
 func _on_zombie_attacked(damage: float) -> void:
@@ -295,9 +326,7 @@ func _chain_damage(prop_ref: WeakRef, amount: float) -> void:
 
 
 func _spawn_blood(at: Vector3) -> void:
-	var splat: Node3D = blood_scene.instantiate() as Node3D
-	splat.position = Vector3(at.x, 0.0, at.z)
-	effects.add_child(splat)
+	_splat_spawner.spawn(blood_scene, effects, Vector3(at.x, 0.0, at.z))
 
 
 func _spawn_health(at: Vector3) -> void:

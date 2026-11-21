@@ -4,8 +4,12 @@ extends CharacterBody3D
 
 signal died(zombie: Zombie, xp: float, at: Vector3)
 signal attacked(damage: float)
+## Emitted on every hit that lands, before death. `at` is the zombie position, `direction` the push (zero for blasts).
+signal damaged(at: Vector3, direction: Vector3, amount: float)
 
 const GROUP: StringName = &"zombies"
+## Seconds between animation-culling distance checks.
+const CULL_CHECK_SECONDS: float = 0.25
 
 @export var data: EnemyData
 ## Zombies notice the target within this distance in metres (directors set it very high; hordes keep it low).
@@ -14,6 +18,15 @@ const GROUP: StringName = &"zombies"
 @export var hit_color: Color = Color(1, 1, 1)
 ## Seconds a corpse stays on the ground after its death animation ends.
 @export_range(0, 30, 0.5) var corpse_linger: float = 2.0
+
+## Set by the director before the zombie enters the tree: difficulty ramp multipliers on speed and health.
+var speed_multiplier: float = 1.0
+var health_multiplier: float = 1.0
+## Beyond this distance from the target the walk animation is paused (nobody can see it, saves CPU).
+@export_range(5, 100) var animation_cull_distance: float = 26.0
+## Corpses left on the ground by all zombies at once; the oldest model is freed beyond this.
+static var max_corpses: int = 40
+static var _corpses: Array[Node3D] = []
 
 @onready var _visual: Node3D = $Visual
 @onready var _model: ZombieModel = $Visual/Model
@@ -31,24 +44,30 @@ var _flash: float = 0.0
 var _wander: Vector3 = Vector3.ZERO
 var _wander_time: float = 0.0
 var _knockback: Vector3 = Vector3.ZERO
+var _max_health: float
+var _animate: bool = true
+var _cull_timer: float = 0.0
 
 
 func _ready() -> void:
 	add_to_group(GROUP)
 	if data == null:
 		data = EnemyData.new()
-	health = data.max_health
-	_speed = data.speed * randf_range(1.0 - data.speed_variance, 1.0 + data.speed_variance)
-	var shape: CylinderShape3D = ($CollisionShape3D as CollisionShape3D).shape as CylinderShape3D
+	_max_health = data.max_health * health_multiplier
+	health = _max_health
+	_speed = data.speed * speed_multiplier * randf_range(1.0 - data.speed_variance, 1.0 + data.speed_variance)
+	var shape_node: CollisionShape3D = $CollisionShape3D as CollisionShape3D
+	var shape: CylinderShape3D = shape_node.shape as CylinderShape3D
 	shape.radius = data.radius
+	shape.height *= data.size_scale
+	shape_node.position.y *= data.size_scale
 	if data.model_scene != null:
 		_swap_model(data.model_scene)
-		_visual.scale = Vector3.ONE
-	else:
-		var s: float = data.radius / 0.33
-		_visual.scale = Vector3(s, 1.0 + (s - 1.0) * 0.5, s)
+	_visual.scale = Vector3.ONE * data.size_scale
+	_bar.position.y *= data.size_scale
 	_model.set_tint(data.tint)
-	_bar.visible = false
+	_bar.visible = data.always_show_health_bar
+	_cull_timer = randf() * CULL_CHECK_SECONDS
 
 
 ## Replaces the built-in walker model with this zombie type's own.
@@ -75,12 +94,13 @@ func take_damage(amount: float, direction: Vector3 = Vector3.ZERO) -> float:
 		return 0.0
 	var dealt: float = minf(health, amount * (1.0 - data.armour))
 	health -= dealt
+	damaged.emit(global_position, direction, dealt)
 	_flash = 0.08
 	_model.flash(hit_color)
 	_aware = true
 	_knockback += direction * amount * knockback_strength * 0.5
 	_bar.visible = true
-	_bar_fill.scale.x = maxf(0.001, health / data.max_health)
+	_bar_fill.scale.x = maxf(0.001, health / _max_health)
 	if health <= 0.0:
 		is_dead = true
 		_leave_corpse()
@@ -93,6 +113,10 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)
+	_cull_timer -= delta
+	if _cull_timer <= 0.0:
+		_cull_timer = CULL_CHECK_SECONDS
+		_update_animation_culling()
 	if _flash > 0.0:
 		_flash = maxf(0.0, _flash - delta)
 		if _flash == 0.0:
@@ -120,9 +144,22 @@ func _physics_process(delta: float) -> void:
 	_knockback = _knockback.move_toward(Vector3.ZERO, 22.0 * delta)
 	move_and_slide()
 	global_position.y = 0.0
-	_model.set_move_speed(dir.length() * _speed)
+	if _animate:
+		_model.set_move_speed(dir.length() * _speed)
 	if dir.length() > 0.05:
 		_visual.rotation.y = lerp_angle(_visual.rotation.y, atan2(-dir.x, -dir.z), 10.0 * delta)
+
+
+## Pauses the walk animation of zombies too far from the target to be seen.
+func _update_animation_culling() -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	var off: Vector3 = target.global_position - global_position
+	var animate: bool = Vector2(off.x, off.z).length_squared() <= animation_cull_distance * animation_cull_distance
+	if animate != _animate:
+		_animate = animate
+		if not animate:
+			_model.hold()
 
 
 ## The model outlives the zombie: it is handed to our parent, plays its death clip and is freed afterwards.
@@ -133,3 +170,7 @@ func _leave_corpse() -> void:
 	_visual.reparent(holder)
 	var clip_length: float = _model.play_death()
 	get_tree().create_timer(clip_length + corpse_linger).timeout.connect(_visual.queue_free)
+	_corpses.assign(_corpses.filter(func(c: Variant) -> bool: return is_instance_valid(c) and not c.is_queued_for_deletion()))
+	_corpses.append(_visual)
+	while _corpses.size() > max_corpses:
+		_corpses.pop_front().queue_free()
