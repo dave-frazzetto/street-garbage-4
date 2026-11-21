@@ -69,12 +69,15 @@ func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumbe
 	stats = player_stats
 	rng = random
 	var cfg: RunConfig = run_config if run_config != null else RunConfig.new()
+	Zombie.max_corpses = director.config.max_corpses
 	_spawn_player()
 	_spawn_gears(cfg.gears_required)
 	for node: Node in $Hordes.get_children():
 		var spawner: HordeSpawner = node as HordeSpawner
 		if spawner != null:
 			spawner.zombie_spawned.connect(_on_zombie_spawned)
+			spawner.activation_radius = director.config.horde_activation_radius
+			spawner.deactivation_radius = director.config.horde_deactivation_radius
 			spawner.spawn(player, entities, rng)
 	for node: Node in find_children("Destructible", "", true, false):
 		var prop: Destructible = node as Destructible
