@@ -24,6 +24,7 @@ enum Stat {
 	HEALTH_DROP_CHANCE,
 	PICKUP_RADIUS,
 	LIFESTEAL,
+	FIRING_MOVE_SPEED,
 }
 
 enum Mode { FLAT, PERCENT }
@@ -58,6 +59,7 @@ const STAT_INFO: Dictionary = {
 	Stat.HEALTH_DROP_CHANCE: ["Health Drop Chance", Format.ABSOLUTE_PERCENT],
 	Stat.PICKUP_RADIUS: ["Pickup Radius", Format.BONUS_PERCENT],
 	Stat.LIFESTEAL: ["Lifesteal", Format.ABSOLUTE_PERCENT],
+	Stat.FIRING_MOVE_SPEED: ["Firing Move Speed", Format.ABSOLUTE_PERCENT],
 }
 
 var _base: Dictionary = {}

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://data/enemies/enemy_data.gd" id="1_boss"]
+
+[resource]
+script = ExtResource("1_boss")
+display_name = "Boss"
+max_health = 220.0
+speed = 1.5
+contact_damage = 25.0
+armour = 0.15
+xp = 15.0
+radius = 0.396
+size_scale = 1.2
+always_show_health_bar = true
+max_alive = 3
+tint = Color(0.75, 0.1, 0.9, 0.4)
