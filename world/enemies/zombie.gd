@@ -4,6 +4,8 @@ extends CharacterBody3D
 
 signal died(zombie: Zombie, xp: float, at: Vector3)
 signal attacked(damage: float)
+## Emitted on every hit that lands, before death. `at` is the zombie position, `direction` the push (zero for blasts).
+signal damaged(at: Vector3, direction: Vector3, amount: float)
 
 const GROUP: StringName = &"zombies"
 
@@ -75,6 +77,7 @@ func take_damage(amount: float, direction: Vector3 = Vector3.ZERO) -> float:
 		return 0.0
 	var dealt: float = minf(health, amount * (1.0 - data.armour))
 	health -= dealt
+	damaged.emit(global_position, direction, dealt)
 	_flash = 0.08
 	_model.flash(hit_color)
 	_aware = true

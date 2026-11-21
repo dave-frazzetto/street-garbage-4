@@ -1,32 +1,44 @@
+class_name ExplosionEffect
 extends Node3D
-## Short-lived explosion flash: an expanding, fading sphere plus a brief light.
+## Explosion: a white-hot flash puff, a fireball, a smoke puff, flying sparks and a short light. Each part is a child
+## VfxBurst (tune amount, speed, colours in its Inspector). `radius` scales the whole thing relative to
+## `reference_radius`, so a barrel blast and a small explosive round use the same scene.
 
+## Blast radius this effect is drawn for. Prop blasts and explosive rounds set it when they spawn the effect.
 @export var radius: float = 1.75
+## Radius at which the authored particle speeds and sizes look right.
+@export_range(0.25, 10, 0.05) var reference_radius: float = 1.75
+## How long the light lasts (the flash is a particle, see its own lifetime), in seconds.
 @export_range(0.05, 2, 0.05) var lifetime: float = 0.3
-@export var color: Color = Color(1.0, 0.55, 0.15)
+@export var color: Color = Color(1.0, 0.6, 0.2)
+@export_range(0, 20, 0.1) var light_energy: float = 6.0
 
-@onready var _mesh: MeshInstance3D = $Sphere
 @onready var _light: OmniLight3D = $Light
 
 var _age: float = 0.0
-var _material: StandardMaterial3D
+var _free_after: float = 0.0
 
 
 func _ready() -> void:
-	_material = StandardMaterial3D.new()
-	_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_material.albedo_color = Color(color, 0.7)
-	_mesh.material_override = _material
+	var factor: float = radius / reference_radius
+	for child: Node in get_children():
+		var burst: VfxBurst = child as VfxBurst
+		if burst == null:
+			continue
+		burst.initial_velocity_min *= factor
+		burst.initial_velocity_max *= factor
+		burst.scale_amount_min *= factor
+		burst.scale_amount_max *= factor
+		burst.emission_sphere_radius *= factor
+		_free_after = maxf(_free_after, burst.lifetime * (1.0 + burst.lifetime_randomness))
+	_free_after = maxf(_free_after, lifetime) + 0.1
 	_light.light_color = color
-	_light.omni_range = radius * 3.0
+	_light.omni_range = maxf(radius * 3.0, 3.0)
 
 
 func _process(delta: float) -> void:
 	_age += delta
 	var t: float = clampf(_age / lifetime, 0.0, 1.0)
-	_mesh.scale = Vector3.ONE * radius * (0.4 + 0.6 * t)
-	_material.albedo_color.a = 0.7 * (1.0 - t)
-	_light.light_energy = 4.0 * (1.0 - t)
-	if _age >= lifetime:
+	_light.light_energy = light_energy * (1.0 - t)
+	if _age >= _free_after:
 		queue_free()

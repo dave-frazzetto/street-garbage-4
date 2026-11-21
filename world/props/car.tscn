@@ -4,17 +4,7 @@
 [ext_resource type="Script" path="res://world/props/destructible.gd" id="2_destructible"]
 [ext_resource type="Script" path="res://world/props/fit_model.gd" id="fit_script"]
 [ext_resource type="PackedScene" path="res://art/models/props/car/car.glb" id="model_glb"]
-
-[sub_resource type="SphereMesh" id="SphereMesh_flame"]
-radius = 0.5
-height = 0.8
-radial_segments = 10
-rings = 6
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flame"]
-shading_mode = 0
-albedo_color = Color(1, 0.45, 0.1, 0.85)
-transparency = 1
+[ext_resource type="PackedScene" path="res://world/effects/flame_effect.tscn" id="flame_fx"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_car"]
 size = Vector3(1.9, 1.4, 4.4)
@@ -77,11 +67,8 @@ explosion_damage = 90.0
 [node name="Burning" type="Node3D" parent="."]
 visible = false
 
-[node name="Flame" type="MeshInstance3D" parent="Burning"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -1.4)
-cast_shadow = 0
-mesh = SubResource("SphereMesh_flame")
-surface_material_override/0 = SubResource("StandardMaterial3D_flame")
+[node name="Flame" parent="Burning" instance=ExtResource("flame_fx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, -1.4)
 
 [node name="FlameLight" type="OmniLight3D" parent="Burning"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -1.4)
