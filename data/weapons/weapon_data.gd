@@ -9,8 +9,6 @@ extends Resource
 @export_range(1, 20) var projectiles: int = 1
 ## Total cone in degrees across which projectiles are spread, plus random jitter.
 @export_range(0, 90) var spread_degrees: float = 4.0
-## Metres per second.
-@export_range(5, 100) var bullet_speed: float = 24.0
 ## Distance in metres a bullet travels before vanishing.
 @export_range(1, 60, 0.5) var range_meters: float = 13.0
 ## Sound played on every shot.
@@ -22,9 +20,7 @@ extends Resource
 ## Shift of the held model in the hand, in metres (hand space). Tune against the player preview.
 @export var held_offset: Vector3 = Vector3.ZERO
 @export var bullet_color: Color = Color(1.0, 0.6, 0.25)
-## Beam thickness in metres.
+## Thickness of the line of light in metres.
 @export_range(0.02, 0.5, 0.01) var bullet_radius: float = 0.08
-## Length in metres of the visible beam trailing behind the bullet (it grows from the muzzle up to this).
-@export_range(0.5, 20, 0.1) var beam_length: float = 4.0
-## Seconds the beam stays visible, fading out, after the bullet hits something or runs out of range.
-@export_range(0.02, 1.0, 0.01) var beam_fade_seconds: float = 0.18
+## Seconds the line of light stays visible, fading out, after the shot.
+@export_range(0.02, 1.0, 0.01) var beam_fade_seconds: float = 0.12

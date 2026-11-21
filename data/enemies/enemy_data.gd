@@ -12,6 +12,8 @@ extends Resource
 @export_range(0.1, 5, 0.05) var attack_interval: float = 0.8
 ## Fraction of incoming damage ignored (armour).
 @export_range(0, 0.95, 0.01) var armour: float = 0.0
+## Fraction of the hit stagger ignored (1 = never staggers). Bosses shrug hits off more.
+@export_range(0, 1, 0.01) var stagger_resistance: float = 0.0
 @export_range(0, 100) var xp: float = 1.0
 ## Body radius in metres (collision). Keep it at 0.33 x size_scale so hit boxes match the visible body.
 @export_range(0.1, 1.5, 0.01) var radius: float = 0.33

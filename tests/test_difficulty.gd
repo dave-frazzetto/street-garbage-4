@@ -24,7 +24,7 @@ func test_ramp_node_free() -> void:
 	check(c.batch_at(100.0) > c.batch_at(0.0), "batch ramps up")
 	check(c.interval_at(100.0) < c.interval_at(0.0), "interval shrinks")
 	check(c.health_multiplier(100.0) > c.health_multiplier(0.0), "health ramps up")
-	check(DIRECTOR_CONFIG.max_alive_at(0.0) > 30 and DIRECTOR_CONFIG.max_alive_at(DIRECTOR_CONFIG.ramp_seconds) > 140, "busier than before")
+	check(DIRECTOR_CONFIG.max_alive_at(0.0) >= 20 and DIRECTOR_CONFIG.max_alive_at(DIRECTOR_CONFIG.ramp_seconds) <= 100, "fewer zombies than before, but still a crowd")
 
 
 func test_boss_spawn_table() -> void:

@@ -97,7 +97,7 @@ func _physics_process(delta: float) -> void:
 	_invulnerable = maxf(0.0, _invulnerable - delta)
 	_hit_flash = maxf(0.0, _hit_flash - delta)
 	var move: Vector3 = input.get_move_vector()
-	var moving: bool = move.length() > 0.1
+	var moving: bool = move.length() > 0.1 and not (input.is_firing() and stats.get_value(PlayerStats.Stat.FIRING_MOVE_SPEED) <= 0.0)
 	if sprinting and not stamina.update(delta, moving):
 		_set_sprinting(false)
 	elif not sprinting:

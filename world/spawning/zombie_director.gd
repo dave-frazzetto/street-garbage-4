@@ -15,6 +15,8 @@ var bounds: Rect2 = Rect2(0, 0, 100, 100)
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Callable() -> float giving run time elapsed (drives the ramp).
 var elapsed_provider: Callable
+## Scales the config's max alive count (the graphics profile lowers it on phones).
+var population_scale: float = 1.0
 var active: bool = false
 var _timer: float = 0.0
 var _burst_pending: bool = false
@@ -43,7 +45,7 @@ func _physics_process(delta: float) -> void:
 	_alive.assign(_alive.filter(func(z: Variant) -> bool: return is_instance_valid(z) and not z.is_dead))
 	_cull_far()
 	var elapsed: float = _elapsed()
-	var max_alive: int = config.max_alive_at(elapsed)
+	var max_alive: int = maxi(1, roundi(config.max_alive_at(elapsed) * population_scale))
 	if _burst_pending:
 		_burst_pending = false
 		for i: int in config.initial_burst:

@@ -143,6 +143,7 @@ func player_start_position() -> Vector3:
 ## Call down: apply a rendering budget (shadows, glow, fog, how many static lights stay on).
 func apply_graphics(profile: GraphicsProfile) -> void:
 	_graphics = profile
+	director.population_scale = profile.zombie_population_scale
 	var env_node: WorldEnvironment = get_node_or_null("WorldEnvironment") as WorldEnvironment
 	if env_node != null and env_node.environment != null:
 		env_node.environment = env_node.environment.duplicate() as Environment

@@ -1128,12 +1128,12 @@ transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 76.00, 0
 [node name="HelicopterCrash" parent="Hordes" instance=ExtResource("11_horde")]
 transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 60.00, 0.00, 60.00)
 enemies = Array[ExtResource("18_enemydata")]([ExtResource("16_walker"), ExtResource("16_walker"), ExtResource("16_walker"), ExtResource("17_armoured")])
-count = 40
+count = 18
 scatter_radius = 6.5
 [node name="QuarantineGuards" parent="Hordes" instance=ExtResource("11_horde")]
 transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 98.00, 0.00, 25.00)
 enemies = Array[ExtResource("18_enemydata")]([ExtResource("16_walker"), ExtResource("17_armoured")])
-count = 18
+count = 8
 scatter_radius = 4.5
 show_wreck = false
 [node name="ExtractionZone" parent="." instance=ExtResource("12_extract")]

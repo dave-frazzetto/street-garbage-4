@@ -8,10 +8,9 @@
 [resource]
 script = ExtResource("1_e2c1g")
 display_name = "Micro SMG"
-shots_per_second = 11.0
-damage = 6.0
+shots_per_second = 6.0
+damage = 13.0
 spread_degrees = 12.0
-bullet_speed = 25.0
 range_meters = 11.5
 bullet_color = Color(1, 0.75, 0.3, 1)
 bullet_radius = 0.07

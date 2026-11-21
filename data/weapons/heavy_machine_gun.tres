@@ -8,10 +8,9 @@
 [resource]
 script = ExtResource("1_dan6i")
 display_name = "Heavy Machine Gun"
-shots_per_second = 9.0
-damage = 15.0
+shots_per_second = 5.0
+damage = 32.0
 spread_degrees = 7.0
-bullet_speed = 28.0
 range_meters = 18.0
 bullet_color = Color(1, 0.8, 0.4, 1)
 bullet_radius = 0.11

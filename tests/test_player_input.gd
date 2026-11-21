@@ -11,6 +11,7 @@ func _ready() -> void:
 	player = (load("res://world/player/player.tscn") as PackedScene).instantiate() as Player
 	player.position = Vector3(20, 0, 20)
 	add_child(player)
+	player.fired.connect(func(_w: WeaponData) -> void: shots_fired += 1)
 	player.setup(PlayerStats.new(), projectiles)
 	run_all()
 
@@ -29,6 +30,10 @@ func _axis(axis: JoyAxis, value: float) -> void:
 	ev.axis = axis
 	ev.axis_value = value
 	Input.parse_input_event(ev)
+
+
+## Shots fired so far (bullets are instant now and free themselves after their line fades).
+var shots_fired: int = 0
 
 
 func _bullets() -> int:
@@ -80,7 +85,7 @@ func test_3_mouse_shoots() -> void:
 	check_eq(player.input.device, PlayerInput.Device.MOUSE_KEYBOARD, "mouse device")
 	check(player.input.is_firing(), "LMB fires")
 	await wait_frames(30)
-	check(_bullets() > 0, "bullets spawned (%d)" % _bullets())
+	check(shots_fired > 0, "shots fired (%d)" % shots_fired)
 	ev = ev.duplicate() as InputEventMouseButton
 	ev.pressed = false
 	Input.parse_input_event(ev)
@@ -102,7 +107,7 @@ func test_4_gamepad_moves_and_shoots() -> void:
 	await wait_frames(30)
 	check(player.input.is_firing(), "right stick push fires")
 	check(player.input.get_aim_direction().dot(player.input.screen_to_world(Vector2.DOWN)) > 0.9, "right stick aims screen-down")
-	check(_bullets() > 0, "gamepad bullets spawned")
+	check(shots_fired > 1, "gamepad shots fired")
 	_axis(JOY_AXIS_RIGHT_Y, 0.0)
 	await wait_frames(2)
 	check(not player.input.is_firing(), "stick release stops")
@@ -139,6 +144,9 @@ func test_6_bullets_hit_zombies_point_blank_and_at_range() -> void:
 	player.weapon._fire(dir)
 	await wait_frames(10)
 	check(not is_instance_valid(near) or near.health < near_hp, "point-blank zombie hit (%s)" % (str(near.health) if is_instance_valid(near) else "dead"))
+	# Tougher walkers survive the first shot and would sit in the line of fire (their hurtbox is wide), so clear it.
+	if is_instance_valid(near):
+		near.free()
 	var far_hp: float = far.health
 	var far_dir: Vector3 = (far.global_position - player.weapon.global_position)
 	far_dir.y = 0.0
