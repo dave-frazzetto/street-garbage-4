@@ -15,7 +15,7 @@ var _live: Array[Node3D] = []
 func spawn(scene: PackedScene, parent: Node3D, at: Vector3, dir: Vector3 = Vector3.ZERO) -> Node3D:
 	if scene == null:
 		return null
-	_live = _live.filter(func(n: Node3D) -> bool: return is_instance_valid(n))
+	_live.assign(_live.filter(func(n: Variant) -> bool: return is_instance_valid(n)))
 	if _live.size() >= max_live:
 		if not replace_oldest:
 			return null
@@ -30,5 +30,5 @@ func spawn(scene: PackedScene, parent: Node3D, at: Vector3, dir: Vector3 = Vecto
 
 
 func live_count() -> int:
-	_live = _live.filter(func(n: Node3D) -> bool: return is_instance_valid(n))
+	_live.assign(_live.filter(func(n: Variant) -> bool: return is_instance_valid(n)))
 	return _live.size()
