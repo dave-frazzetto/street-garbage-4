@@ -40,7 +40,7 @@ func test_1_title_then_start() -> void:
 	for node: Node in flow.level.get_node("Hordes").get_children():
 		if node is HordeSpawner:
 			horde += (node as HordeSpawner).remaining()
-	check(horde >= 50, "hordes planned (%d, lazily instanced)" % horde)
+	check(horde >= 20, "hordes planned (%d, lazily instanced)" % horde)
 
 
 func test_2_time_and_director() -> void:

@@ -7,7 +7,8 @@
 
 [resource]
 script = ExtResource("1_ihp4e")
-shots_per_second = 3.2
+shots_per_second = 1.6
+damage = 28.0
 fire_sound = ExtResource("9_fire")
 held_model = ExtResource("10_held")
 held_length = 0.34

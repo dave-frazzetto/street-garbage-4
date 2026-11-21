@@ -107,6 +107,7 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 21 | 2026-11-21 | [procedural-street-ground-fences-and-skyline-backdrop](docs/adr/procedural-street-ground-fences-and-skyline-backdrop.md) | Procedural street ground, fences and skyline backdrop |
 | 22 | 2026-11-21 | [cpuparticles3d-effects-with-capped-effect-spawner](docs/adr/cpuparticles3d-effects-with-capped-effect-spawner.md) | CPUParticles3D effects with capped effect spawner |
 | 23 | 2026-11-21 | [real-cc0-audio-samples-with-synthesised-layers](docs/adr/real-cc0-audio-samples-with-synthesised-layers.md) | Real CC0 audio samples with synthesised layers (refines 12) |
+| 24 | 2026-11-21 | [survival-style-combat-rooted-shooting-hitscan-line-tougher-zombies](docs/adr/survival-style-combat-rooted-shooting-hitscan-line-tougher-zombies.md) | Survival-style combat: rooted shooting, hitscan line, tougher zombies |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),

@@ -40,9 +40,9 @@ func _shoot(from: Vector3, dir: Vector3, range_m: float = 12.0) -> Bullet:
 
 func test_1_firing_speed_stat() -> void:
 	var cfg: PlayerConfig = PlayerConfig.new()
-	check_eq(cfg.firing_move_multiplier, 0.6, "default firing multiplier")
+	check_eq(cfg.firing_move_multiplier, 0.0, "default firing multiplier")
 	var stats: PlayerStats = PlayerStats.new(cfg)
-	check_eq(stats.get_value(PlayerStats.Stat.FIRING_MOVE_SPEED), 0.6, "stat carries multiplier")
+	check_eq(stats.get_value(PlayerStats.Stat.FIRING_MOVE_SPEED), 0.0, "stat carries multiplier")
 
 
 func test_2_player_moves_slower_while_firing() -> void:
@@ -57,11 +57,12 @@ func test_2_player_moves_slower_while_firing() -> void:
 	Input.action_press("shoot")
 	await wait_frames(10)
 	var firing: float = Vector2(p.velocity.x, p.velocity.z).length()
+	var was_firing: bool = p.input.is_firing()
 	Input.action_release("shoot")
 	Input.action_release("move_right")
 	check(walk > 4.0, "walks at normal speed (%.2f)" % walk)
-	check(p.input.is_firing() or firing > 0.0, "firing state read")
-	check_eq(snappedf(firing / walk, 0.01), 0.6, "firing speed ratio")
+	check(was_firing, "firing state read")
+	check_eq(snappedf(firing, 0.01), 0.0, "cannot walk while shooting (speed %.2f)" % firing)
 	p.queue_free()
 	for b: Node in projectiles.get_children():
 		b.queue_free()
@@ -101,12 +102,50 @@ func test_5_wall_blocks_and_beam_fades() -> void:
 	var z: Zombie = _spawn_zombie(Vector3(103, 0, 0))  # behind the wall at x=100
 	await wait_frames(3)
 	var b: Bullet = _shoot(Vector3(95, 1.0, 0), Vector3.RIGHT, 20.0)
-	await wait_frames(20)
+	await wait_frames(3)
 	check_eq(z.health, z.data.max_health, "wall blocks bullet")
 	check(b.global_position.x < 100.0, "bullet stopped at wall (x=%.2f)" % b.global_position.x)
-	check(is_instance_valid(b) and b._spent, "bullet spent at wall")
+	check(is_instance_valid(b) and b._segments.size() == 1, "one static line of light")
+	check(b._segments[0][1].x < 100.0 and b._segments[0][1].x > 99.0, "line ends at the wall (x=%.2f)" % b._segments[0][1].x)
 	var beam: MeshInstance3D = b.get_node("Beam") as MeshInstance3D
-	check(beam.visible, "beam still visible just after impact")
+	check(beam.visible, "line still visible just after impact")
+	check_eq(beam.global_position.x, (b._segments[0][0].x + b._segments[0][1].x) * 0.5, "line spans muzzle to wall (centre)")
 	await wait_seconds(pistol.beam_fade_seconds + 0.3)
 	check(not is_instance_valid(b), "beam faded and bullet freed")
 	z.queue_free()
+
+
+func test_6_open_air_line_spans_full_range() -> void:
+	var b: Bullet = _shoot(Vector3(0, 1.0, 40), Vector3.RIGHT, 12.0)
+	await wait_frames(3)
+	check(is_instance_valid(b) and b._segments.size() == 1, "one segment in open air")
+	check_eq(snappedf(b._segments[0][0].distance_to(b._segments[0][1]), 0.01), 12.0, "line is as long as the weapon range")
+	var p0: Vector3 = b._segments[0][1]
+	await wait_frames(3)
+	check_eq(b._segments[0][1], p0, "line does not move")
+	b.queue_free()
+
+
+func test_7_hit_is_instant_and_zombie_flinches() -> void:
+	var z: Zombie = _spawn_zombie(Vector3(60, 0, 0), load("res://data/enemies/walker.tres") as EnemyData)
+	await wait_frames(3)
+	var hp: float = z.health
+	_shoot(Vector3(56, 1.0, 0), Vector3.RIGHT, 12.0)
+	await wait_frames(2)
+	check(z.health < hp, "damage lands on the first frames, no travel time")
+	var model: ZombieModel = z.get_node("Visual/Model") as ZombieModel
+	check(z._stun > 0.0, "zombie staggers after the hit")
+	check(model._hit_left > 0.0, "hit reaction plays")
+	var tilted: bool = not model.basis.is_equal_approx(model._rest.basis)
+	check(tilted, "model tilted by the hit")
+	await wait_seconds(model.hit_recover_seconds + 0.2)
+	check(model.basis.is_equal_approx(model._rest.basis), "model returns to rest")
+	check_eq(z._stun, 0.0, "stagger ends")
+	z.queue_free()
+
+
+func test_8_weapons_fire_slower_but_hit_harder() -> void:
+	check(pistol.shots_per_second <= 2.0, "pistol fire rate %.1f/s" % pistol.shots_per_second)
+	var walker: EnemyData = load("res://data/enemies/walker.tres") as EnemyData
+	var shots: int = ceili(walker.max_health / pistol.damage)
+	check(shots >= 2 and shots <= 4, "walker takes %d pistol shots" % shots)

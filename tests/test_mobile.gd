@@ -40,6 +40,8 @@ func test_2_mobile_graphics_applied() -> void:
 	var env: Environment = (flow.level.get_node("WorldEnvironment") as WorldEnvironment).environment
 	check(not env.glow_enabled and not env.fog_enabled, "no glow or fog")
 	check_eq(flow.get_viewport().scaling_3d_scale, p.render_scale, "3D render scale")
+	check_eq(flow.level.director.population_scale, p.zombie_population_scale, "zombie population scaled by profile")
+	check(p.zombie_population_scale < 1.0, "phones get fewer zombies")
 
 
 func test_3_light_budget_follows_player() -> void:

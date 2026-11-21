@@ -14,7 +14,9 @@ const CULL_CHECK_SECONDS: float = 0.25
 @export var data: EnemyData
 ## Zombies notice the target within this distance in metres (directors set it very high; hordes keep it low).
 @export_range(0, 100000) var aggro_radius: float = 100000.0
-@export_range(0, 2, 0.05) var knockback_strength: float = 0.25
+@export_range(0, 2, 0.05) var knockback_strength: float = 0.6
+## Seconds a zombie staggers (stops chasing and attacking) after a hit, before EnemyData.stagger_resistance.
+@export_range(0, 1, 0.01) var hit_stun_seconds: float = 0.3
 @export var hit_color: Color = Color(1, 1, 1)
 ## Seconds a corpse stays on the ground after its death animation ends.
 @export_range(0, 30, 0.5) var corpse_linger: float = 2.0
@@ -44,6 +46,7 @@ var _flash: float = 0.0
 var _wander: Vector3 = Vector3.ZERO
 var _wander_time: float = 0.0
 var _knockback: Vector3 = Vector3.ZERO
+var _stun: float = 0.0
 var _max_health: float
 var _animate: bool = true
 var _cull_timer: float = 0.0
@@ -98,6 +101,8 @@ func take_damage(amount: float, direction: Vector3 = Vector3.ZERO) -> float:
 	_flash = 0.08
 	_model.flash(hit_color)
 	_aware = true
+	_stun = hit_stun_seconds * (1.0 - data.stagger_resistance)
+	_model.play_hit(_visual.global_transform.basis.inverse() * direction)
 	_knockback += direction * amount * knockback_strength * 0.5
 	_bar.visible = true
 	_bar_fill.scale.x = maxf(0.001, health / _max_health)
@@ -113,6 +118,7 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)
+	_stun = maxf(0.0, _stun - delta)
 	_cull_timer -= delta
 	if _cull_timer <= 0.0:
 		_cull_timer = CULL_CHECK_SECONDS
@@ -128,13 +134,13 @@ func _physics_process(delta: float) -> void:
 		var dist: float = to_target.length()
 		if not _aware and dist <= aggro_radius:
 			_aware = true
-		if _aware:
+		if _aware and _stun <= 0.0:
 			dir = to_target / maxf(dist, 0.001)
 			if dist <= data.radius + target_radius + 0.15 and _attack_cooldown <= 0.0:
 				_attack_cooldown = data.attack_interval
 				_model.play_attack()
 				attacked.emit(data.contact_damage)
-	if not _aware:
+	if not _aware and _stun <= 0.0:
 		_wander_time -= delta
 		if _wander_time <= 0.0:
 			_wander_time = randf_range(1.0, 3.0)

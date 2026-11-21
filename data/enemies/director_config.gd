@@ -8,24 +8,24 @@ extends Resource
 ## Seconds of run time until full ramp.
 @export_range(1, 3600) var ramp_seconds: float = 600.0
 ## Seconds between spawn waves at the start and at full ramp.
-@export_range(0.05, 10, 0.05) var interval_start: float = 0.9
-@export_range(0.05, 10, 0.05) var interval_end: float = 0.25
+@export_range(0.05, 10, 0.05) var interval_start: float = 1.3
+@export_range(0.05, 10, 0.05) var interval_end: float = 0.6
 ## Zombies per wave at the start and at full ramp.
-@export_range(1, 30) var batch_start: int = 4
-@export_range(1, 30) var batch_end: int = 9
+@export_range(1, 30) var batch_start: int = 2
+@export_range(1, 30) var batch_end: int = 4
 ## Max ambient zombies alive at the start and at full ramp.
-@export_range(1, 800) var max_alive_start: int = 70
-@export_range(1, 800) var max_alive_end: int = 260
+@export_range(1, 800) var max_alive_start: int = 24
+@export_range(1, 800) var max_alive_end: int = 70
 ## Zombies spawned around the player on the very first tick, so the run does not start empty.
-@export_range(0, 200) var initial_burst: int = 30
+@export_range(0, 200) var initial_burst: int = 10
 
 @export_group("Zombie strength ramp")
 ## Chase speed multiplier at the start and at full ramp (applied to each zombie when it spawns).
 @export_range(0.5, 3, 0.05) var speed_multiplier_start: float = 1.0
-@export_range(0.5, 3, 0.05) var speed_multiplier_end: float = 1.6
+@export_range(0.5, 3, 0.05) var speed_multiplier_end: float = 1.5
 ## Health multiplier at the start and at full ramp.
 @export_range(0.5, 5, 0.05) var health_multiplier_start: float = 1.0
-@export_range(0.5, 5, 0.05) var health_multiplier_end: float = 1.5
+@export_range(0.5, 5, 0.05) var health_multiplier_end: float = 1.8
 
 @export_group("Distances")
 ## Spawn distance from the player in metres (just off-screen).

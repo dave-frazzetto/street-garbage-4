@@ -5,10 +5,11 @@
 [resource]
 script = ExtResource("1_boss")
 display_name = "Boss"
-max_health = 220.0
+max_health = 700.0
 speed = 1.5
-contact_damage = 25.0
+contact_damage = 35.0
 armour = 0.15
+stagger_resistance = 0.6
 xp = 15.0
 radius = 0.396
 size_scale = 1.2

@@ -16,3 +16,5 @@ extends Resource
 @export_range(0.05, 2.0, 0.05) var light_refresh_seconds: float = 0.3
 ## Full street detail (cracks, patches, puddles, manholes). Off keeps just grain, markings and slabs.
 @export var detailed_ground: bool = true
+## Multiplier on how many ambient zombies may be alive at once (phones: fewer zombies, fewer physics and animation updates).
+@export_range(0.1, 1.0, 0.05) var zombie_population_scale: float = 1.0
