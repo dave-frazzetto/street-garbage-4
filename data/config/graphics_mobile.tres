@@ -10,3 +10,4 @@ glow = false
 fog = false
 render_scale = 0.6
 max_static_lights = 8
+detailed_ground = false
