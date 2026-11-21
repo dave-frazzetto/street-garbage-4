@@ -62,3 +62,27 @@ Standing process for every change:
 
 The user has given standing approval for this workflow to be performed autonomously,
 without re-asking each time.
+
+### Parallel sessions: one worktree per session
+
+Several Claude sessions can work on this repository at the same time. They must never share a working tree: a shared
+tree means one checked-out branch, one set of uncommitted files and one Godot import cache for everybody.
+
+1. **Start in a worktree.** Before the first edit, check whether the session is in a linked worktree:
+   `git rev-parse --git-dir` differs from `git rev-parse --git-common-dir` there, and equals it in the main checkout.
+   If this session is in the main checkout, first create a worktree and work only inside it: use the `EnterWorktree`
+   tool, or `git fetch origin && git worktree add ../street-garbage-4-<topic> -b <branch> origin/main` and `cd` into it.
+   Read-only questions do not need one.
+2. **One worktree, one branch, one slice.** Branches are `slice-N-<name>` (or `fix-<name>` for a fix).
+3. **Never touch what is not yours.** Do not switch branches, reset, clean, stash or `git checkout --` in the main checkout or
+   in another session's worktree. Never discard uncommitted changes in files this session did not write: they belong to the
+   owner or to another session. Revert only files you can show you changed. Godot rewrites `.tres`/`.tscn` files with
+   `uid=` entries when it imports, so run it, and look at `git status`, only inside your own worktree.
+4. **Local-only files live in the main checkout.** `tools/arkouda/arkouda.exe`, `tools/level_gen/*.awk`, `art/concept art/`
+   and the `.godot` cache are gitignored, so a new worktree does not have them. Call the tools by absolute path from the
+   worktree (for example `D:/git_repos/street-garbage-4/tools/arkouda/arkouda.exe`). Edit a shared local file such as the
+   level generator in place only if no other session is using it, and say so in the hand-over.
+5. **Import once per worktree.** A new worktree has no import cache: run `godot --headless --path . --import` before the first
+   test or export, and run tests and builds from inside the worktree.
+6. **Finish cleanly.** Merge through a pull request as above, then `git worktree remove ../street-garbage-4-<topic>` and
+   delete the branch. Base new worktrees on `origin/main` after a fetch, since the main checkout's `main` can lag.
