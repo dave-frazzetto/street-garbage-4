@@ -98,6 +98,7 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 12 | 2026-11-20 | [procedural-sound-effects-with-sfxr-style-generator](docs/adr/procedural-sound-effects-with-sfxr-style-generator.md) | Procedural sound effects with sfxr-style generator |
 | 13 | 2026-11-20 | [looping-background-music-from-the-same-synth](docs/adr/looping-background-music-from-the-same-synth.md) | Looping background music from the same synth |
 | 14 | 2026-11-20 | [mobile-graphics-profile-and-on-screen-errors](docs/adr/mobile-graphics-profile-and-on-screen-errors.md) | Mobile graphics profile and on-screen errors |
+| 15 | 2026-11-21 | [cyberpunk-world-and-female-protagonist](docs/adr/cyberpunk-world-and-female-protagonist.md) | Cyberpunk world and female protagonist |
 $row
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
