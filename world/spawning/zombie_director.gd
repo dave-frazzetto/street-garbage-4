@@ -1,6 +1,7 @@
 class_name ZombieDirector
 extends Node
-## Spawns ambient zombies just off-screen around the target, with pressure that ramps up over the run.
+## Spawns ambient zombies just off-screen around the target, with pressure (count, speed, health, bosses) that ramps up over the run.
+## Ambient zombies far behind the player are freed and replaced near it.
 
 signal zombie_spawned(zombie: Zombie)
 
@@ -16,6 +17,7 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var elapsed_provider: Callable
 var active: bool = false
 var _timer: float = 0.0
+var _burst_pending: bool = false
 var _alive: Array[Zombie] = []
 
 
@@ -27,6 +29,7 @@ func start(chase_target: Node3D, zombie_container: Node3D, level_bounds: Rect2, 
 	elapsed_provider = elapsed
 	active = true
 	_timer = 1.0
+	_burst_pending = true
 
 
 func alive_count() -> int:
@@ -36,23 +39,42 @@ func alive_count() -> int:
 func _physics_process(delta: float) -> void:
 	if not active or target == null or not is_instance_valid(target):
 		return
-	_alive = _alive.filter(func(z: Zombie) -> bool: return is_instance_valid(z) and not z.is_dead)
-	_recycle_far()
-	var t: float = config.ramp(_elapsed())
+	# Untyped lambda parameter: freed zombies cannot be converted to a typed argument.
+	_alive.assign(_alive.filter(func(z: Variant) -> bool: return is_instance_valid(z) and not z.is_dead))
+	_cull_far()
+	var elapsed: float = _elapsed()
+	var max_alive: int = config.max_alive_at(elapsed)
+	if _burst_pending:
+		_burst_pending = false
+		for i: int in config.initial_burst:
+			if _alive.size() >= max_alive:
+				break
+			_spawn_one()
 	_timer -= delta
 	if _timer > 0.0:
 		return
-	_timer = lerpf(config.interval_start, config.interval_end, t)
-	var max_alive: int = roundi(lerpf(config.max_alive_start, config.max_alive_end, t))
-	var batch: int = roundi(lerpf(config.batch_start, config.batch_end, t))
-	for i: int in batch:
+	_timer = config.interval_at(elapsed)
+	for i: int in config.batch_at(elapsed):
 		if _alive.size() >= max_alive:
 			break
 		_spawn_one()
 
 
+## Number of living ambient zombies of this type.
+func alive_of(enemy: EnemyData) -> int:
+	var n: int = 0
+	for z: Zombie in _alive:
+		if z.data == enemy:
+			n += 1
+	return n
+
+
 func _spawn_one() -> void:
-	var data: EnemyData = config.pick(_elapsed(), rng)
+	var elapsed: float = _elapsed()
+	var counts: Dictionary = {}
+	for z: Zombie in _alive:
+		counts[z.data] = int(counts.get(z.data, 0)) + 1
+	var data: EnemyData = config.pick(elapsed, rng, counts)
 	if data == null:
 		return
 	var pos: Vector3 = Vector3.ZERO
@@ -68,23 +90,25 @@ func _spawn_one() -> void:
 		return
 	var z: Zombie = zombie_scene.instantiate() as Zombie
 	z.setup(data, target, 100000.0)
+	z.speed_multiplier = config.speed_multiplier(elapsed)
+	z.health_multiplier = config.health_multiplier(elapsed)
 	z.position = pos
 	container.add_child(z)
 	_alive.append(z)
 	zombie_spawned.emit(z)
 
 
-func _recycle_far() -> void:
+## Frees ambient zombies that fell far behind; the spawner brings fresh ones in near the player, so pressure stays constant.
+func _cull_far() -> void:
+	var limit_sq: float = config.despawn_distance * config.despawn_distance
+	var origin: Vector3 = target.global_position
+	var kept: Array[Zombie] = []
 	for z: Zombie in _alive:
-		if z.global_position.distance_to(target.global_position) > config.despawn_distance:
-			# Move it back near the player rather than deleting it, so pressure stays constant.
-			var away: Vector3 = z.global_position - target.global_position
-			away.y = 0.0
-			var dir: Vector3 = away.normalized().rotated(Vector3.UP, rng.randf_range(-1.5, 1.5))
-			var pos: Vector3 = target.global_position + dir * config.spawn_distance_max
-			pos.y = 0.0
-			if _in_bounds(pos, 0.0) and _is_free(pos, z.data.radius):
-				z.global_position = pos
+		if Vector2(z.global_position.x - origin.x, z.global_position.z - origin.z).length_squared() > limit_sq:
+			z.queue_free()
+		else:
+			kept.append(z)
+	_alive = kept
 
 
 func _in_bounds(pos: Vector3, margin: float) -> bool:

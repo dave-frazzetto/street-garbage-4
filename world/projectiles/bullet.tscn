@@ -2,15 +2,19 @@
 
 [ext_resource type="Script" path="res://world/projectiles/bullet.gd" id="1_bullet"]
 [ext_resource type="PackedScene" path="res://world/effects/explosion_effect.tscn" id="2_fx"]
+[ext_resource type="PackedScene" path="res://world/effects/impact_effect.tscn" id="3_impact"]
+[ext_resource type="PackedScene" path="res://world/effects/zombie_impact_effect.tscn" id="4_zimpact"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_tracer"]
-size = Vector3(0.08, 0.08, 0.7)
+[sub_resource type="BoxMesh" id="BoxMesh_beam"]
+size = Vector3(1, 1, 1)
 
 [node name="Bullet" type="Node3D"]
 script = ExtResource("1_bullet")
 explosion_scene = ExtResource("2_fx")
+impact_scene = ExtResource("3_impact")
+zombie_impact_scene = ExtResource("4_zimpact")
 
-[node name="Tracer" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.3)
+[node name="Beam" type="MeshInstance3D" parent="."]
+top_level = true
 cast_shadow = 0
-mesh = SubResource("BoxMesh_tracer")
+mesh = SubResource("BoxMesh_beam")

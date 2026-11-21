@@ -30,6 +30,8 @@
 [ext_resource type="PackedScene" path="res://world/props/barrier.tscn" id="27_barrier"]
 [ext_resource type="PackedScene" path="res://world/props/dumpster.tscn" id="28_dumpster"]
 [ext_resource type="PackedScene" path="res://world/props/traffic_light.tscn" id="29_traffic"]
+[ext_resource type="PackedScene" path="res://world/props/fence.tscn" id="30_fence"]
+[ext_resource type="PackedScene" path="res://world/props/city_backdrop.tscn" id="31_backdrop"]
 
 [sub_resource type="Environment" id="Environment_night"]
 background_mode = 1
@@ -500,30 +502,6 @@ generated_facades = true
 transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 5.00, 0.00, 110.00)
 size = Vector3(1.00, 3.00, 7.00)
 
-[node name="WallNorth" parent="Buildings" instance=ExtResource("10_building")]
-transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 60.00, 0.00, -1.00)
-size = Vector3(124.00, 6.00, 2.00)
-color = Color(0.08, 0.08, 0.1, 1)
-roof_color = Color(0.06, 0.06, 0.08, 1)
-
-[node name="WallSouth" parent="Buildings" instance=ExtResource("10_building")]
-transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 60.00, 0.00, 121.00)
-size = Vector3(124.00, 6.00, 2.00)
-color = Color(0.08, 0.08, 0.1, 1)
-roof_color = Color(0.06, 0.06, 0.08, 1)
-
-[node name="WallWest" parent="Buildings" instance=ExtResource("10_building")]
-transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, -1.00, 0.00, 60.00)
-size = Vector3(2.00, 6.00, 124.00)
-color = Color(0.08, 0.08, 0.1, 1)
-roof_color = Color(0.06, 0.06, 0.08, 1)
-
-[node name="WallEast" parent="Buildings" instance=ExtResource("10_building")]
-transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 121.00, 0.00, 60.00)
-size = Vector3(2.00, 6.00, 124.00)
-color = Color(0.08, 0.08, 0.1, 1)
-roof_color = Color(0.06, 0.06, 0.08, 1)
-
 [node name="CourtFenceN" parent="Buildings" instance=ExtResource("10_building")]
 transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 60.00, 0.00, 52.00)
 size = Vector3(18.00, 0.90, 0.20)
@@ -535,6 +513,26 @@ transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 60.00, 0
 size = Vector3(18.00, 0.90, 0.20)
 color = Color(0.3, 0.32, 0.34, 1)
 roof_color = Color(0.3, 0.32, 0.34, 1)
+
+[node name="Fences" type="Node3D" parent="."]
+
+[node name="FenceNorth" parent="Fences" instance=ExtResource("30_fence")]
+transform = Transform3D(1.0, 0, -0.0, 0, 1, 0, 0.0, 0, 1.0, 60, 0, -0.25)
+length = 121
+
+[node name="FenceSouth" parent="Fences" instance=ExtResource("30_fence")]
+transform = Transform3D(1.0, 0, -0.0, 0, 1, 0, 0.0, 0, 1.0, 60, 0, 120.25)
+length = 121
+
+[node name="FenceWest" parent="Fences" instance=ExtResource("30_fence")]
+transform = Transform3D(0.0, 0, -1.0, 0, 1, 0, 1.0, 0, 0.0, -0.25, 0, 60)
+length = 120
+
+[node name="FenceEast" parent="Fences" instance=ExtResource("30_fence")]
+transform = Transform3D(0.0, 0, -1.0, 0, 1, 0, 1.0, 0, 0.0, 120.25, 0, 60)
+length = 120
+
+[node name="CityBackdrop" parent="." instance=ExtResource("31_backdrop")]
 
 [node name="Props" type="Node3D" parent="."]
 

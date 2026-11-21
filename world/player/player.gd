@@ -105,6 +105,8 @@ func _physics_process(delta: float) -> void:
 	var speed: float = stats.get_value(PlayerStats.Stat.MOVE_SPEED)
 	if sprinting:
 		speed *= 1.0 + stats.get_value(PlayerStats.Stat.SPRINT_BONUS)
+	if input.is_firing():
+		speed *= stats.get_value(PlayerStats.Stat.FIRING_MOVE_SPEED)
 	velocity = move * speed
 	move_and_slide()
 	global_position.y = 0.0

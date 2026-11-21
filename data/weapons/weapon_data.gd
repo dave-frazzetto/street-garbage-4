@@ -22,5 +22,9 @@ extends Resource
 ## Shift of the held model in the hand, in metres (hand space). Tune against the player preview.
 @export var held_offset: Vector3 = Vector3.ZERO
 @export var bullet_color: Color = Color(1.0, 0.6, 0.25)
-## Tracer thickness in metres.
+## Beam thickness in metres.
 @export_range(0.02, 0.5, 0.01) var bullet_radius: float = 0.08
+## Length in metres of the visible beam trailing behind the bullet (it grows from the muzzle up to this).
+@export_range(0.5, 20, 0.1) var beam_length: float = 4.0
+## Seconds the beam stays visible, fading out, after the bullet hits something or runs out of range.
+@export_range(0.02, 1.0, 0.01) var beam_fade_seconds: float = 0.18

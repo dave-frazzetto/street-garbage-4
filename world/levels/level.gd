@@ -88,12 +88,15 @@ func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumbe
 	stats = player_stats
 	rng = random
 	var cfg: RunConfig = run_config if run_config != null else RunConfig.new()
+	Zombie.max_corpses = director.config.max_corpses
 	_spawn_player()
 	_spawn_gears(cfg.gears_required)
 	for node: Node in $Hordes.get_children():
 		var spawner: HordeSpawner = node as HordeSpawner
 		if spawner != null:
 			spawner.zombie_spawned.connect(_on_zombie_spawned)
+			spawner.activation_radius = director.config.horde_activation_radius
+			spawner.deactivation_radius = director.config.horde_deactivation_radius
 			spawner.spawn(player, entities, rng)
 	for node: Node in find_children("Destructible", "", true, false):
 		var prop: Destructible = node as Destructible
@@ -148,6 +151,9 @@ func apply_graphics(profile: GraphicsProfile) -> void:
 	var moon: DirectionalLight3D = get_node_or_null("Moon") as DirectionalLight3D
 	if moon != null:
 		moon.shadow_enabled = profile.shadows
+	var ground: Ground = get_node_or_null("Ground") as Ground
+	if ground != null:
+		ground.set_detail(profile.detailed_ground)
 	_static_lights.clear()
 	for root_name: String in ["Props", "Hordes", "ExtractionZone"]:
 		var root: Node = get_node_or_null(root_name)
