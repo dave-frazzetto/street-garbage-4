@@ -5,19 +5,11 @@ extends CharacterModel
 ## properly and starting or stopping a run blends instead of snapping. Presentation only: the player scene calls
 ## update_motion() every physics frame and never reaches into the model.
 
-## Weapon model held in the hand (one scene per weapon; swap it when the weapon changes).
-@export var weapon_scene: PackedScene:
-	set(value):
-		weapon_scene = value
-		if is_node_ready():
-			_attach_weapon()
 ## Bone of the Meshy skeleton the weapon is attached to.
 @export var hand_bone: StringName = &"RightHand"
-## Weapon placement relative to the hand bone, in metres and degrees (tune in the Inspector against the preview).
-@export var weapon_position: Vector3 = Vector3.ZERO
+## Rotation of every held weapon relative to the hand bone, in degrees. All generated weapons point the same way, so one
+## value fits them all; each weapon's length and offset live in its WeaponData.
 @export var weapon_rotation_degrees: Vector3 = Vector3.ZERO
-## Size in metres of the weapon model's unit size (the generated weapon GLBs are about one unit long).
-@export_range(0.01, 2.0, 0.01) var weapon_scale: float = 0.36
 ## Ground speed in m/s at which the run clip plays at normal speed.
 @export_range(0.5, 12.0, 0.1) var run_reference_speed: float = 3.6
 @export_range(0.5, 4.0, 0.05) var max_playback_scale: float = 2.6
@@ -40,6 +32,7 @@ const _RUN_SPEED: String = "parameters/run_speed/scale"
 
 var _dead: bool = false
 var _weapon_holder: BoneAttachment3D
+var _held: WeaponData
 var _tree: AnimationTree
 var _ground_speed: float = 0.0
 var _fire_hold: float = 0.0
@@ -51,6 +44,12 @@ var _aim_blend: float = 0.0
 func _ready() -> void:
 	super._ready()
 	_build_tree()
+	_attach_weapon()
+
+
+## Shows this weapon's model in the hand (WeaponData.held_model, length and offset). Call when the weapon changes.
+func hold_weapon(weapon: WeaponData) -> void:
+	_held = weapon
 	_attach_weapon()
 
 
@@ -137,16 +136,22 @@ func _attach_weapon() -> void:
 		_weapon_holder.queue_free()
 		_weapon_holder = null
 	var skeleton: Skeleton3D = find_first("Skeleton3D") as Skeleton3D
-	if skeleton == null or weapon_scene == null or skeleton.find_bone(hand_bone) < 0:
+	if skeleton == null or _held == null or _held.held_model == null or skeleton.find_bone(hand_bone) < 0:
 		return
 	_weapon_holder = BoneAttachment3D.new()
 	_weapon_holder.name = "WeaponHolder"
 	_weapon_holder.bone_name = hand_bone
 	skeleton.add_child(_weapon_holder)
-	var weapon: Node3D = weapon_scene.instantiate() as Node3D
+	var weapon: Node3D = _held.held_model.instantiate() as Node3D
 	_weapon_holder.add_child(weapon)
 	# The Meshy skeleton is in centimetres (node scale 0.01), so convert metres into the bone's space.
 	var bone_space: float = maxf(_weapon_holder.global_transform.basis.get_scale().x, 0.0001)
-	weapon.position = weapon_position / bone_space
-	weapon.rotation_degrees = weapon_rotation_degrees
-	weapon.scale = Vector3.ONE * (weapon_scale / bone_space)
+	var box: AABB = FitModel.measure(_held.held_model)
+	var longest: float = maxf(box.size.x, maxf(box.size.y, box.size.z))
+	var unit: float = (_held.held_length / maxf(longest, 0.0001)) / bone_space
+	var turn: Basis = Basis.from_euler(weapon_rotation_degrees * (PI / 180.0))
+	weapon.basis = turn * Basis.from_scale(Vector3.ONE * unit)
+	# Centre the model's bounding box on the hand, then shift by the weapon's offset.
+	weapon.position = _held.held_offset / bone_space - turn * (box.get_center() * unit)
+	for mesh: MeshInstance3D in ModelLook.meshes_of(weapon):
+		ModelLook.lift(mesh, 1.3, 0.12)

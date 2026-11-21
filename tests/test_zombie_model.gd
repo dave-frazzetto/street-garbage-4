@@ -92,14 +92,34 @@ func test_4_death_leaves_a_corpse_then_cleans_up() -> void:
 
 
 func test_5_tint_is_applied_for_variants() -> void:
-	var zombie: Zombie = _spawn("res://data/enemies/armoured.tres")
+	var tinted: EnemyData = (load("res://data/enemies/walker.tres") as EnemyData).duplicate() as EnemyData
+	tinted.tint = Color(0.35, 0.5, 0.75, 0.35)
+	var zombie: Zombie = (load("res://world/enemies/zombie.tscn") as PackedScene).instantiate() as Zombie
+	zombie.data = tinted
+	root.add_child(zombie)
 	await wait_frames(2)
 	var mesh: MeshInstance3D = zombie.find_children("*", "MeshInstance3D", true, false)[0] as MeshInstance3D
 	var overlay: StandardMaterial3D = mesh.material_overlay as StandardMaterial3D
 	check(overlay != null, "overlay material set")
-	check(overlay.albedo_color.a > 0.0, "armoured variant is tinted")
+	check(overlay.albedo_color.a > 0.0, "a variant with a tint is tinted")
 	zombie.take_damage(1.0)
 	check_eq(overlay.albedo_color.r, 1.0, "hit flash is white")
 	await wait_seconds(0.2)
 	check(overlay.albedo_color.a < 0.75, "flash cleared back to tint")
 	zombie.queue_free()
+
+
+func test_6_zombie_types_use_their_own_model() -> void:
+	var walker: Zombie = _spawn("res://data/enemies/walker.tres")
+	var armoured: Zombie = _spawn("res://data/enemies/armoured.tres")
+	await wait_frames(2)
+	var armoured_model: Node = armoured.get_node("Visual/Model")
+	check_eq(armoured_model.scene_file_path, "res://world/enemies/zombie_armoured_model.tscn", "armoured zombie shows its own model")
+	check_eq(walker.get_node("Visual/Model").scene_file_path, "res://world/enemies/zombie_model.tscn", "walker keeps the walker model")
+	check(armoured_model is ZombieModel, "swapped model is a ZombieModel")
+	var player: AnimationPlayer = _player_of(armoured)
+	for clip: StringName in [&"walk", &"run", &"attack", &"die"]:
+		check(player.has_animation(clip), "armoured clip '%s' present" % clip)
+	check_eq(armoured.get_node("Visual").scale, Vector3.ONE, "own-model zombies are not stretched by radius")
+	walker.queue_free()
+	armoured.queue_free()

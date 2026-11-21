@@ -13,9 +13,6 @@ signal clip_finished(clip: StringName)
 ## Self-lit share of the texture, so characters stay readable away from any lamp (0 = none).
 @export_range(0.0, 2.0, 0.05) var glow: float = 0.2
 
-# Lifted copies of the imported materials, one per source material and setting, shared by every character.
-static var _lit_materials: Dictionary = {}
-
 var _player: AnimationPlayer
 var _meshes: Array[MeshInstance3D] = []
 var _overlay: StandardMaterial3D = StandardMaterial3D.new()
@@ -24,13 +21,13 @@ var _tint: Color = Color(1, 1, 1, 0)
 
 func _ready() -> void:
 	_player = _find_player(self)
-	_collect_meshes(self)
+	_meshes = ModelLook.meshes_of(self)
 	_overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_overlay.albedo_color = Color(1, 1, 1, 0)
 	for mesh: MeshInstance3D in _meshes:
 		mesh.material_overlay = _overlay
-		_lift_materials(mesh)
+		ModelLook.lift(mesh, brightness, glow)
 	if _player != null:
 		_install_clips()
 		_player.animation_finished.connect(func(clip: StringName) -> void: clip_finished.emit(clip))
@@ -94,26 +91,6 @@ func _install_clips() -> void:
 			library.add_animation(clip_name, clips[clip_name] as Animation)
 
 
-func _lift_materials(mesh: MeshInstance3D) -> void:
-	if mesh.mesh == null:
-		return
-	for surface: int in mesh.mesh.get_surface_count():
-		var source: StandardMaterial3D = mesh.get_active_material(surface) as StandardMaterial3D
-		if source == null:
-			continue
-		var key: Array = [source, brightness, glow]
-		if not _lit_materials.has(key):
-			var lit: StandardMaterial3D = source.duplicate() as StandardMaterial3D
-			lit.albedo_color = Color(brightness, brightness, brightness, source.albedo_color.a)
-			if glow > 0.0 and source.albedo_texture != null:
-				lit.emission_enabled = true
-				lit.emission_texture = source.albedo_texture
-				lit.emission = Color.WHITE
-				lit.emission_energy_multiplier = glow
-			_lit_materials[key] = lit
-		mesh.set_surface_override_material(surface, _lit_materials[key])
-
-
 func _find_player(node: Node) -> AnimationPlayer:
 	if node is AnimationPlayer:
 		return node as AnimationPlayer
@@ -122,10 +99,3 @@ func _find_player(node: Node) -> AnimationPlayer:
 		if found != null:
 			return found
 	return null
-
-
-func _collect_meshes(node: Node) -> void:
-	if node is MeshInstance3D:
-		_meshes.append(node as MeshInstance3D)
-	for child: Node in node.get_children():
-		_collect_meshes(child)

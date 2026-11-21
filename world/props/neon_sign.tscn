@@ -1,6 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://world/props/street_light.gd" id="1_light"]
+[ext_resource type="Script" path="res://world/props/fit_model.gd" id="fit_script"]
+[ext_resource type="PackedScene" path="res://art/models/props/neon_sign/neon_sign.glb" id="model_glb"]
 
 [node name="NeonSign" type="Node3D"]
 script = ExtResource("1_light")
@@ -10,7 +12,7 @@ light_range = 7.0
 sign_text = "BAKERY"
 
 [node name="Sign" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 1.12)
 pixel_size = 0.018
 double_sided = false
 modulate = Color(1, 0.25, 0.55, 1)
@@ -24,3 +26,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 1.2)
 light_color = Color(1, 0.25, 0.55, 1)
 light_energy = 2.0
 omni_range = 7.0
+
+[node name="Model" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0.55)
+script = ExtResource("fit_script")
+model_scene = ExtResource("model_glb")
+target_height = 1.8

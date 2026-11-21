@@ -17,6 +17,8 @@ extends StaticBody3D
 ## Health fraction below which the car starts burning as a warning.
 @export_range(0, 1, 0.05) var burn_threshold: float = 0.4
 
+## True once the car has exploded.
+var wrecked: bool = false
 var _material: StandardMaterial3D
 
 
@@ -41,6 +43,9 @@ func _refresh() -> void:
 		var mesh: MeshInstance3D = get_node_or_null(part) as MeshInstance3D
 		if mesh != null:
 			mesh.material_override = _material
+	var model: FitModel = get_node_or_null("Model") as FitModel
+	if model != null:
+		model.set_tint(Color(paint, 0.4) if not wrecked else Color(wreck_color, 0.85))
 	var lights: Node3D = get_node_or_null("Lights") as Node3D
 	if lights != null:
 		lights.visible = lights_on
@@ -53,6 +58,10 @@ func _on_damaged(health: float, max_health: float) -> void:
 
 
 func _on_destroyed(_at: Vector3, _radius: float, _damage: float) -> void:
+	wrecked = true
+	var model: FitModel = get_node_or_null("Model") as FitModel
+	if model != null:
+		model.set_tint(Color(wreck_color, 0.85))
 	_material.albedo_color = wreck_color
 	_material.metallic = 0.0
 	_material.roughness = 1.0

@@ -1,25 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://world/pickups/health_pickup.gd" id="1_hp"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_case"]
-size = Vector3(0.45, 0.3, 0.45)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_case"]
-albedo_color = Color(0.95, 0.95, 0.95, 1)
-emission_enabled = true
-emission = Color(0.4, 0.4, 0.4, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_cross_a"]
-size = Vector3(0.1, 0.02, 0.32)
-
-[sub_resource type="BoxMesh" id="BoxMesh_cross_b"]
-size = Vector3(0.32, 0.02, 0.1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cross"]
-albedo_color = Color(0.9, 0.08, 0.12, 1)
-emission_enabled = true
-emission = Color(0.9, 0.08, 0.12, 1)
+[ext_resource type="Script" path="res://world/props/fit_model.gd" id="fit_script"]
+[ext_resource type="PackedScene" path="res://art/models/pickups/health/health.glb" id="model_glb"]
 
 [node name="HealthPickup" type="Node3D"]
 script = ExtResource("1_hp")
@@ -27,16 +10,8 @@ script = ExtResource("1_hp")
 [node name="Visual" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
 
-[node name="Case" type="MeshInstance3D" parent="Visual"]
-mesh = SubResource("BoxMesh_case")
-surface_material_override/0 = SubResource("StandardMaterial3D_case")
-
-[node name="CrossA" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.16, 0)
-mesh = SubResource("BoxMesh_cross_a")
-surface_material_override/0 = SubResource("StandardMaterial3D_cross")
-
-[node name="CrossB" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.16, 0)
-mesh = SubResource("BoxMesh_cross_b")
-surface_material_override/0 = SubResource("StandardMaterial3D_cross")
+[node name="Model" type="Node3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+script = ExtResource("fit_script")
+model_scene = ExtResource("model_glb")
+target_height = 0.55

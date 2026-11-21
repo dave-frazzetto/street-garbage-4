@@ -1,25 +1,9 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://world/props/fit_model.gd" id="fit_script"]
+[ext_resource type="PackedScene" path="res://art/models/props/barricade/barricade.glb" id="model_glb"]
 [sub_resource type="BoxShape3D" id="BoxShape3D_barrier"]
 size = Vector3(2.6, 0.9, 0.6)
-
-[sub_resource type="BoxMesh" id="BoxMesh_base"]
-size = Vector3(2.6, 0.6, 0.6)
-
-[sub_resource type="BoxMesh" id="BoxMesh_top"]
-size = Vector3(2.6, 0.3, 0.3)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_concrete"]
-albedo_color = Color(0.5, 0.49, 0.46, 1)
-roughness = 0.95
-
-[sub_resource type="BoxMesh" id="BoxMesh_stripe"]
-size = Vector3(0.35, 0.31, 0.32)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stripe"]
-albedo_color = Color(0.9, 0.45, 0.05, 1)
-emission_enabled = true
-emission = Color(0.4, 0.15, 0, 1)
 
 [node name="Barrier" type="StaticBody3D"]
 collision_mask = 0
@@ -28,22 +12,8 @@ collision_mask = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
 shape = SubResource("BoxShape3D_barrier")
 
-[node name="Base" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
-mesh = SubResource("BoxMesh_base")
-surface_material_override/0 = SubResource("StandardMaterial3D_concrete")
-
-[node name="Top" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
-mesh = SubResource("BoxMesh_top")
-surface_material_override/0 = SubResource("StandardMaterial3D_concrete")
-
-[node name="StripeA" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 0.75, 0)
-mesh = SubResource("BoxMesh_stripe")
-surface_material_override/0 = SubResource("StandardMaterial3D_stripe")
-
-[node name="StripeB" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 0.75, 0)
-mesh = SubResource("BoxMesh_stripe")
-surface_material_override/0 = SubResource("StandardMaterial3D_stripe")
+[node name="Model" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("fit_script")
+model_scene = ExtResource("model_glb")
+target_size = Vector3(2.6, 1.1, 1.0)

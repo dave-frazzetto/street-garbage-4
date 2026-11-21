@@ -41,10 +41,25 @@ func _ready() -> void:
 	_speed = data.speed * randf_range(1.0 - data.speed_variance, 1.0 + data.speed_variance)
 	var shape: CylinderShape3D = ($CollisionShape3D as CollisionShape3D).shape as CylinderShape3D
 	shape.radius = data.radius
-	var s: float = data.radius / 0.33
-	_visual.scale = Vector3(s, 1.0 + (s - 1.0) * 0.5, s)
+	if data.model_scene != null:
+		_swap_model(data.model_scene)
+		_visual.scale = Vector3.ONE
+	else:
+		var s: float = data.radius / 0.33
+		_visual.scale = Vector3(s, 1.0 + (s - 1.0) * 0.5, s)
 	_model.set_tint(data.tint)
 	_bar.visible = false
+
+
+## Replaces the built-in walker model with this zombie type's own.
+func _swap_model(scene: PackedScene) -> void:
+	var old: Node = _visual.get_node("Model")
+	_visual.remove_child(old)
+	old.queue_free()
+	var fresh: ZombieModel = scene.instantiate() as ZombieModel
+	fresh.name = "Model"
+	_visual.add_child(fresh)
+	_model = fresh
 
 
 ## Call down: who to chase.
