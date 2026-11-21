@@ -9,6 +9,8 @@ extends Resource
 @export_range(1, 15, 0.05) var move_speed: float = 5.25
 ## Extra speed while sprinting, as a fraction of walk speed (0.6 = 60% faster).
 @export_range(0, 3, 0.05) var sprint_bonus: float = 0.6
+## Movement speed multiplier while the trigger is held (1 = no slowdown, 0.6 = 40% slower). Also applies when sprinting.
+@export_range(0.1, 1, 0.01) var firing_move_multiplier: float = 0.6
 @export_range(10, 500) var max_stamina: float = 100.0
 ## Stamina drained per second while sprinting.
 @export_range(1, 200) var stamina_drain: float = 28.0
@@ -42,4 +44,5 @@ func to_base_stats() -> Dictionary:
 		PlayerStats.Stat.HEALTH_DROP_CHANCE: health_drop_chance,
 		PlayerStats.Stat.PICKUP_RADIUS: pickup_radius,
 		PlayerStats.Stat.LIFESTEAL: lifesteal,
+		PlayerStats.Stat.FIRING_MOVE_SPEED: firing_move_multiplier,
 	}
