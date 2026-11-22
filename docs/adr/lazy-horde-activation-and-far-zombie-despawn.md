@@ -29,4 +29,4 @@ HordeSpawner keeps its horde as data and instances a zombie only within activati
 
 Headless measurement with 200+ zombies: about 11% fewer objects and about 10% less physics time. Tests must not assume hordes exist far from the player. Draw-distance culling was skipped because camera frustum culling already covers it.
 
-Update: generalised to the whole map by ADR 26 (world-anchored zombie population); the radii and wake limits are now the numbers in DirectorConfig used by WorldPopulation.
+Update: generalised to the whole map by ADR 27 (world-anchored zombie population); the radii and wake limits are now the numbers in DirectorConfig used by WorldPopulation.
