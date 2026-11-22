@@ -6,8 +6,9 @@ tags: [vfx]
 generated:
   by: arkouda/0.8.0
   at: 2026-11-21T18:09:39Z
-status: stable
-lifecycle: accepted
+status: deprecated
+lifecycle: superseded
+superseded_by: gpu-particle-effects-with-shader-driven-look
 deciders: [claude]
 ---
 

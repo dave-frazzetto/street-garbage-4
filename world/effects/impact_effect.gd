@@ -1,17 +1,18 @@
 class_name ImpactEffect
 extends Node3D
-## One-shot spark / flash burst where a bullet hits. Unshaded CPU particles, no lights, frees itself.
+## One-shot spark streaks where a bullet hits. GPU particles with an unshaded additive material, no lights, frees itself.
 
 @export_range(0.05, 2, 0.05) var lifetime: float = 0.3
 ## Tint of the sparks; the bullet sets it to its own colour.
 @export var color: Color = Color(1.0, 0.7, 0.3)
 
-@onready var _sparks: CPUParticles3D = $Sparks
+@onready var _sparks: GPUParticles3D = $Sparks
 
 
 func _ready() -> void:
-	var mat: StandardMaterial3D = _sparks.material_override.duplicate() as StandardMaterial3D
-	mat.albedo_color = color
+	# The material is shared by every impact; tint a private copy.
+	var mat: ShaderMaterial = _sparks.material_override.duplicate() as ShaderMaterial
+	mat.set_shader_parameter("tint", color)
 	_sparks.material_override = mat
 	_sparks.lifetime = lifetime
 	_sparks.restart()

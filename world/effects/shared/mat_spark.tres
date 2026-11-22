@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://world/effects/shared/fx_streak.gdshader" id="1_sh"]
+
+[resource]
+shader = ExtResource("1_sh")
+shader_parameter/additive = 1.0
+shader_parameter/intensity = 2.4
+shader_parameter/tint = Color(1, 1, 1, 1)
+shader_parameter/tail_falloff = 1.4
