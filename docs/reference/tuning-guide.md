@@ -125,6 +125,10 @@ player who kills one zombie every 5 s gets level 2 after about 30 to 35 s, a lev
 levels in a full run. `tests/test_tuning.gd` simulates this and fails if the pace leaves 12 to 20 levels or level 2
 comes before 20 s or after 45 s.
 
+## Leg animation follows the speed
+
+If you change the player's speeds, the legs follow on their own: `PlayerModel` plays a walk clip at slow speeds and the run clip at fast speeds, each sped up so a planted foot covers the ground at the same pace as the player (walk clip about 1.4 m/s, run clip about 3.5 m/s, both measured). Above 1.5x playback the step rate grows at half rate (`cadence_soft_limit`, `cadence_excess_share`), so a sprint looks like longer, quicker steps and not a blur; the feet then slide slightly. If you swap the character's clips, re-measure `walk_reference_speed` and `run_reference_speed` on the new clips.
+
 ## How the parameters interact
 
 - **Speed ratio decides whether outrunning works.** At 0.85 a zombie falls behind a walking player by about 0.7 m/s, but

@@ -117,3 +117,32 @@ func test_7_death_takes_over() -> void:
 	check_eq(model.current_clip(), &"die", "death clip is playing")
 	await _drive(10, 5.0, true)
 	check_eq(model.current_clip(), &"die", "motion updates after death do not interrupt it")
+
+
+func check_near(actual: float, expected: float, tolerance: float, message: String) -> void:
+	check(absf(actual - expected) <= tolerance, "%s (%.3f vs %.3f)" % [message, actual, expected])
+
+
+func test_8_gait_and_playback_match_ground_speed() -> void:
+	# Fresh model: test 7 played the death clip.
+	var m: PlayerModel = (load("res://world/player/player_model.tscn") as PackedScene).instantiate() as PlayerModel
+	add_child(m)
+	await wait_frames(2)
+	check(m.has_clip(&"walk"), "walk clip is available")
+	check_eq(m.gait_blend(1.4), 0.0, "walking pace plays only the walk clip")
+	check_eq(m.gait_blend(4.4), 1.0, "walk speed of the player plays only the run clip")
+	var mid: float = m.gait_blend(2.7)
+	check(mid > 0.1 and mid < 0.9, "in between the clips blend (%.2f)" % mid)
+	check_near(m.playback_scale(1.4, m.walk_reference_speed), 1.0, 0.01, "walk clip at its reference pace is not sped up")
+	check_near(m.playback_scale(0.7, m.walk_reference_speed), 0.5, 0.01, "slow walking slows the walk clip")
+	check_near(m.playback_scale(3.5, m.run_reference_speed), 1.0, 0.01, "run clip at its reference pace is not sped up")
+	# Foot planted speed = clip speed * playback scale must equal the ground speed where the cadence is not eased.
+	for v: float in [1.0, 1.4, 3.5, 4.4]:
+		var ref: float = m.walk_reference_speed if v < 2.5 else m.run_reference_speed
+		check_near(m.playback_scale(v, ref) * ref, v, 0.01, "feet match the ground at %.1f m/s" % v)
+	# Sprint: faster than walking, but the step rate grows less than the speed (eased cadence).
+	var walk_rate: float = m.playback_scale(4.4, m.run_reference_speed)
+	var sprint_rate: float = m.playback_scale(6.6, m.run_reference_speed)
+	check(sprint_rate > walk_rate, "sprint steps faster than the walk")
+	check(sprint_rate / walk_rate < 6.6 / 4.4, "step rate grows slower than speed at sprint (%.2f vs %.2f)" % [sprint_rate / walk_rate, 6.6 / 4.4])
+	m.queue_free()

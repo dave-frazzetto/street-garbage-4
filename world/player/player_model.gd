@@ -10,8 +10,19 @@ extends CharacterModel
 ## Rotation of every held weapon relative to the hand bone, in degrees. All generated weapons point the same way, so one
 ## value fits them all; each weapon's length and offset live in its WeaponData.
 @export var weapon_rotation_degrees: Vector3 = Vector3.ZERO
-## Ground speed in m/s at which the run clip plays at normal speed.
-@export_range(0.5, 12.0, 0.1) var run_reference_speed: float = 3.6
+## Ground speed in m/s the walk clip covers at normal playback speed (measured from the foot travel while a foot is planted:
+## the clip's feet move about 1.1 to 1.7 m/s). Playing it at speed / this value keeps the feet from sliding.
+@export_range(0.3, 6.0, 0.05) var walk_reference_speed: float = 1.4
+## Same for the run clip (measured about 3.1 to 3.9 m/s).
+@export_range(0.5, 12.0, 0.05) var run_reference_speed: float = 3.5
+## Below this ground speed the legs play only the walk clip; above walk_to_run_end only the run clip; in between they blend.
+@export_range(0.0, 8.0, 0.05) var walk_to_run_start: float = 2.2
+@export_range(0.0, 8.0, 0.05) var walk_to_run_end: float = 3.2
+## Playback speed ratio (speed / reference) above which the step rate grows only by cadence_excess_share of the extra.
+## A clip has a fixed stride, so keeping the feet planted at sprint speed would need an unnaturally quick step rate.
+@export_range(1.0, 3.0, 0.05) var cadence_soft_limit: float = 1.5
+## Share of the ratio above the soft limit that is still applied (1 = exact foot matching, 0 = cadence stops growing).
+@export_range(0.0, 1.0, 0.05) var cadence_excess_share: float = 0.5
 @export_range(0.5, 4.0, 0.05) var max_playback_scale: float = 2.6
 ## Speed above which the legs start running, and below which they stop (the gap prevents flicker near zero).
 @export_range(0.0, 3.0, 0.05) var move_start_speed: float = 0.6
@@ -29,6 +40,8 @@ extends CharacterModel
 const _LOCO: String = "parameters/loco/blend_amount"
 const _AIM: String = "parameters/aim/blend_amount"
 const _RUN_SPEED: String = "parameters/run_speed/scale"
+const _WALK_SPEED: String = "parameters/walk_speed/scale"
+const _GAIT: String = "parameters/gait/blend_amount"
 
 var _dead: bool = false
 var _weapon_holder: BoneAttachment3D
@@ -94,19 +107,42 @@ func _physics_process(delta: float) -> void:
 	_aim_blend = move_toward(_aim_blend, 1.0 if _fire_hold > 0.0 else 0.0, blend_rate * delta)
 	_tree.set(_LOCO, _loco_blend)
 	_tree.set(_AIM, _aim_blend)
-	_tree.set(_RUN_SPEED, clampf(_ground_speed / run_reference_speed, 0.5, max_playback_scale))
+	_tree.set(_GAIT, gait_blend(_ground_speed))
+	_tree.set(_WALK_SPEED, playback_scale(_ground_speed, walk_reference_speed))
+	_tree.set(_RUN_SPEED, playback_scale(_ground_speed, run_reference_speed))
 
 
-# Layers: locomotion = idle blended into run; upper body = that, overlaid with the shoot pose on the upper-body bones.
+## 0 = walk clip, 1 = run clip for this ground speed.
+func gait_blend(ground_speed: float) -> float:
+	if not has_clip(&"walk"):
+		return 1.0
+	return smoothstep(walk_to_run_start, maxf(walk_to_run_end, walk_to_run_start + 0.01), ground_speed)
+
+
+## Playback speed of a locomotion clip so its planted foot travels at the ground speed, with the step rate eased at sprint.
+func playback_scale(ground_speed: float, reference_speed: float) -> float:
+	var ratio: float = ground_speed / reference_speed
+	if ratio > cadence_soft_limit:
+		ratio = cadence_soft_limit + (ratio - cadence_soft_limit) * cadence_excess_share
+	return clampf(ratio, 0.5, max_playback_scale)
+
+
+# Layers: locomotion = idle blended into a walk/run gait; upper body = that, overlaid with the shoot pose on the upper-body bones.
 func _build_tree() -> void:
 	if _player == null or not (has_clip(&"idle") and has_clip(&"run") and has_clip(&"shoot")):
 		return
 	var graph: AnimationNodeBlendTree = AnimationNodeBlendTree.new()
-	for pair: Array in [["idle", &"idle"], ["run", &"run"], ["shoot", &"shoot"]]:
+	var names: Array = [["idle", &"idle"], ["run", &"run"], ["shoot", &"shoot"]]
+	var with_walk: bool = has_clip(&"walk")
+	if with_walk:
+		names.append(["walk", &"walk"])
+	for pair: Array in names:
 		var clip_node: AnimationNodeAnimation = AnimationNodeAnimation.new()
 		clip_node.animation = pair[1]
 		graph.add_node(pair[0], clip_node)
 	graph.add_node("run_speed", AnimationNodeTimeScale.new())
+	graph.add_node("walk_speed", AnimationNodeTimeScale.new())
+	graph.add_node("gait", AnimationNodeBlend2.new())
 	var loco: AnimationNodeBlend2 = AnimationNodeBlend2.new()
 	graph.add_node("loco", loco)
 	var aim: AnimationNodeBlend2 = AnimationNodeBlend2.new()
@@ -117,7 +153,13 @@ func _build_tree() -> void:
 	graph.add_node("aim", aim)
 	graph.connect_node("run_speed", 0, "run")
 	graph.connect_node("loco", 0, "idle")
-	graph.connect_node("loco", 1, "run_speed")
+	if with_walk:
+		graph.connect_node("walk_speed", 0, "walk")
+		graph.connect_node("gait", 0, "walk_speed")
+	else:
+		graph.connect_node("gait", 0, "run_speed")
+	graph.connect_node("gait", 1, "run_speed")
+	graph.connect_node("loco", 1, "gait")
 	graph.connect_node("aim", 0, "loco")
 	graph.connect_node("aim", 1, "shoot")
 	graph.connect_node("output", 0, "aim")
