@@ -5,18 +5,25 @@ extends CanvasLayer
 
 ## Show on every platform, not only on the web (tests, debugging).
 @export var always_enabled: bool = false
-@export_range(1, 50) var max_lines: int = 12
+@export_range(1, 50) var max_lines: int = 4
+## Seconds the panel stays up after the last line, so it never covers the game for long.
+@export var hide_after_seconds: float = 8.0
 
 @onready var _label: Label = %Text
 @onready var _panel: Control = %Panel
 
 var _lines: PackedStringArray = []
 var _logger: ConsoleLogger
+var _hide_timer: Timer
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_panel.visible = false
+	_hide_timer = Timer.new()
+	_hide_timer.one_shot = true
+	_hide_timer.timeout.connect(func() -> void: _panel.visible = false)
+	add_child(_hide_timer)
 	if always_enabled or OS.has_feature("web"):
 		_logger = ConsoleLogger.new()
 		_logger.console = weakref(self)
@@ -36,6 +43,7 @@ func add_line(text: String) -> void:
 		_lines.remove_at(0)
 	_label.text = "\n".join(_lines)
 	_panel.visible = true
+	_hide_timer.start(hide_after_seconds)
 
 
 func line_count() -> int:

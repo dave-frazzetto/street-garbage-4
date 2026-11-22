@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://ui/debug/error_console.gd" id="1_console"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_console"]
-bg_color = Color(0, 0, 0, 0.75)
+bg_color = Color(0, 0, 0, 0.6)
 content_margin_left = 8.0
 content_margin_top = 6.0
 content_margin_right = 8.0
@@ -15,13 +15,13 @@ script = ExtResource("1_console")
 
 [node name="Panel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -200.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 110.0
+offset_right = 300.0
 grow_horizontal = 2
-grow_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_console")
 
@@ -29,6 +29,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_console")
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.55, 0.5, 1)
+custom_minimum_size = Vector2(584, 0)
 theme_override_font_sizes/font_size = 13
 autowrap_mode = 3
 clip_text = true
