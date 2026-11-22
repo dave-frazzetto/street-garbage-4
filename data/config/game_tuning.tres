@@ -1,6 +1,9 @@
-[gd_resource type="Resource" script_class="GameTuning" format=3]
+[gd_resource type="Resource" script_class="GameTuning" format=3 uid="uid://gcxhsujtwbco"]
 
-[ext_resource type="Script" path="res://data/config/game_tuning.gd" id="1_tuning"]
+[ext_resource type="Script" uid="uid://dsnbfp7himspd" path="res://data/config/game_tuning.gd" id="1_tuning"]
 
 [resource]
 script = ExtResource("1_tuning")
+player_walk_speed = 3.3
+zombie_speed_ratio = 0.56
+xp_per_standard_kill = 2.0

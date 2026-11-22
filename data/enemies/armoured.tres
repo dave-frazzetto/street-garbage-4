@@ -1,7 +1,6 @@
-[gd_resource type="Resource" script_class="EnemyData" format=3]
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://u17c8ar2ftrb"]
 
-[ext_resource type="Script" path="res://data/enemies/enemy_data.gd" id="1_04c5j"]
-
+[ext_resource type="Script" uid="uid://thkwvfc0v0kc" path="res://data/enemies/enemy_data.gd" id="1_04c5j"]
 [ext_resource type="PackedScene" path="res://world/enemies/zombie_armoured_model.tscn" id="2_model"]
 
 [resource]
@@ -10,7 +9,6 @@ display_name = "Armoured"
 tier = 1
 health_scale = 2.0
 speed_scale = 0.85
-contact_damage = 10.0
 armour = 0.3
 xp = 3.0
 radius = 0.43
