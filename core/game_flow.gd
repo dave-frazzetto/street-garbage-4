@@ -12,6 +12,8 @@ const SPRINT_STEP_BOOST_DB: float = 2.5
 @export var level_scene: PackedScene
 @export var run_config: RunConfig
 @export var player_config: PlayerConfig
+## The main balance numbers of the run (speeds, zombie amounts and strength, bosses, XP per kill).
+@export var tuning: GameTuning
 @export var perk_pool: PerkPool
 ## Skip the title screen (used by tests and quick iteration).
 @export var auto_start: bool = false
@@ -95,7 +97,7 @@ func start_run() -> void:
 	else:
 		rng.randomize()
 	run = RunState.new(run_config)
-	stats = PlayerStats.new(player_config)
+	stats = PlayerStats.new(player_config, tuning)
 	var perks: Array[Perk] = perk_pool.perks if perk_pool != null else ([] as Array[Perk])
 	var deck_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	deck_rng.seed = rng.randi()
@@ -104,7 +106,7 @@ func start_run() -> void:
 	level = level_scene.instantiate() as Level
 	level_slot.add_child(level)
 	_connect_level()
-	level.start(stats, run.config, rng, func() -> float: return run.elapsed)
+	level.start(stats, run.config, rng, func() -> float: return run.elapsed, tuning)
 	if graphics != null:
 		level.apply_graphics(graphics)
 		get_viewport().scaling_3d_scale = graphics.render_scale

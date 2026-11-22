@@ -65,7 +65,7 @@ func test_3_explosion_hurts_zombies_and_player_and_chains() -> void:
 	check(Destructible.of(car).is_destroyed, "car destroyed")
 	check(car.wrecked, "car became a wreck")
 	check(not is_instance_valid(zombie) or zombie.health < z_hp0, "zombie in blast damaged")
-	check_eq(far_zombie.health, far_zombie.data.max_health, "zombie outside blast untouched")
+	check_eq(far_zombie.health, far_zombie.max_health, "zombie outside blast untouched")
 	check(p.health.current < hp0, "player in blast damaged (%.0f -> %.0f)" % [hp0, p.health.current])
 	await wait_seconds(0.4)
 	check(not is_instance_valid(barrel), "barrel chained and removed")

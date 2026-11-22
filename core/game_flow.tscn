@@ -18,12 +18,14 @@
 [ext_resource type="PackedScene" path="res://audio/ambient_player.tscn" id="16_ambient"]
 [ext_resource type="Script" path="res://audio/footstep_stepper.gd" id="17_steps"]
 [ext_resource type="Script" path="res://audio/zombie_groaner.gd" id="18_groan"]
+[ext_resource type="Resource" path="res://data/config/game_tuning.tres" id="19_tuning"]
 
 [node name="GameFlow" type="Node"]
 script = ExtResource("1_flow")
 level_scene = ExtResource("2_level")
 run_config = ExtResource("3_run")
 player_config = ExtResource("4_player")
+tuning = ExtResource("19_tuning")
 perk_pool = ExtResource("5_pool")
 desktop_graphics = ExtResource("14_gfx_desktop")
 mobile_graphics = ExtResource("15_gfx_mobile")

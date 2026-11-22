@@ -28,3 +28,5 @@ Firing roots the player (PlayerConfig.firing_move_multiplier = 0, aiming still w
 ## Consequences
 
 Fewer nodes and physics bodies, so better frame time on mobile, and each kill takes deliberate shots. Danger rises because the player cannot kite while shooting. Bullets no longer travel, so weapon bullet_speed and beam_length were removed from WeaponData. Balance (kill time, damage taken) has been tested by numbers only and needs hand playing.
+
+Update: the zombie speed, health and population numbers were superseded by ADR 25 (GameTuning) and ADR 26 (world-anchored population).

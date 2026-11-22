@@ -58,7 +58,7 @@ Leave "SharedArrayBuffer support" off, turn on "Mobile friendly" with landscape 
 ## Tests
 
 ```sh
-tests/run_tests.sh   # headless: rules, keyboard+mouse and gamepad input, touch sticks, game flow, destructibles, audio; ~13 s
+tests/run_tests.sh   # headless: rules, input, touch, game flow, destructibles, audio, models, difficulty, tuning, zombie pressure; about 1 minute
 Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # windowed: saves PNGs to tests/output/
 ```
 
@@ -68,7 +68,7 @@ Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # 
 |---|---|
 | `core/` | `game_flow.tscn`: main scene; owns the run rules and wires world and UI |
 | `audio/` | Sound: `SfxCue` and `SfxBank` resources, `SfxPlayer` and `MusicPlayer` scenes, `cues/` (.tres), `sfx/` and `music/` (generated .wav) |
-| `rules/` | Node-free rules: `RunState`, `PlayerStats`, `PerkDeck` |
+| `rules/` | Node-free rules: `RunState`, `PlayerStats`, `PerkDeck`, `PopulationGrid` |
 | `data/` | Resource scripts and `.tres` content: perks (`data/perks/pool/`), weapons, enemies, run/player/director config |
 | `world/` | 3D world: camera rig, player (and components), zombies, bullets, pickups, props (buildings, cars, lamps, neon, destructibles), spawners, the Freedom City level |
 | `ui/` | HUD, perk cards, title and end screens, touch sticks |
@@ -78,7 +78,9 @@ Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # 
 
 Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` and listing them in
 `data/perks/perk_pool_default.tres`; run length, gears, redraws, XP curve and rarity weights are in
-`data/config/run_default.tres`; zombie pressure is in `data/config/director_default.tres`.
+`data/config/run_default.tres`; the main balance numbers (speeds, zombie health, amounts, bosses, XP per kill) are in `data/config/game_tuning.tres`,
+explained in [docs/reference/tuning-guide.md](docs/reference/tuning-guide.md); zombie types and spawn weights are in
+`data/config/director_default.tres` and `data/enemies/`.
 
 ## Decision history
 
@@ -108,6 +110,8 @@ Designers add or rebalance perks by editing `.tres` files in `data/perks/pool/` 
 | 22 | 2026-11-21 | [cpuparticles3d-effects-with-capped-effect-spawner](docs/adr/cpuparticles3d-effects-with-capped-effect-spawner.md) | CPUParticles3D effects with capped effect spawner |
 | 23 | 2026-11-21 | [real-cc0-audio-samples-with-synthesised-layers](docs/adr/real-cc0-audio-samples-with-synthesised-layers.md) | Real CC0 audio samples with synthesised layers (refines 12) |
 | 24 | 2026-11-21 | [survival-style-combat-rooted-shooting-hitscan-line-tougher-zombies](docs/adr/survival-style-combat-rooted-shooting-hitscan-line-tougher-zombies.md) | Survival-style combat: rooted shooting, hitscan line, tougher zombies |
+| 25 | 2026-11-22 | [central-gametuning-resource-for-the-main-balance-knobs](docs/adr/central-gametuning-resource-for-the-main-balance-knobs.md) | Central GameTuning resource for the main balance knobs (refines 19 and 24) |
+| 26 | 2026-11-22 | [world-anchored-zombie-population](docs/adr/world-anchored-zombie-population.md) | World-anchored zombie population (generalises 20) |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),

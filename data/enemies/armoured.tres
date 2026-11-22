@@ -7,10 +7,11 @@
 [resource]
 script = ExtResource("1_04c5j")
 display_name = "Armoured"
-max_health = 180.0
-speed = 1.45
-contact_damage = 22.0
-armour = 0.4
-xp = 4.0
+tier = 1
+health_scale = 2.0
+speed_scale = 0.85
+contact_damage = 10.0
+armour = 0.3
+xp = 3.0
 radius = 0.43
 model_scene = ExtResource("2_model")
