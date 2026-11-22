@@ -64,3 +64,8 @@ data-driven design guides, and the "Godot 4 Best Practices" book (data-driven de
     (e.g. a combat test scene with a canned party) so a module can be verified without playing through the game.
 12. **Before adding a feature ask:** which scene owns it, which Resource holds its tunables, which signal is its contract?
     Record non-trivial architectural choices as written decisions, and when a task is a refactor keep behaviour identical.
+
+## Builds
+
+Every build (web zip, exports) is tagged with its build date and time, `YYYYMMDD-HHMMSS`, in the artifact file name,
+so builds are easy to tell apart. `scripts/build_web.sh` does this; never overwrite an untagged build artifact.

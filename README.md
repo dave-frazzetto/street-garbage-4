@@ -47,13 +47,14 @@ interval), the non-weapon events are slots on `audio/sfx_bank_default.tres`, and
 ## Web build (itch.io)
 
 ```sh
-scripts/build_web.sh            # exports build/web/ and build/street-garbage-web.zip (single-threaded)
+scripts/build_web.sh            # exports build/web/ and build/street-garbage-web_YYYYMMDD-HHMMSS.zip (single-threaded)
 node scripts/serve_web.js       # serves build/web on http://localhost:8060/ (phones on the LAN: use the PC's IP)
 node scripts/web_smoke.js       # headless Chrome: loads the build, taps START, drives both touch sticks
 ```
 
-Upload `build/street-garbage-web.zip` to itch.io as an HTML project ("This file will be played in the browser").
+Upload `build/street-garbage-web_YYYYMMDD-HHMMSS.zip` to itch.io as an HTML project ("This file will be played in the browser").
 Leave "SharedArrayBuffer support" off, turn on "Mobile friendly" with landscape orientation, and add a fullscreen button.
+The page shell is `web/shell.html` (set as the custom HTML shell in the Web preset). It pins the canvas to the dynamic viewport so no black band is left under it, and adds an in-page Fullscreen button (Android/desktop; iPhone Safari has no Fullscreen API, so it shows "Add to Home Screen" instructions, and the page is iOS standalone-capable).
 
 ## Tests
 
@@ -110,8 +111,9 @@ explained in [docs/reference/tuning-guide.md](docs/reference/tuning-guide.md); z
 | 22 | 2026-11-21 | [cpuparticles3d-effects-with-capped-effect-spawner](docs/adr/cpuparticles3d-effects-with-capped-effect-spawner.md) | CPUParticles3D effects with capped effect spawner |
 | 23 | 2026-11-21 | [real-cc0-audio-samples-with-synthesised-layers](docs/adr/real-cc0-audio-samples-with-synthesised-layers.md) | Real CC0 audio samples with synthesised layers (refines 12) |
 | 24 | 2026-11-21 | [survival-style-combat-rooted-shooting-hitscan-line-tougher-zombies](docs/adr/survival-style-combat-rooted-shooting-hitscan-line-tougher-zombies.md) | Survival-style combat: rooted shooting, hitscan line, tougher zombies |
-| 25 | 2026-11-22 | [central-gametuning-resource-for-the-main-balance-knobs](docs/adr/central-gametuning-resource-for-the-main-balance-knobs.md) | Central GameTuning resource for the main balance knobs (refines 19 and 24) |
-| 26 | 2026-11-22 | [world-anchored-zombie-population](docs/adr/world-anchored-zombie-population.md) | World-anchored zombie population (generalises 20) |
+| 25 | 2026-11-22 | [custom-web-page-shell-with-fullscreen-button-for-mobile](docs/adr/custom-web-page-shell-with-fullscreen-button-for-mobile.md) | Custom web page shell with fullscreen button for mobile |
+| 26 | 2026-11-22 | [central-gametuning-resource-for-the-main-balance-knobs](docs/adr/central-gametuning-resource-for-the-main-balance-knobs.md) | Central GameTuning resource for the main balance knobs (refines 19 and 24) |
+| 27 | 2026-11-22 | [world-anchored-zombie-population](docs/adr/world-anchored-zombie-population.md) | World-anchored zombie population (generalises 20) |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),
