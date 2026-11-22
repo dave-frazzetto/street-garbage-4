@@ -23,7 +23,7 @@ func spawn(scene: PackedScene, parent: Node3D, at: Vector3, dir: Vector3 = Vecto
 	var fx: Node3D = scene.instantiate() as Node3D
 	fx.position = at
 	if fx is VfxBurst and dir != Vector3.ZERO:
-		(fx as VfxBurst).direction = dir.normalized()
+		(fx as VfxBurst).aim(dir)
 	parent.add_child(fx)
 	_live.append(fx)
 	return fx

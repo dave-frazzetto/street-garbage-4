@@ -1,29 +1,33 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://world/effects/impact_effect.gd" id="1_fx"]
+[ext_resource type="QuadMesh" path="res://world/effects/shared/quad_streak.tres" id="2_streak"]
+[ext_resource type="Material" path="res://world/effects/shared/mat_spark.tres" id="3_spark"]
 
-[sub_resource type="StandardMaterial3D" id="Mat_spark"]
-shading_mode = 0
-albedo_color = Color(1, 0.7, 0.3, 1)
-
-[sub_resource type="BoxMesh" id="Mesh_spark"]
-size = Vector3(0.08, 0.08, 0.08)
+[sub_resource type="ParticleProcessMaterial" id="Proc_spark"]
+particle_flag_align_y = true
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 0.5
+initial_velocity_max = 1.5
+gravity = Vector3(0, -9, 0)
+scale_min = 0.6
+scale_max = 1.0
 
 [node name="ZombieImpactEffect" type="Node3D"]
 script = ExtResource("1_fx")
 lifetime = 0.15
 color = Color(1, 0.9, 0.7, 1)
 
-[node name="Sparks" type="CPUParticles3D" parent="."]
+[node name="Sparks" type="GPUParticles3D" parent="."]
+cast_shadow = 0
 emitting = false
 amount = 4
 lifetime = 0.15
 one_shot = true
 explosiveness = 1.0
-mesh = SubResource("Mesh_spark")
-material_override = SubResource("Mat_spark")
-direction = Vector3(0, 1, 0)
-spread = 180.0
-gravity = Vector3(0, -9, 0)
-initial_velocity_min = 0.5
-initial_velocity_max = 1.5
+fixed_fps = 60
+visibility_aabb = AABB(-2, -2, -2, 4, 4, 4)
+process_material = SubResource("Proc_spark")
+material_override = ExtResource("3_spark")
+draw_pass_1 = ExtResource("2_streak")
