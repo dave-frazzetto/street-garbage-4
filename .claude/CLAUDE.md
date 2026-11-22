@@ -72,7 +72,9 @@ so builds are easy to tell apart. `scripts/build_web.sh` does this; never overwr
 
 ## Pull request review
 
-When a PR is ready to merge, do not merge it straight away. Have it reviewed by a fresh subagent first:
+When a PR is ready to merge, do not merge it straight away. Have it reviewed by a fresh subagent first, unless the change is trivial (a colour/constant/texture tweak, a typo, a doc or comment edit, a one-line fix with no behaviour or architecture impact). Trivial changes need no review: run the tests, then merge and clean up. When in doubt, or if the change touches game rules, several files or shared contracts, review it.
+
+Review steps for non-trivial PRs:
 
 1. Run the project tests (from inside the worktree, as in `project.md`), then spawn a new subagent (Agent tool, `general-purpose`, not a fork) as the reviewer. Give it
    clear, self-contained context: the PR number, branch and absolute worktree path, what the change is for, the exact diff
