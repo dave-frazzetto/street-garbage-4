@@ -29,14 +29,12 @@ dark ground.
   car 8k triangles (`art/tools/assets.tsv`). Small props and weapons are unchanged.
 - Hero textures stay at the 2048 px Meshy N1 size; `shrink_textures.gd` is no longer run on them.
 - Characters are re-rigged from the new meshes and reuse the existing animation clips (`.res`), since Meshy rigs share bone names.
-- Characters get an inverted-hull outline (`world/characters/outline.gdshader`) as the next pass of the lifted material, red for
-  the infected and cyan for the player, set per model scene (`outline_color`, `outline_width` in metres). The width is divided
-  by the model matrix scale so it is world-space.
+- Characters briefly got an inverted-hull outline pass; it did not look right in game and was removed on 2026-11-22. Readability
+  now relies on the models and the colour grade.
 - The level environment gets a colour grade (contrast 1.12, saturation 1.3).
 
 ## Consequences
 
 - More triangles per zombie and per building tile (about 2x); the web build and low-end mobile need a check before release.
 - GLB files stay around 4 to 5 MB each; the web zip grew from 51.9 MB to 56.2 MB (+8%) with the 2k textures.
-- The outline doubles the draw cost of characters. It is controlled by exports, so a mobile profile can set the colour alpha to 0.
 - If a future rig has different bone names the clips must be re-extracted with `art/tools/extract_clips.gd`.
