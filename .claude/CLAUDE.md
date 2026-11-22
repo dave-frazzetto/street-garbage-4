@@ -69,3 +69,25 @@ data-driven design guides, and the "Godot 4 Best Practices" book (data-driven de
 
 Every build (web zip, exports) is tagged with its build date and time, `YYYYMMDD-HHMMSS`, in the artifact file name,
 so builds are easy to tell apart. `scripts/build_web.sh` does this; never overwrite an untagged build artifact.
+
+## Pull request review
+
+When a PR is ready to merge, do not merge it straight away. Have it reviewed by a fresh subagent first:
+
+1. Run the project tests (from inside the worktree, as in `project.md`), then spawn a new subagent (Agent tool, `general-purpose`, not a fork) as the reviewer. Give it
+   clear, self-contained context: the PR number, branch and absolute worktree path, what the change is for, the exact diff
+   command (`git -C <worktree> diff origin/main...HEAD`), and the project rules (`.claude/CLAUDE.md`,
+   `.claude/rules/project.md`). Tell it to read the files itself, and that it is read-only: it must not edit, push or merge.
+   Ask for correctness bugs, broken project rules, missing tests/docs and risky side effects, ranked by severity. Give it the
+   diff, not your conclusion about it.
+2. Be critical of the feedback. Verify each point against the code, drop false positives and nitpicks, and decide which
+   findings are a priority. Fix those, and say briefly which you skipped and why.
+3. If you fixed anything, push and have a new reviewer look again, passing it the previous findings and what you fixed or
+   skipped. Stop when a round has no priority findings, normally within 3 rounds; list any remaining findings in the PR
+   comment. If the same issue comes back twice, or round 3 still has priority findings, stop and ask the user.
+4. If a reviewer cannot be spawned or fails, retry once. If it still fails, review `git diff origin/main...HEAD` yourself and
+   state in the PR that no independent review happened. Never skip the review silently.
+5. Post the review summary (rounds, what was fixed, what was skipped) as a PR comment before merging
+   (`POST /repos/{owner}/{repo}/issues/{n}/comments`, with the same API token approach used to open the PR). GitHub does not let an author approve their own PR, so merging
+   through the REST API is the approval. Then merge, and clean up as in "Finish cleanly" in `.claude/rules/project.md`,
+   running the worktree removal from outside that worktree.
