@@ -46,9 +46,13 @@ func test_2_left_stick_moves() -> void:
 	var p0: Vector3 = p.global_position
 	_touch(0, Vector2(300, 500), true)
 	_drag(0, Vector2(420, 500))
-	await wait_frames(20)
+	await wait_frames(30)
 	check(flow.touch_controls.move_vector.x > 0.9, "move stick vector right (%s)" % str(flow.touch_controls.move_vector))
-	check((p.global_position - p0).dot(p.input.screen_to_world(Vector2.RIGHT)) > 0.5, "player moved screen-right by touch")
+	# Half a second at walking speed, less the drag start-up.
+	var walk: float = p.stats.get_value(PlayerStats.Stat.MOVE_SPEED)
+	var moved: float = (p.global_position - p0).dot(p.input.screen_to_world(Vector2.RIGHT))
+	check(moved > walk * 0.25, "player moved screen-right by touch (%.2f m)" % moved)
+	check(not p.sprinting, "touch play walks")
 	check_eq(p.input.device, PlayerInput.Device.TOUCH, "touch device (emulated mouse ignored)")
 
 
@@ -106,10 +110,18 @@ func test_4_release_stops() -> void:
 	check(not flow.level.player.input.is_firing(), "fire released")
 
 
-func test_5_sprint_button() -> void:
-	flow.touch_controls.sprint_button.pressed.emit()
+func test_5_no_sprint_on_touch() -> void:
+	check(flow.touch_controls.find_children("*", "Button", true, false).is_empty(), "no sprint button on screen")
+	var p: Player = flow.level.player
+	_touch(0, Vector2(300, 500), true)
+	_drag(0, Vector2(420, 500))
+	Input.action_press("sprint")
+	await wait_frames(10)
+	check_eq(p.input.device, PlayerInput.Device.TOUCH, "touch device")
+	check(not p.sprinting, "touch play never sprints")
+	Input.action_release("sprint")
+	_touch(0, Vector2(420, 500), false)
 	await wait_frames(2)
-	check(flow.level.player.sprinting, "sprint button toggles sprint")
 
 
 func test_6_hidden_during_perk_choice() -> void:

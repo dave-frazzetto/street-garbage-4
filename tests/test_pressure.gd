@@ -65,11 +65,17 @@ func test_1_a_standing_player_is_reached_and_hurt() -> void:
 		if hurt[0] < 0.0:
 			hurt[0] = _elapsed
 	)
-	await wait_frames(int(15.0 * 60.0))
+	# Top-up zombies appear just off-screen and walk in: the slowest one needs spawn distance / its speed.
+	var slowest: float = TUNING.zombie_speed(WALKER, 0.0) * (1.0 - WALKER.speed_variance)
+	var limit: float = level.director.config.spawn_distance_max / slowest + 4.0
+	for i: int in int(limit * 60.0):
+		await wait_frames(1)
+		if hurt[0] > 0.0:
+			break
 	var hurt_at: float = hurt[0]
-	print("  standing player first hurt at %.1f s" % hurt_at)
+	print("  standing player first hurt at %.1f s (limit %.1f s)" % [hurt_at, limit])
 	check(hurt_at > 0.0, "a zombie reached the standing player")
-	check(hurt_at < 15.0, "within 15 s of the start (hurt at %.1f s)" % hurt_at)
+	check(hurt_at < limit, "as soon as the first zombies walk in from off-screen (hurt at %.1f s, limit %.1f s)" % [hurt_at, limit])
 	check(level.player.health.current < start_health, "health went down")
 	await _stop_level()
 
@@ -172,7 +178,7 @@ func test_4_zombies_lead_a_moving_target() -> void:
 
 
 ## Seconds until a zombie reaches a target that stands right behind a wall (straight line blocked); 99 if it never does.
-func _time_to_get_round_wall(follow_seconds: float) -> float:
+func _time_to_get_round_wall(follow_distance: float) -> float:
 	var holder: Node3D = Node3D.new()
 	add_child(holder)
 	var wall: StaticBody3D = StaticBody3D.new()
@@ -191,11 +197,11 @@ func _time_to_get_round_wall(follow_seconds: float) -> float:
 	data.speed_variance = 0.0
 	var z: Zombie = ZOMBIE.instantiate() as Zombie
 	z.setup(data, target, 100000.0, TUNING, 0.0)
-	z.wall_follow_seconds = follow_seconds
+	z.wall_follow_distance = follow_distance
 	z.position = Vector3(0, 0, 6)
 	holder.add_child(z)
 	var arrived: float = 99.0
-	for i: int in 25 * 60:
+	for i: int in 40 * 60:
 		await wait_frames(1)
 		if Vector2(z.global_position.x - target.global_position.x, z.global_position.z - target.global_position.z).length() < 2.5:
 			arrived = i / 60.0
@@ -206,10 +212,13 @@ func _time_to_get_round_wall(follow_seconds: float) -> float:
 
 func test_5_chasers_get_round_a_wall() -> void:
 	var stuck: float = await _time_to_get_round_wall(0.0)
-	var round_it: float = await _time_to_get_round_wall(4.0)
-	print("  behind a wall: without wall-following %.1f s, with %.1f s" % [stuck, round_it])
+	var round_it: float = await _time_to_get_round_wall(15.0)
+	# Shortest way round the 16 m wall: to its corner and on to the target, less the 2.5 m arrival distance.
+	var detour: float = Vector2(8.4, 6.0).length() * 2.0 - 2.5
+	var limit: float = detour / TUNING.zombie_speed(WALKER, 0.0) * 1.4
+	print("  behind a wall: without wall-following %.1f s, with %.1f s (limit %.1f s)" % [stuck, round_it, limit])
 	check(stuck >= 99.0, "a zombie that only steers straight stays pinned against the wall")
-	check(round_it < 15.0, "a zombie that follows the wall reaches the target behind it (%.1f s)" % round_it)
+	check(round_it < limit, "a zombie that follows the wall reaches the target behind it (%.1f s, limit %.1f s)" % [round_it, limit])
 
 
 func test_6_the_player_recovers_slowly_when_left_alone() -> void:

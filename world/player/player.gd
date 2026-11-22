@@ -1,7 +1,7 @@
 class_name Player
 extends CharacterBody3D
-## The survivor. Moves, sprints, shoots; reports health and deaths upward.
-## Runs on its own (F6) with default stats and its own camera; the level injects stats, camera and projectile parent.
+## The survivor. Moves, sprints while the sprint input is held, shoots; reports health and deaths upward.
+## Runs on its own (F6) with default stats and its own camera; the level injects stats, camera, size and projectile parent.
 
 signal health_changed(current: float, maximum: float)
 signal stamina_changed(current: float, maximum: float)
@@ -18,8 +18,8 @@ signal hit_landed(amount: float)
 @export var camera_scene: PackedScene
 ## Colour the model flashes when the player is hit.
 @export var hit_color: Color = Color(1.0, 0.3, 0.3)
-## Collision radius in metres (zombies use it for contact range).
-@export_range(0.1, 2, 0.05) var body_radius: float = 0.35
+## Collision radius in metres for the model at scale 1 (see set_body_scale; zombies use body_radius for contact range).
+@export_range(0.1, 2, 0.05) var base_body_radius: float = 0.35
 ## Seconds of invulnerability after a hit.
 @export_range(0, 2, 0.05) var hit_invulnerability: float = 0.25
 
@@ -29,9 +29,22 @@ signal hit_landed(amount: float)
 @onready var weapon: WeaponComponent = $Weapon
 @onready var visual: Node3D = $Visual
 @onready var _model: PlayerModel = $Visual/Model
+@onready var _body: CollisionShape3D = $CollisionShape3D
+@onready var _ring: Node3D = $Ring
+@onready var _glow: Node3D = $Glow
 
 var stats: PlayerStats
 var sprinting: bool = false
+## Collision radius in metres after the body scale.
+var body_radius: float = 0.35
+## Size relative to the generated model (GameTuning.character_scale).
+var body_scale: float = 1.0
+## Set when stamina ran out mid-sprint: sprinting waits until the sprint input is released and held again.
+var _sprint_spent: bool = false
+## Heights of the scaled parts at scale 1, read from the scene.
+var _base_heights: Dictionary[Node3D, float] = {}
+var _base_shape_height: float = 1.8
+var _scale_set: bool = false
 var _invulnerable: float = 0.0
 ## Seconds since the player last took damage (calm regeneration waits for it).
 var _since_damage: float = 0.0
@@ -39,7 +52,6 @@ var _hit_flash: float = 0.0
 
 
 func _ready() -> void:
-	input.sprint_toggled.connect(_toggle_sprint)
 	health.changed.connect(func(c: float, m: float) -> void: health_changed.emit(c, m))
 	health.damaged.connect(func(a: float) -> void: damaged.emit(a))
 	health.died.connect(_on_died)
@@ -51,6 +63,8 @@ func _ready() -> void:
 	weapon.fired.connect(func(w: WeaponData) -> void: fired.emit(w))
 	if stats == null:
 		setup(PlayerStats.new(default_config), null)
+	if not _scale_set:
+		set_body_scale(GameTuning.fallback().character_scale)
 	_ensure_camera.call_deferred()
 
 
@@ -65,6 +79,29 @@ func setup(player_stats: PlayerStats, projectile_parent: Node) -> void:
 	health.max_health = stats.get_value(PlayerStats.Stat.MAX_HEALTH)
 	health.current = health.max_health
 	_apply_stats()
+
+
+## Call down: size relative to the generated model (GameTuning.character_scale). Scales the model, the held weapon, the
+## collision body, the glow and the ground ring together; the legs' animation follows on its own. The bullet height (the
+## Weapon node) and the mouse aim plane stay in world units, so shots still hit props sized in metres (1 m fire barrels).
+func set_body_scale(value: float) -> void:
+	if _base_heights.is_empty():
+		var cylinder: CylinderShape3D = (_body.shape as CylinderShape3D).duplicate() as CylinderShape3D
+		_body.shape = cylinder
+		_base_shape_height = cylinder.height
+		var scaled_parts: Array[Node3D] = [_body, _glow]
+		for part: Node3D in scaled_parts:
+			_base_heights[part] = part.position.y
+	_scale_set = true
+	body_scale = value
+	body_radius = base_body_radius * value
+	var shape: CylinderShape3D = _body.shape as CylinderShape3D
+	shape.radius = body_radius
+	shape.height = _base_shape_height * value
+	for part: Node3D in _base_heights:
+		part.position.y = _base_heights[part] * value
+	visual.scale = Vector3.ONE * value
+	_ring.scale = Vector3.ONE * value
 
 
 ## Call down: the camera that defines screen directions.
@@ -102,8 +139,10 @@ func _physics_process(delta: float) -> void:
 	_since_damage += delta
 	var move: Vector3 = input.get_move_vector()
 	var moving: bool = move.length() > 0.1 and not (input.is_firing() and stats.get_value(PlayerStats.Stat.FIRING_MOVE_SPEED) <= 0.0)
+	_update_sprint(input.is_sprint_held())
 	if sprinting and not stamina.update(delta, moving):
 		_set_sprinting(false)
+		_sprint_spent = true
 	elif not sprinting:
 		stamina.update(delta, false)
 	var speed: float = stats.get_value(PlayerStats.Stat.MOVE_SPEED)
@@ -145,10 +184,14 @@ func _ensure_camera() -> void:
 		set_view(cam)
 
 
-func _toggle_sprint() -> void:
-	if not sprinting and stamina.current <= 1.0:
-		return
-	_set_sprinting(not sprinting)
+## Sprint lasts while the input is held and stamina remains. Once the bar runs dry, the input must be let go first, and a
+## sprint starts only with more than stats.min_sprint_stamina of the bar (no on/off flicker while it refills).
+func _update_sprint(held: bool) -> void:
+	if not held:
+		_sprint_spent = false
+		_set_sprinting(false)
+	elif not sprinting and not _sprint_spent and stamina.current > maxf(1.0, stamina.max_stamina * stats.min_sprint_stamina):
+		_set_sprinting(true)
 
 
 func _set_sprinting(value: bool) -> void:

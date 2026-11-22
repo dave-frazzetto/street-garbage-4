@@ -56,23 +56,87 @@ func test_1_keyboard_moves() -> void:
 	check(player.input.view != null, "standalone player brought its own camera")
 
 
-func test_2_sprint_toggle_faster_and_drains() -> void:
+func _joy_button(button: JoyButton, pressed: bool) -> void:
+	var ev: InputEventJoypadButton = InputEventJoypadButton.new()
+	ev.device = 0
+	ev.button_index = button
+	ev.pressed = pressed
+	Input.parse_input_event(ev)
+
+
+func test_2_sprint_while_shift_is_held() -> void:
 	_key(KEY_SHIFT, true)
-	_key(KEY_SHIFT, false)
-	await wait_frames(1)
-	check(player.sprinting, "shift toggles sprint on")
+	await wait_frames(2)
+	check(player.sprinting, "holding shift sprints")
 	var st0: float = player.stamina.current
 	var p0: Vector3 = player.global_position
 	_key(KEY_D, true)
 	await wait_frames(20)
 	_key(KEY_D, false)
 	var sprint_dist: float = (player.global_position - p0).length()
+	check(player.sprinting, "still sprinting while shift stays held")
 	check(player.stamina.current < st0, "sprinting drains stamina")
-	check(sprint_dist > GameTuning.fallback().player_walk_speed * 20.0 / 60.0 * 1.3, "sprint is faster (%.2f m)" % sprint_dist)
+	check(sprint_dist > player.stats.get_value(PlayerStats.Stat.MOVE_SPEED) * 20.0 / 60.0 * 1.3, "sprint is faster (%.2f m)" % sprint_dist)
+	_key(KEY_SHIFT, false)
+	await wait_frames(2)
+	check(not player.sprinting, "releasing shift stops the sprint")
+	# A second press is not a toggle: pressing and releasing in the same frame never leaves it on.
 	_key(KEY_SHIFT, true)
 	_key(KEY_SHIFT, false)
+	await wait_frames(2)
+	check(not player.sprinting, "a tap does not latch the sprint on")
+
+
+func test_2b_empty_stamina_ends_the_sprint_until_released() -> void:
+	_key(KEY_SHIFT, true)
+	_key(KEY_D, true)
+	await wait_frames(2)
+	player.stamina.current = 0.5
+	await wait_frames(3)
+	check(not player.sprinting, "an empty bar ends the sprint even while shift is held")
+	player.stamina.current = player.stamina.max_stamina
+	await wait_frames(3)
+	check(not player.sprinting, "holding on does not restart it once the bar refills")
+	_key(KEY_SHIFT, false)
 	await wait_frames(1)
-	check(not player.sprinting, "shift toggles sprint off")
+	_key(KEY_SHIFT, true)
+	await wait_frames(2)
+	check(player.sprinting, "release and hold again sprints")
+	_key(KEY_SHIFT, false)
+	await wait_frames(3)
+	check(not player.sprinting, "released again")
+	# Re-holding on an almost empty bar must not flick the sprint on for a few frames and off again.
+	var changes: Array[int] = [0]
+	var count_change: Callable = func(_on: bool) -> void: changes[0] += 1
+	player.sprint_changed.connect(count_change)
+	var minimum: float = player.stamina.max_stamina * player.stats.min_sprint_stamina
+	check(player.stats.min_sprint_stamina > 0.05, "a sprint needs a real share of the bar (%.2f)" % player.stats.min_sprint_stamina)
+	player.stamina.current = minimum * 0.5
+	_key(KEY_SHIFT, true)
+	await wait_frames(6)
+	check(not player.sprinting and changes[0] == 0, "held on a nearly empty bar: no sprint and no flicker (%d changes)" % changes[0])
+	player.stamina.current = minimum + 2.0
+	await wait_frames(2)
+	check(player.sprinting and changes[0] == 1, "starts once the bar holds the minimum")
+	player.sprint_changed.disconnect(count_change)
+	_key(KEY_SHIFT, false)
+	_key(KEY_D, false)
+	await wait_frames(2)
+
+
+func test_2c_gamepad_shoulder_holds_sprint() -> void:
+	_joy_button(JOY_BUTTON_LEFT_SHOULDER, true)
+	await wait_frames(2)
+	check(player.sprinting, "holding LB sprints")
+	_joy_button(JOY_BUTTON_LEFT_SHOULDER, false)
+	await wait_frames(2)
+	check(not player.sprinting, "releasing LB stops")
+	_joy_button(JOY_BUTTON_LEFT_STICK, true)
+	await wait_frames(2)
+	check(player.sprinting, "holding L3 sprints")
+	_joy_button(JOY_BUTTON_LEFT_STICK, false)
+	await wait_frames(2)
+	check(not player.sprinting, "releasing L3 stops")
 
 
 func test_3_mouse_shoots() -> void:
@@ -154,3 +218,38 @@ func test_6_bullets_hit_zombies_point_blank_and_at_range() -> void:
 	player.weapon._fire(far_dir.normalized())
 	await wait_frames(30)
 	check(far.health < far_hp, "zombie at 5 m hit (%.1f -> %.1f)" % [far_hp, far.health])
+
+
+func _held_weapon_length() -> float:
+	var holder: Node = player.find_child("WeaponHolder", true, false)
+	var longest: float = 0.0
+	if holder == null:
+		return 0.0
+	for node: Node in holder.find_children("*", "MeshInstance3D", true, false):
+		var mesh: MeshInstance3D = node as MeshInstance3D
+		var box: AABB = mesh.global_transform * mesh.get_aabb()
+		longest = maxf(longest, maxf(box.size.x, maxf(box.size.y, box.size.z)))
+	return longest
+
+
+func test_7_player_follows_the_character_scale() -> void:
+	var size: float = GameTuning.fallback().character_scale
+	check(size > 1.0, "characters are drawn larger than the generated models (%.2f)" % size)
+	check(player.visual.scale.is_equal_approx(Vector3.ONE * size), "standalone player uses the default character scale")
+	var shape: CylinderShape3D = (player.get_node("CollisionShape3D") as CollisionShape3D).shape as CylinderShape3D
+	check(is_equal_approx(player.body_radius, player.base_body_radius * size), "contact radius follows the scale (%.3f)" % player.body_radius)
+	check(is_equal_approx(shape.radius, player.body_radius) and is_equal_approx(shape.height, 1.8 * size), "collision body follows the scale")
+	check(is_equal_approx(player.weapon.position.y, 1.0) and is_equal_approx(player.input.aim_height, 1.0), "bullets keep flying at 1 m, the props' scale (%.2f)" % player.weapon.position.y)
+	var held_scaled: float = _held_weapon_length()
+	player.set_body_scale(1.0)
+	check(player.visual.scale.is_equal_approx(Vector3.ONE) and is_equal_approx(shape.height, 1.8), "scale can be set back to 1")
+	var held_unscaled: float = _held_weapon_length()
+	check(absf(held_scaled / held_unscaled - size) < 0.02, "the gun in hand grows with the model (%.3f vs %.3f m)" % [held_scaled, held_unscaled])
+	player.set_body_scale(size)
+	player._model.hold_weapon(player.weapon.current_weapon())
+	await wait_frames(1)
+	check(absf(_held_weapon_length() - held_scaled) < 0.01, "a gun picked up after scaling has the same size (%.3f m)" % _held_weapon_length())
+	var other: Player = (load("res://world/player/player.tscn") as PackedScene).instantiate() as Player
+	var other_shape: CylinderShape3D = (other.get_node("CollisionShape3D") as CollisionShape3D).shape as CylinderShape3D
+	check(is_equal_approx(other_shape.height, 1.8), "the scene's shared collision shape is not modified")
+	other.free()

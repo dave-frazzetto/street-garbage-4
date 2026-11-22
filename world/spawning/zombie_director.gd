@@ -86,7 +86,7 @@ func _spawn_one() -> void:
 		var dist: float = rng.randf_range(config.spawn_distance_min, config.spawn_distance_max)
 		pos = target.global_position + Vector3.FORWARD.rotated(Vector3.UP, rng.randf() * TAU) * dist
 		pos.y = 0.0
-		if _in_bounds(pos, 1.0) and _is_free(pos, data.radius):
+		if _in_bounds(pos, 1.0) and _is_free(pos, tuning.zombie_radius(data)):
 			found = true
 			break
 	if not found:

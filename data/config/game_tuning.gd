@@ -32,6 +32,15 @@ static func fallback() -> GameTuning:
 @export_range(0.5, 30.0, 0.1) var sprint_seconds: float = 6.0
 ## Seconds to refill an empty stamina bar while not sprinting.
 @export_range(0.5, 60.0, 0.5) var stamina_recharge_seconds: float = 6.5
+## Share of the stamina bar needed to start a sprint (a running sprint lasts until the bar is empty). Keeps a held sprint
+## key on an almost empty bar from flicking sprint on and off while the bar refills.
+@export_range(0.0, 1.0, 0.01) var min_sprint_stamina: float = 0.15
+
+@export_group("Characters")
+## Size of the player and of every zombie relative to the generated models (1.15 = 15% larger). Bodies, bullet hit boxes,
+## health bars, the held weapon and the animation playback all follow (bullets keep their 1 m height); EnemyData.size_scale (bosses) multiplies on top.
+## Bigger zombies are easier to hit and fill a street sooner.
+@export_range(0.5, 2.0, 0.05) var character_scale: float = 1.15
 
 @export_group("Zombie movement")
 ## Chase speed of a standard zombie as a fraction of the player's walking speed. Below 1 the player can walk away from
@@ -130,6 +139,16 @@ func stamina_regen(max_stamina: float) -> float:
 ## Average chase speed of this zombie type at this point of the run, in metres per second.
 func zombie_speed(enemy: EnemyData, elapsed: float) -> float:
 	return player_walk_speed * zombie_speed_ratio * enemy.speed_scale * (1.0 + zombie_speed_growth * ramp(elapsed))
+
+
+## Uniform size of this zombie type's model and body relative to the generated model (EnemyData.size_scale x character_scale).
+func zombie_size(enemy: EnemyData) -> float:
+	return enemy.size_scale * character_scale
+
+
+## Collision radius of this zombie type in metres (EnemyData.radius x character_scale).
+func zombie_radius(enemy: EnemyData) -> float:
+	return enemy.radius * character_scale
 
 
 ## Maximum health of this zombie type when it appears at this point of the run.

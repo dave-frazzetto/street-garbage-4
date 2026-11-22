@@ -58,7 +58,6 @@ func _ready() -> void:
 	perk_select.perk_chosen.connect(_on_perk_chosen)
 	perk_select.redraw_requested.connect(_on_redraw)
 	perk_select.skipped.connect(_on_skip)
-	touch_controls.sprint_pressed.connect(_on_touch_sprint)
 	footsteps.step_taken.connect(func(sprinting: bool) -> void: sfx.play_cue(sfx.bank.footstep, SPRINT_STEP_BOOST_DB if sprinting else 0.0))
 	groaner.groan_requested.connect(func(offset_db: float) -> void: sfx.play_cue(sfx.bank.zombie_groan, offset_db))
 	title_screen.start_requested.connect(_play.bind(sfx.bank.run_start))
@@ -119,11 +118,6 @@ func start_run() -> void:
 	hud.show_banner("DAY %d\nKILL ZOMBIES TO GET XP AND UPGRADE YOUR CHARACTER" % (run.config.day_number + _runs_started - 1), 5.0)
 	touch_controls.set_gameplay_active(_gameplay_active())
 	run_started.emit()
-
-
-func _on_touch_sprint() -> void:
-	if level != null:
-		level.toggle_sprint()
 
 
 func _process(delta: float) -> void:
