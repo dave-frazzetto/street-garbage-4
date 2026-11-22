@@ -11,6 +11,9 @@ rm -rf build/web && mkdir -p build/web
 "$GODOT" --headless --path . --import >/dev/null 2>&1 || true
 "$GODOT" --headless --path . --export-release "Web" build/web/index.html
 echo "$STAMP" > build/web/build.txt
+cat > build/web/manifest.webmanifest <<EOF
+{"name":"Street Garbage 4","short_name":"Street Garbage","start_url":".","display":"fullscreen","orientation":"landscape","background_color":"#000000","theme_color":"#000000","icons":[{"src":"index.icon.png","sizes":"any","type":"image/png"},{"src":"index.apple-touch-icon.png","sizes":"180x180","type":"image/png"}]}
+EOF
 if command -v zip >/dev/null 2>&1; then
   (cd build/web && zip -qr ../../$ZIP .)
 else
