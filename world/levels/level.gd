@@ -54,6 +54,7 @@ signal prop_destroyed(at: Vector3, explosive: bool)
 @onready var arrow: ObjectiveArrow = $ObjectiveArrow
 @onready var camera_rig: IsoCamera = $IsoCamera
 @onready var buildings: Node3D = $Buildings
+@onready var navigation: StreetNavigation = $StreetNavigation
 
 var player: Player
 var stats: PlayerStats
@@ -94,7 +95,9 @@ func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumbe
 	tuning = game_tuning if game_tuning != null else (default_tuning if default_tuning != null else GameTuning.fallback())
 	var cfg: RunConfig = run_config if run_config != null else RunConfig.new()
 	Zombie.max_corpses = director.config.max_corpses
+	navigation.build(bounds, player_start_position(), solid_roots())
 	_spawn_player()
+	navigation.track(player)
 	_spawn_gears(cfg.gears_required)
 	for node: Node in $Hordes.get_children():
 		var spawner: HordeSpawner = node as HordeSpawner
@@ -103,6 +106,7 @@ func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumbe
 			spawner.activation_radius = director.config.horde_activation_radius
 			spawner.deactivation_radius = director.config.horde_deactivation_radius
 			spawner.tuning = tuning
+			spawner.walk_grid = navigation.walk_grid
 			spawner.elapsed_provider = elapsed_provider
 			spawner.spawn(player, entities, rng)
 	for node: Node in find_children("Destructible", "", true, false):
@@ -110,8 +114,11 @@ func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumbe
 		if prop != null:
 			prop.destroyed.connect(_on_prop_destroyed)
 	director.zombie_spawned.connect(_on_zombie_spawned)
+	director.walk_grid = navigation.walk_grid
+	director.flow = navigation.flow
 	director.start(player, entities, bounds, rng, elapsed_provider, tuning)
 	population.zombie_spawned.connect(_on_zombie_spawned)
+	population.walk_grid = navigation.walk_grid
 	population.start(player, entities, bounds, rng, elapsed_provider, tuning, player_start_position())
 	arrow.follow = player
 	_update_objective()
@@ -140,6 +147,17 @@ func gear_positions() -> Array[Vector3]:
 	return out
 
 
+## The nodes holding the level's solid scenery (walls, fences, cars, wrecks): what StreetNavigation and the layout
+## tests draw onto the walk grid.
+func solid_roots() -> Array[Node]:
+	var roots: Array[Node] = []
+	for root_name: String in ["Buildings", "Fences", "Props", "Hordes"]:
+		var node: Node = get_node_or_null(root_name)
+		if node != null:
+			roots.append(node)
+	return roots
+
+
 func player_start_position() -> Vector3:
 	return ($PlayerStart as Node3D).global_position
 
@@ -149,6 +167,7 @@ func apply_graphics(profile: GraphicsProfile) -> void:
 	_graphics = profile
 	director.population_scale = profile.zombie_population_scale
 	population.population_scale = profile.zombie_population_scale
+	navigation.flow_cells_per_frame = profile.flow_cells_per_frame
 	var env_node: WorldEnvironment = get_node_or_null("WorldEnvironment") as WorldEnvironment
 	if env_node != null and env_node.environment != null:
 		env_node.environment = env_node.environment.duplicate() as Environment
@@ -271,6 +290,7 @@ func _on_gear_collected(pickup: Pickup) -> void:
 
 func _on_zombie_spawned(zombie: Zombie) -> void:
 	zombie.target_radius = player.body_radius
+	zombie.flow = navigation.flow
 	zombie.died.connect(_on_zombie_died)
 	zombie.damaged.connect(_on_zombie_damaged)
 	zombie.attacked.connect(_on_zombie_attacked)

@@ -18,3 +18,6 @@ extends Resource
 @export var detailed_ground: bool = true
 ## Multiplier on how many ambient zombies may be alive at once (phones: fewer zombies, fewer physics and animation updates).
 @export_range(0.1, 1.0, 0.05) var zombie_population_scale: float = 1.0
+## Walk-grid cells the zombie flow field settles per physics frame (StreetNavigation). Lower spreads the cost of a
+## new field over more frames on slow single-threaded web builds; zombies use the previous field meanwhile.
+@export_range(100, 5000, 50) var flow_cells_per_frame: int = 600

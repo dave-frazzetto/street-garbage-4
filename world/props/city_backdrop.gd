@@ -57,6 +57,12 @@ extends Node3D
 	set(value):
 		facade_colors = value
 		_rebuild()
+## Areas kept free of backdrop buildings (x = world X, y = world Z): the streets that run out of the playable area, so
+## the city visibly continues past the fences that close them.
+@export var open_rects: Array[Rect2] = []:
+	set(value):
+		open_rects = value
+		_rebuild()
 @export var seed_value: int = 11:
 	set(value):
 		seed_value = value
@@ -153,8 +159,16 @@ func _layout() -> Array[Dictionary]:
 				var shade: float = rng.randf_range(0.8, 1.25)
 				var lit: float = lerpf(lit_fraction.x, lit_fraction.y, rng.randf())
 				var col: Color = Color(base_color.r * shade, base_color.g * shade, base_color.b * shade, lit)
-				out.append({"rect": rect, "height": h, "color": col})
+				if not _blocks_street(rect):
+					out.append({"rect": rect, "height": h, "color": col})
 	return out
+
+
+func _blocks_street(rect: Rect2) -> bool:
+	for open: Rect2 in open_rects:
+		if open.grow(0.5).intersects(rect):
+			return true
+	return false
 
 
 static func _distance_to_rect(a: Rect2, b: Rect2) -> float:

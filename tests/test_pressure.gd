@@ -83,10 +83,10 @@ func test_1_a_standing_player_is_reached_and_hurt() -> void:
 func test_2_running_across_the_map_always_has_zombies_around() -> void:
 	_start_level()
 	var lines: Array = [
-		[Vector3(10, 0, 95), Vector3(10, 0, 8)],
-		[Vector3(15, 0, 60), Vector3(110, 0, 60)],
-		[Vector3(110, 0, 110), Vector3(30, 0, 30)],
-		[Vector3(60, 0, 10), Vector3(60, 0, 110)],
+		[Vector3(10, 0, 67), Vector3(110, 0, 67)],   # Main Avenue
+		[Vector3(68, 0, 20), Vector3(68, 0, 98)],    # Cross Street and the rail street
+		[Vector3(110, 0, 17), Vector3(10, 0, 17)],   # Back Street
+		[Vector3(30, 0, 100), Vector3(110, 0, 100)], # through the south lots and blocks
 	]
 	var worst_nearest: float = 0.0
 	var fewest_near: int = 1 << 20
@@ -114,7 +114,7 @@ func test_2_running_across_the_map_always_has_zombies_around() -> void:
 
 func test_3_killed_world_zombies_stay_dead_and_far_ones_sleep() -> void:
 	_start_level()
-	level.player.global_position = Vector3(60, 0, 60)
+	level.player.global_position = Vector3(68, 0, 67)  # Main Avenue at Cross Street
 	await wait_frames(90)
 	var awake: int = level.population.awake_count()
 	check(awake > 3, "world zombies woke around the player (%d)" % awake)
@@ -126,7 +126,7 @@ func test_3_killed_world_zombies_stay_dead_and_far_ones_sleep() -> void:
 	check(dead_after >= dead_before + awake, "killed world zombies leave empty slots (%d -> %d)" % [dead_before, dead_after])
 	await wait_frames(60)
 	check(level.population.awake_count() == 0, "they do not respawn while the player stays (%d awake)" % level.population.awake_count())
-	level.player.global_position = Vector3(110, 0, 5)
+	level.player.global_position = Vector3(104, 0, 99)  # the south-east yard, far from there
 	await wait_frames(90)
 	var nodes: int = _live_zombies().size()
 	check(nodes < 60, "zombies far from the player are data again (%d nodes)" % nodes)

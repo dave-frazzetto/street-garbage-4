@@ -46,6 +46,23 @@ const WALL_LAYER: int = 1
 @export_range(0, 10, 0.25) var wall_follow_min_distance: float = 2.5
 ## After this many walk-along-the-wall attempts in a row it turns the other way round the obstacle.
 @export_range(1, 10) var wall_follow_flip_after: int = 3
+## With a flow field: seconds a blocked zombie walks the street round a small obstacle (car, barrier) before it tries
+## the straight way again.
+@export_range(0, 10, 0.5) var route_around_seconds: float = 4.0
+## With a flow field (the level injects one), a zombie whose walk to the target is longer than this many times the
+## straight distance, plus route_detour_slack metres, follows the street instead of heading straight for the target.
+@export_range(1.0, 3.0, 0.05) var route_detour_ratio: float = 1.15
+@export_range(0.0, 10.0, 0.25) var route_detour_slack: float = 1.5
+## A zombie following the street goes back to the straight chase only once the walk is at most this many times the
+## straight distance plus route_exit_slack (below the entry threshold, so it does not flip between the two every frame
+## where the walk distance, measured in whole grid cells, sits on the threshold).
+@export_range(1.0, 3.0, 0.05) var route_exit_ratio: float = 1.08
+@export_range(0.0, 10.0, 0.25) var route_exit_slack: float = 0.25
+## Shortest time it keeps following the street once it started.
+@export_range(0.0, 5.0, 0.1) var route_min_seconds: float = 1.0
+## Blocked again this soon (seconds) after it began walking the street round an obstacle: the street does not get it
+## past (a prop the walk grid does not know), so it walks along the obstacle instead.
+@export_range(0.0, 10.0, 0.25) var route_retry_seconds: float = 2.5
 @export_group("")
 ## Beyond this distance from the target the walk animation is paused (nobody can see it, saves CPU).
 @export_range(5, 100) var animation_cull_distance: float = 26.0
@@ -63,6 +80,8 @@ var target_radius: float = 0.35
 ## Collision radius in metres and model size after GameTuning.character_scale (set in _ready; the hurtbox reads them).
 var body_radius: float = 0.33
 var body_scale: float = 1.0
+## Walking distances toward the player (injected by the level; null = straight chase and wall following only).
+var flow: FlowField
 var is_dead: bool = false
 var health: float
 ## Health at spawn (GameTuning.zombie_max_health); the bar and tests read it.
@@ -88,6 +107,13 @@ var _target_dist: float = 0.0
 var _blocked_time: float = 0.0
 var _unblocked_time: float = 0.0
 var _follow_time: float = 0.0
+## Seconds left of following the flow field after being blocked (a car or barrier in the way).
+var _route_time: float = 0.0
+## Following the flow field (see route_exit_ratio), and for how long.
+var _routing: bool = false
+var _routing_for: float = 0.0
+## Seconds since it last started walking the street round an obstacle (see route_retry_seconds).
+var _since_route_start: float = INF
 var _follow_normal: Vector3 = Vector3.ZERO
 ## Which way round an obstacle it walks: +1 or -1 quarter turns from the wall normal (0 = not decided).
 var _follow_side: float = 0.0
@@ -208,8 +234,11 @@ func _physics_process(delta: float) -> void:
 		_track_target_velocity(delta)
 		if _aware and _stun <= 0.0:
 			dir = _chase_direction(to_target, dist)
+			var route: Vector3 = _route_direction(delta)
 			if _follow_time > 0.0:
 				dir = _follow_direction(delta)
+			elif route != Vector3.ZERO:
+				dir = route
 			if dist <= body_radius + target_radius + 0.15 and _attack_cooldown <= 0.0:
 				_attack_cooldown = data.attack_interval
 				_model.play_attack()
@@ -254,6 +283,33 @@ func _chase_direction(to_target: Vector3, dist: float) -> Vector3:
 	return aim.normalized()
 
 
+## Down the street toward the target when buildings stand between them (the walk is clearly longer than the straight
+## line); zero when the straight chase is fine or there is no flow field here.
+func _route_direction(delta: float) -> Vector3:
+	_route_time = maxf(0.0, _route_time - delta)
+	_since_route_start += delta
+	if flow == null or not flow.is_ready():
+		_routing = false
+		return Vector3.ZERO
+	var p: Vector2 = Vector2(global_position.x, global_position.z)
+	var walk: float = flow.distance_at(p)
+	if walk == INF:
+		_routing = false
+		return Vector3.ZERO
+	var straight: float = p.distance_to(flow.goal())
+	if _routing:
+		_routing_for += delta
+		if _route_time <= 0.0 and _routing_for >= route_min_seconds and walk <= straight * route_exit_ratio + route_exit_slack:
+			_routing = false
+	elif _route_time > 0.0 or walk > straight * route_detour_ratio + route_detour_slack:
+		_routing = true
+		_routing_for = 0.0
+	if not _routing:
+		return Vector3.ZERO
+	var d: Vector2 = flow.direction_at(p)
+	return Vector3(d.x, 0.0, d.y)
+
+
 ## Notices a chasing zombie that is pushed against a wall and makes it walk along the wall for a moment, always round
 ## the obstacle the same way, so a crowd behind a building finds the corner instead of standing there.
 func _track_blocked(delta: float, dir: Vector3) -> void:
@@ -266,7 +322,13 @@ func _track_blocked(delta: float, dir: Vector3) -> void:
 		_unblocked_time = 0.0
 		_blocked_time += delta
 		if _blocked_time >= blocked_seconds and _follow_time <= 0.0:
-			_start_wall_follow()
+			if _route_time <= 0.0 and _can_route() and _since_route_start > route_retry_seconds:
+				# Something small (a car, a barrier) is in the way: walk the street round it for a while.
+				_blocked_time = 0.0
+				_route_time = route_around_seconds
+				_since_route_start = 0.0
+			else:
+				_start_wall_follow()
 	else:
 		_blocked_time = 0.0
 		_unblocked_time += delta
@@ -277,6 +339,10 @@ func _track_blocked(delta: float, dir: Vector3) -> void:
 			else:
 				_follow_side = 0.0
 				_follow_count = 0
+
+
+func _can_route() -> bool:
+	return flow != null and flow.is_ready() and flow.distance_at(Vector2(global_position.x, global_position.z)) < INF
 
 
 func _start_wall_follow() -> void:

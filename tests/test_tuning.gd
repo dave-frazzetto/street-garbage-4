@@ -9,7 +9,7 @@ const BOSS: EnemyData = preload("res://data/enemies/boss.tres")
 const PLAYER: PlayerConfig = preload("res://data/config/player_default.tres")
 const DIRECTOR: DirectorConfig = preload("res://data/config/director_default.tres")
 const MAP: Rect2 = Rect2(0, 0, 120, 120)
-const START: Vector2 = Vector2(10, 111)
+const START: Vector2 = Vector2(24, 66.5)
 
 
 func _ready() -> void:

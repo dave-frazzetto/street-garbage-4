@@ -1,5 +1,6 @@
 extends TestCase
-## World dressing: fences close the whole perimeter (physics rays from inside hit a Fence at the bounds), zombies and
+## World dressing: fences close the whole perimeter (physics rays from inside, from the street ends and from inside the
+## buildings that run to the edge, hit a Fence at the bounds), zombies and
 ## the player collide with them, and the ground and skyline backdrop extend far enough beyond the bounds that the
 ## camera can never see the end of the map.
 
@@ -35,6 +36,17 @@ func test_1_fences_close_the_perimeter() -> void:
 				total += 1
 				var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(Vector3(inside[k].x, height, inside[k].y), Vector3(outside[k].x, height, outside[k].y), 1)
 				var hit: Dictionary = space.intersect_ray(query)
+				if not hit.is_empty() and not (hit["collider"] is Fence) and (hit["position"] as Vector3).distance_to(query.from) < 0.05:
+					# Starts on the shared wall of two buildings that run to the edge: solid, nothing can escape from here.
+					total -= 1
+					continue
+				# Props in front of the fence (the barricade lines closing the street ends) are looked through: a fence
+				# must still stand behind them.
+				var exclude: Array[RID] = []
+				while not hit.is_empty() and not (hit["collider"] is Fence) and not (hit["collider"] is Building) and exclude.size() < 4:
+					exclude.append((hit["collider"] as CollisionObject3D).get_rid())
+					query.exclude = exclude
+					hit = space.intersect_ray(query)
 				if hit.is_empty() or not (hit["collider"] is Fence):
 					misses += 1
 					continue

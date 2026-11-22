@@ -20,8 +20,8 @@ func test_1_setup_scene() -> void:
 	var p: Player = flow.level.player
 	p.health.max_health = 1000.0
 	p.health.current = 1000.0
-	# Stage a car in an open spot of the street, with a barrel next to it.
-	var at: Vector3 = Vector3(44.0, 0.0, 48.0)
+	# Stage a car in an open spot of Cross Street (open for 15 m north of it), with a barrel next to it.
+	var at: Vector3 = Vector3(68.0, 0.0, 46.0)
 	car = (load("res://world/props/car.tscn") as PackedScene).instantiate() as Car
 	car.position = at
 	flow.level.get_node("Props").add_child(car)
@@ -49,11 +49,12 @@ func test_2b_player_gun_hits_a_fire_barrel() -> void:
 	# Fired from the real player's gun: its height must stay within the 1 m barrel, whatever the character scale.
 	var p: Player = flow.level.player
 	var d: Destructible = barrel.get_node("Body/Destructible") as Destructible
-	p.global_position = barrel.global_position + Vector3(4.0, 0, 0)
+	# North of the barrel: Cross Street runs north-south, so east of it is building frontage.
+	p.global_position = barrel.global_position + Vector3(0, 0, -4.0)
 	await wait_frames(2)
 	var hp0: float = d.health
 	p.weapon._cooldown = 0.0
-	p.weapon._fire(Vector3.LEFT)
+	p.weapon._fire(Vector3.BACK)
 	await wait_frames(20)
 	check(d.health < hp0, "a shot from the player's gun damaged the barrel (%.0f -> %.0f, gun at %.2f m)" % [hp0, d.health, p.weapon.global_position.y])
 	d.health = hp0

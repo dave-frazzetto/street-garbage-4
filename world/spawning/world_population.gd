@@ -24,6 +24,8 @@ var bounds: Rect2 = Rect2(0, 0, 100, 100)
 var elapsed_provider: Callable
 ## Scales the world density (the graphics profile lowers it on phones).
 var population_scale: float = 1.0
+## Where zombies can stand (injected by the level before start; null = everywhere in the bounds).
+var walk_grid: WalkGrid
 var active: bool = false
 var grid: PopulationGrid
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -40,6 +42,7 @@ func start(chase_target: Node3D, zombie_container: Node3D, level_bounds: Rect2, 
 	tuning = game_tuning if game_tuning != null else GameTuning.fallback()
 	_rng.seed = random.randi()
 	grid = PopulationGrid.new(bounds, random.randi(), tuning.world_density_max(), cell_size, Vector2(start_position.x, start_position.z), tuning.start_safe_radius)
+	grid.walk = walk_grid
 	active = true
 	_timer = 0.0
 
