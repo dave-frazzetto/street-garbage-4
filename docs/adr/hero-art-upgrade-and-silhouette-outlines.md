@@ -37,6 +37,6 @@ dark ground.
 ## Consequences
 
 - More triangles per zombie and per building tile (about 2x); the web build and low-end mobile need a check before release.
-- GLB files stay around 4 to 5 MB each; 2k textures add repo and build size.
+- GLB files stay around 4 to 5 MB each; the web zip grew from 51.9 MB to 56.2 MB (+8%) with the 2k textures.
 - The outline doubles the draw cost of characters. It is controlled by exports, so a mobile profile can set the colour alpha to 0.
 - If a future rig has different bone names the clips must be re-extracted with `art/tools/extract_clips.gd`.
