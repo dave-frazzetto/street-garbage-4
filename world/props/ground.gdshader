@@ -5,9 +5,9 @@ shader_type spatial;
 // manholes; pavement gets slabs and kerbs. `detailed` = false keeps only the cheap grain for mobile and web.
 
 group_uniforms palette;
-uniform vec4 asphalt_color : source_color = vec4(0.085, 0.085, 0.1, 1.0);
-uniform vec4 patch_color : source_color = vec4(0.06, 0.06, 0.07, 1.0);
-uniform vec4 pavement_color : source_color = vec4(0.19, 0.185, 0.19, 1.0);
+uniform vec4 asphalt_color : source_color = vec4(0.3, 0.3, 0.31, 1.0);
+uniform vec4 patch_color : source_color = vec4(0.19, 0.19, 0.2, 1.0);
+uniform vec4 pavement_color : source_color = vec4(0.3, 0.29, 0.3, 1.0);
 uniform vec4 kerb_color : source_color = vec4(0.3, 0.29, 0.28, 1.0);
 uniform vec4 centre_line_color : source_color = vec4(0.85, 0.62, 0.08, 1.0);
 uniform vec4 lane_line_color : source_color = vec4(0.5, 0.5, 0.5, 1.0);
@@ -94,7 +94,12 @@ void fragment() {
 	vec3 col;
 
 	if (street > 0.5) {
-		col = asphalt_color.rgb * (0.7 + 0.6 * grain);
+		// Asphalt: fine grain, large blotchy mottling, light aggregate speckles and darker tyre-wear bands along the street.
+		float mottle = vnoise(p * 0.45) * 0.6 + vnoise(p * 1.3) * 0.4;
+		float speck = step(0.93, hash21(floor(p * 14.0)));
+		float wear_band = vnoise(vec2(mix(q.x, q.y, in_x * (1.0 - in_z)) * 0.12, mix(d.y, d.x, in_x * (1.0 - in_z)) * 1.4));
+		col = asphalt_color.rgb * (0.55 + 0.7 * grain) * (0.75 + 0.5 * mottle) * (0.85 + 0.3 * wear_band);
+		col += vec3(0.1) * speck * grain;
 		if (detailed) {
 			// Repair patches: blocky darker areas with hard edges.
 			vec2 pc = floor(p * 0.28);
