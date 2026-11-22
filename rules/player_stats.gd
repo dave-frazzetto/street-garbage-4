@@ -69,6 +69,8 @@ var _flags: Dictionary = {}
 ## Out-of-combat recovery (GameTuning): seconds without damage before it starts, and health per second while it runs.
 var calm_regen_delay: float = 5.0
 var calm_regen_per_second: float = 0.0
+## Share of the stamina bar needed to start a sprint (GameTuning.min_sprint_stamina).
+var min_sprint_stamina: float = 0.15
 
 
 func _init(config: PlayerConfig = null, tuning: GameTuning = null) -> void:
@@ -78,6 +80,7 @@ func _init(config: PlayerConfig = null, tuning: GameTuning = null) -> void:
 	var t: GameTuning = tuning if tuning != null else GameTuning.fallback()
 	calm_regen_delay = t.calm_regen_delay
 	calm_regen_per_second = t.calm_regen_per_second
+	min_sprint_stamina = t.min_sprint_stamina
 	for stat: int in Stat.values():
 		_flat[stat] = 0.0
 		_percent[stat] = 0.0

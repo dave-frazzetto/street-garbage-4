@@ -72,14 +72,14 @@ func refresh() -> void:
 		return
 	var elapsed: float = _elapsed()
 	for slot: PopulationGrid.Slot in grid.awake_slots():
-		var z: Zombie = _live.get(slot) as Zombie
-		if z != null and is_instance_valid(z):
+		var z: Zombie = _live_zombie(slot)
+		if z != null:
 			slot.live_position = z.global_position
 	var plan: PopulationGrid.Plan = grid.plan(target.global_position, elapsed, tuning.world_density_fraction(elapsed, population_scale), config.horde_activation_radius, config.horde_deactivation_radius, max_wakes_per_check)
 	for slot: PopulationGrid.Slot in plan.sleep:
-		var z: Zombie = _live.get(slot) as Zombie
+		var z: Zombie = _live_zombie(slot)
 		_live.erase(slot)
-		if z != null and is_instance_valid(z):
+		if z != null:
 			z.queue_free()
 		grid.sleep_slot(slot)
 	for slot: PopulationGrid.Slot in plan.wake:
@@ -92,7 +92,7 @@ func _wake(slot: PopulationGrid.Slot, elapsed: float) -> void:
 		if slot.enemy == null:
 			grid.kill_slot(slot)
 			return
-	var pos: Vector3 = _free_position(slot.position, slot.enemy.radius)
+	var pos: Vector3 = _free_position(slot.position, tuning.zombie_radius(slot.enemy))
 	if pos.x == INF:
 		# Walled in (inside a building): this slot never holds a zombie.
 		grid.kill_slot(slot)
@@ -138,3 +138,11 @@ func _is_free(pos: Vector3, radius: float) -> bool:
 
 func _elapsed() -> float:
 	return float(elapsed_provider.call()) if elapsed_provider.is_valid() else 0.0
+
+
+## The zombie living in this slot, or null when there is none or it was freed from outside (checked before the cast).
+func _live_zombie(slot: PopulationGrid.Slot) -> Zombie:
+	var value: Variant = _live.get(slot)
+	if value == null or not is_instance_valid(value):
+		return null
+	return value as Zombie

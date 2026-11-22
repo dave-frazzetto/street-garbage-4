@@ -139,11 +139,6 @@ func set_touch_input(move: Vector2, aim: Vector2, touching: bool = false) -> voi
 		player.input.set_touch(move, aim, touching)
 
 
-func toggle_sprint() -> void:
-	if player != null:
-		player.input.request_sprint_toggle()
-
-
 func gear_positions() -> Array[Vector3]:
 	var out: Array[Vector3] = []
 	for g: GearPickup in _gears:
@@ -252,6 +247,7 @@ func _spawn_player() -> void:
 	player = player_scene.instantiate() as Player
 	player.position = player_start_position()
 	entities.add_child(player)
+	player.set_body_scale(tuning.character_scale)
 	player.setup(stats, projectiles)
 	player.set_view(camera_rig)
 	camera_rig.target = player

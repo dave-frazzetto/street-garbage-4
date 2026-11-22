@@ -10,19 +10,29 @@ extends CharacterModel
 ## Rotation of every held weapon relative to the hand bone, in degrees. All generated weapons point the same way, so one
 ## value fits them all; each weapon's length and offset live in its WeaponData.
 @export var weapon_rotation_degrees: Vector3 = Vector3.ZERO
-## Ground speed in m/s the walk clip covers at normal playback speed (measured from the foot travel while a foot is planted:
-## the clip's feet move about 1.1 to 1.7 m/s). Playing it at speed / this value keeps the feet from sliding.
-@export_range(0.3, 6.0, 0.05) var walk_reference_speed: float = 1.4
-## Same for the run clip (measured about 3.1 to 3.9 m/s).
-@export_range(0.5, 12.0, 0.05) var run_reference_speed: float = 3.5
-## Below this ground speed the legs play only the walk clip; above walk_to_run_end only the run clip; in between they blend.
-@export_range(0.0, 8.0, 0.05) var walk_to_run_start: float = 2.2
-@export_range(0.0, 8.0, 0.05) var walk_to_run_end: float = 3.2
+## All speeds below are for the model at scale 1: the ground speed is divided by the model's world scale first, because
+## a bigger model takes proportionally longer strides (GameTuning.character_scale).
+## Ground speed in m/s the walk clip covers at normal playback: the planted foot's backward speed in the character's
+## space (median over the stance, measured on the clip; the clips have no root motion). Playing the clip at
+## speed / this value keeps the planted foot still on the ground.
+@export_range(0.3, 6.0, 0.05) var walk_reference_speed: float = 1.45
+## Same for the run clip (5.1 m/s: lowest foot slip on the slice-17 hero rig; its stride is long, so a 3.5 m/s sprint plays it at about 0.6x).
+@export_range(0.5, 12.0, 0.05) var run_reference_speed: float = 5.1
+## The legs switch from the walk clip to the run clip above run_above_speed and back below walk_below_speed; in between
+## they keep the clip they have, so a steady speed always plays one clip (the two clips are not phase matched, and a
+## blend of them makes the feet slide). Each switch cross-fades at blend_rate. The usual speeds at character scale 1.15,
+## in m/s at scale 1: walk 2.0, walk with four Fleet Foot 2.8, sprint 3.0. The walk clip looks right up to about 2x
+## playback, the run clip down to about 0.55x.
+@export_range(0.0, 8.0, 0.05) var walk_below_speed: float = 2.7
+@export_range(0.0, 8.0, 0.05) var run_above_speed: float = 2.9
 ## Playback speed ratio (speed / reference) above which the step rate grows only by cadence_excess_share of the extra.
-## A clip has a fixed stride, so keeping the feet planted at sprint speed would need an unnaturally quick step rate.
-@export_range(1.0, 3.0, 0.05) var cadence_soft_limit: float = 1.5
+## Above it the feet slide on purpose (a very fast perk-boosted run would otherwise need a blur of steps). At 2 no speed
+## the player can reach eases: the walk clip stops at run_above_speed / walk_reference_speed (2x).
+@export_range(1.0, 3.0, 0.05) var cadence_soft_limit: float = 2.0
 ## Share of the ratio above the soft limit that is still applied (1 = exact foot matching, 0 = cadence stops growing).
 @export_range(0.0, 1.0, 0.05) var cadence_excess_share: float = 0.5
+## Slowest and fastest playback of the walk and run clips (the playback that keeps the feet planted is clamped to this).
+@export_range(0.1, 1.0, 0.05) var min_playback_scale: float = 0.4
 @export_range(0.5, 4.0, 0.05) var max_playback_scale: float = 2.6
 ## Speed above which the legs start running, and below which they stop (the gap prevents flicker near zero).
 @export_range(0.0, 3.0, 0.05) var move_start_speed: float = 0.6
@@ -52,6 +62,8 @@ var _fire_hold: float = 0.0
 var _moving: bool = false
 var _loco_blend: float = 0.0
 var _aim_blend: float = 0.0
+var _running_gait: bool = false
+var _gait_blend: float = 0.0
 
 
 func _ready() -> void:
@@ -66,7 +78,7 @@ func hold_weapon(weapon: WeaponData) -> void:
 	_attach_weapon()
 
 
-## Call every physics frame with the player's ground speed (m/s) and whether the fire input is held.
+## Call every physics frame with the player's ground speed (m/s, world units) and whether the fire input is held.
 func update_motion(ground_speed: float, firing: bool) -> void:
 	_ground_speed = ground_speed
 	if firing:
@@ -107,16 +119,23 @@ func _physics_process(delta: float) -> void:
 	_aim_blend = move_toward(_aim_blend, 1.0 if _fire_hold > 0.0 else 0.0, blend_rate * delta)
 	_tree.set(_LOCO, _loco_blend)
 	_tree.set(_AIM, _aim_blend)
-	_tree.set(_GAIT, gait_blend(_ground_speed))
-	_tree.set(_WALK_SPEED, playback_scale(_ground_speed, walk_reference_speed))
-	_tree.set(_RUN_SPEED, playback_scale(_ground_speed, run_reference_speed))
+	var unit_speed: float = _ground_speed / maxf(global_transform.basis.get_scale().x, 0.1)
+	_running_gait = runs_at(unit_speed, _running_gait)
+	_gait_blend = move_toward(_gait_blend, 1.0 if _running_gait else 0.0, blend_rate * delta)
+	_tree.set(_GAIT, _gait_blend)
+	_tree.set(_WALK_SPEED, playback_scale(unit_speed, walk_reference_speed))
+	_tree.set(_RUN_SPEED, playback_scale(unit_speed, run_reference_speed))
 
 
-## 0 = walk clip, 1 = run clip for this ground speed.
-func gait_blend(ground_speed: float) -> float:
+## True when the legs play the run clip at this ground speed (m/s at model scale 1), given whether they play it now.
+func runs_at(ground_speed: float, running_now: bool) -> bool:
 	if not has_clip(&"walk"):
-		return 1.0
-	return smoothstep(walk_to_run_start, maxf(walk_to_run_end, walk_to_run_start + 0.01), ground_speed)
+		return true
+	if ground_speed > run_above_speed:
+		return true
+	if ground_speed < walk_below_speed:
+		return false
+	return running_now
 
 
 ## Playback speed of a locomotion clip so its planted foot travels at the ground speed, with the step rate eased at sprint.
@@ -124,7 +143,7 @@ func playback_scale(ground_speed: float, reference_speed: float) -> float:
 	var ratio: float = ground_speed / reference_speed
 	if ratio > cadence_soft_limit:
 		ratio = cadence_soft_limit + (ratio - cadence_soft_limit) * cadence_excess_share
-	return clampf(ratio, 0.5, max_playback_scale)
+	return clampf(ratio, min_playback_scale, max_playback_scale)
 
 
 # Layers: locomotion = idle blended into a walk/run gait; upper body = that, overlaid with the shoot pose on the upper-body bones.
@@ -186,8 +205,10 @@ func _attach_weapon() -> void:
 	skeleton.add_child(_weapon_holder)
 	var weapon: Node3D = _held.held_model.instantiate() as Node3D
 	_weapon_holder.add_child(weapon)
-	# The Meshy skeleton is in centimetres (node scale 0.01), so convert metres into the bone's space.
-	var bone_space: float = maxf(_weapon_holder.global_transform.basis.get_scale().x, 0.0001)
+	# The Meshy skeleton is in centimetres (node scale 0.01), so convert metres into the bone's space. Measured against this
+	# model's own space, so the weapon grows with the model when the player is scaled (GameTuning.character_scale).
+	var to_model: Transform3D = global_transform.affine_inverse() * _weapon_holder.global_transform
+	var bone_space: float = maxf(to_model.basis.get_scale().x, 0.0001)
 	var box: AABB = FitModel.measure(_held.held_model)
 	var longest: float = maxf(box.size.x, maxf(box.size.y, box.size.z))
 	var unit: float = (_held.held_length / maxf(longest, 0.0001)) / bone_space

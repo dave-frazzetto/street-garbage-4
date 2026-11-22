@@ -33,14 +33,31 @@ reference video (see `original-game-video-notes.md`):
 |---|---|---|
 | `ramp_seconds` | 900 | Every "start / end" pair below moves linearly from start to end over this many seconds, then stays at end. The run lasts 1080 s, so the last 3 minutes are at full pressure. |
 
+The shipped `game_tuning.tres` overrides three defaults by hand (the current design, tuned in play):
+`player_walk_speed` 2.3 m/s (sprint 3.45 m/s), `zombie_speed_ratio` 0.56 (a standard zombie walks 1.29 m/s at the start,
+the fastest late one about 1.78 m/s, so walking away works) and `xp_per_standard_kill` 2.0. The tables give the script
+defaults; the examples in "How the parameters interact" use the defaults unless they say otherwise.
+
 ### Player movement
+
+Sprint is **held**: the player sprints while Shift (gamepad LB or L3) is held and stamina remains, and walks as soon as it
+is released. When the bar runs dry the sprint ends and the button must be released and held again (the "sprint" action in
+the Input Map). A sprint starts only with more than `min_sprint_stamina` (15%) of the bar, so a held key on an almost empty
+bar does not flick sprint on and off. Touch play has no sprint button: on phones the player walks only.
 
 | Parameter | Default | Meaning |
 |---|---|---|
 | `player_walk_speed` | 4.4 m/s | Walking speed. Zombie speed is a ratio of this. |
-| `sprint_speed_multiplier` | 1.5 | Sprint speed = walk x this (6.6 m/s). |
+| `sprint_speed_multiplier` | 1.5 | Sprint speed = walk x this (6.6 m/s at the default, 3.45 m/s in the shipped file). |
 | `sprint_seconds` | 6 s | How long a full stamina bar lasts. |
+| `min_sprint_stamina` | 0.15 | Share of the stamina bar needed to start a sprint (a sprint already running lasts until the bar is empty). |
 | `stamina_recharge_seconds` | 6.5 s | Time to refill an empty bar (plus a 0.6 s delay set on the stamina component). Keep it above `sprint_seconds` or sprinting becomes a permanent state; `test_tuning` checks it. |
+
+### Characters
+
+| Parameter | Default | Meaning |
+|---|---|---|
+| `character_scale` | 1.15 | Size of the player and every zombie relative to the generated models. Collision bodies (`EnemyData.radius` x this), bullet hurtboxes, health bars, the gun in the hand and the leg animation all follow. Bullets keep flying at 1.0 m (the `Weapon` node's height in `player.tscn`, in world units, not scaled) so they still hit props sized in metres, such as the 1 m fire barrels. A boss keeps its `EnemyData.size_scale` (1.2) on top, so it is 1.38 x the model. Bigger zombies are easier to hit and fill a street sooner. |
 
 ### Zombie movement
 
@@ -127,11 +144,28 @@ comes before 20 s or after 45 s.
 
 ## Leg animation follows the speed
 
-If you change the player's speeds, the legs follow on their own: `PlayerModel` plays a walk clip at slow speeds and the run clip at fast speeds, each sped up so a planted foot covers the ground at the same pace as the player (walk clip about 1.4 m/s, run clip about 3.5 m/s, both measured). Above 1.5x playback the step rate grows at half rate (`cadence_soft_limit`, `cadence_excess_share`), so a sprint looks like longer, quicker steps and not a blur; the feet then slide slightly. If you swap the character's clips, re-measure `walk_reference_speed` and `run_reference_speed` on the new clips.
+If you change the player's speeds or `character_scale`, the legs follow on their own. `PlayerModel` and `ZombieModel`
+divide the ground speed by the model's scale (a bigger model takes longer strides), then play the walk clip at slow
+speeds and the run clip at fast speeds, each at speed / reference so the planted foot stays still on the ground.
+
+| Value (at model scale 1) | Player | Zombie | How it was measured |
+|---|---|---|---|
+| `walk_reference_speed` | 1.45 m/s | 1.45 m/s | Backward speed of the planted foot in the character's space, median over the stance (clips have no root motion) |
+| `run_reference_speed` | 5.1 m/s | 4.85 m/s | Same; the run clip has a long stride, so a 3.45 m/s sprint at scale 1.15 plays it at about 0.59x. The player value was re-swept on the slice-17 hero rig (planted-foot slip 0.25 m/s at sprint, 0.34 at 4.85); re-measure it whenever the model or its clips change |
+| Walk to run | run above 2.9 m/s, walk below 2.7 m/s (`run_above_speed`, `walk_below_speed`) | switch at 2.7 m/s | Between the two speeds the legs keep the clip they have, so a steady speed always plays one clip: the clips are not phase matched and a blend of them slides. At scale 1.15 a plain walk is 2.0, a walk with four Fleet Foot 2.8 (in the band: it keeps the walk clip, or the run clip right after a sprint) and a sprint 3.0 m/s at scale 1, only 0.1 above the switch: if you lower `sprint_speed_multiplier` or raise `character_scale`, keep sprint / scale above 2.9 m/s or lower `run_above_speed` with it. The walk clip looks right up to about 2x, the run clip down to about 0.55x |
+| `cadence_soft_limit` | 2.0 | none | Above this playback the step rate grows at half rate and the feet slide on purpose. At 2.0 no reachable speed triggers it (the walk clip stops at 2.9 / 1.45 = 2x) |
+
+The generated walk and run loops repeat their first pose for one frame; `CharacterModel.trim_held_first_frame` drops that
+frame when the clip is installed (on a copy, the shared clip is not modified), so the planted foot does not stop for a frame
+at every loop. `tests/test_player_model.gd` and `tests/test_zombie_model.gd` move the scaled models at the real speeds and
+fail if a planted foot slides faster than 0.3 to 0.4 m/s (the old run reference of 3.5 slid about 1.5 m/s). If you swap a
+character's clips, re-measure the references on the new clips (those tests print how fast the feet slide).
 
 ## How the parameters interact
 
-- **Speed ratio decides whether outrunning works.** At 0.85 a zombie falls behind a walking player by about 0.7 m/s, but
+- **Speed ratio decides whether outrunning works.** In the shipped file (0.56) every zombie is slower than a walking
+  player, so the danger is numbers, getting cornered and standing still to shoot; a held sprint opens about 12 m in one
+  burst. At the default 0.85 a zombie falls behind a walking player by about 0.7 m/s, but
   the random spread and the late growth let the fastest zombies catch a walking player after mid-run. Sprinting
   (1.5x) opens a gap of about 13 to 17 m in one 6 s burst (more early, less late) and then you wait 6.5 s to recharge. `zombie_speed_ratio x
   (1 + zombie_speed_growth)` near 1 means walking is no longer an escape; above `sprint_speed_multiplier` nothing is.
@@ -150,11 +184,13 @@ If you change the player's speeds, the legs follow on their own: `PlayerModel` p
 - **Boss share vs boss cap.** A boss is a 1200 HP, 15%-armoured target (about 50 pistol shots). Even a 1% share is
   noticeable; `max_alive` stops two bosses from stacking.
 - **Damage vs recovery.** The balance target is a standing, non-shooting player who survives about 15 to 20 s after the
-  first zombie reaches them at the start of the run (measured: first contact at about 6 s, dead at about 23 s), and
+  first zombie reaches them at the start of the run (measured at the defaults: first contact at about 6 s, dead at about
+  23 s; with the shipped slower zombies the first one walks in from off-screen after about 17 s), and
   about 6 to 8 s late in the run. Standing still is not meant to work; the player is meant to move, shoot in short bursts
   and heal in the calm (0.5 HP/s after 5 s). Raise `calm_regen_per_second` or lower contact damage to forgive mistakes.
-- **Walls.** Chasers steer straight at you; one that gets pinned against a wall walks along it until it sees you
-  again (`Zombie` export group "Getting around walls"). There is no navigation mesh, so very winding streets can still
+- **Walls.** Chasers steer straight at you; one that gets pinned against a wall walks along it, always round the same
+  way, until it sees you again or has walked `wall_follow_distance` (15 m, a distance so slow zombies still reach the
+  corner of a building; `Zombie` export group "Getting around walls"). There is no navigation mesh, so very winding streets can still
   hold a zombie for a while, but camping behind a building no longer removes the pressure.
 - **World vs trickle.** World density gives a street that feels inhabited and is always where you run; trickle is the
   pressure that follows you. Few world zombies and a big trickle feel like a chase; many world zombies and no trickle
@@ -186,7 +222,8 @@ godot --headless --fixed-fps 60 --path . res://tests/test_pressure.tscn # standi
 # (always pass --fixed-fps 60 to test_pressure: without it the scene runs in real time and takes about 100 s)
 ```
 
-`test_tuning` fails when a change breaks the intent of the numbers (a zombie that cannot catch a walking player late
-in the run, a sprint that opens less than 5 m or more than 25 m, level 2 outside 20 to 45 s, a boss share above 3%, an
+`test_tuning` fails when a change breaks the intent of the numbers (an average zombie faster than a walking player or slower
+than 45% of it, zombies that cannot close in on a player who stops to shoot, late zombies not clearly faster than early ones,
+a sprint that opens less than 5 m or more than 25 m, level 2 outside 20 to 45 s, a boss share above 3%, an
 empty street along the test routes, a late mix that drifts from the shares, a zombie that sleeps where the grid cannot find it). If you change the intent on purpose, update the thresholds in the test and this
 guide together. The numbers are inferred, not measured from the original, so playtest after any large change.

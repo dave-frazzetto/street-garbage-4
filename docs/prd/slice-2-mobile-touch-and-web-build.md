@@ -35,7 +35,7 @@ and a sprint button, injected into `PlayerInput`. Add a Web export preset and a 
 - T1 Touching the left half of the screen places a move stick under the finger; dragging moves the survivor.
 - T2 Touching the right half places an aim stick; dragging aims and fires once past the fire threshold.
 - T3 Both sticks work at the same time (multi-touch), each tracking its own finger.
-- T4 A SPRINT button toggles sprint.
+- T4 ~~A SPRINT button toggles sprint.~~ Removed in slice 15: touch play walks only (ADR hold-to-sprint-walk-only-on-touch).
 - T5 Touch controls show only on touch devices (or after the first touch) and hide while menus are open.
 - T6 Title, perk cards (tap to pick), redraw/skip buttons and end screen work by tap.
 - T7 In portrait, a "rotate your device" overlay asks for landscape.

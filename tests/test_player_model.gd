@@ -124,25 +124,62 @@ func check_near(actual: float, expected: float, tolerance: float, message: Strin
 
 
 func test_8_gait_and_playback_match_ground_speed() -> void:
-	# Fresh model: test 7 played the death clip.
+	# Fresh model: test 7 played the death clip. Speeds given to runs_at/playback_scale are at model scale 1.
 	var m: PlayerModel = (load("res://world/player/player_model.tscn") as PackedScene).instantiate() as PlayerModel
 	add_child(m)
 	await wait_frames(2)
 	check(m.has_clip(&"walk"), "walk clip is available")
-	check_eq(m.gait_blend(1.4), 0.0, "walking pace plays only the walk clip")
-	check_eq(m.gait_blend(4.4), 1.0, "walk speed of the player plays only the run clip")
-	var mid: float = m.gait_blend(2.7)
-	check(mid > 0.1 and mid < 0.9, "in between the clips blend (%.2f)" % mid)
-	check_near(m.playback_scale(1.4, m.walk_reference_speed), 1.0, 0.01, "walk clip at its reference pace is not sped up")
-	check_near(m.playback_scale(0.7, m.walk_reference_speed), 0.5, 0.01, "slow walking slows the walk clip")
-	check_near(m.playback_scale(3.5, m.run_reference_speed), 1.0, 0.01, "run clip at its reference pace is not sped up")
-	# Foot planted speed = clip speed * playback scale must equal the ground speed where the cadence is not eased.
-	for v: float in [1.0, 1.4, 3.5, 4.4]:
-		var ref: float = m.walk_reference_speed if v < 2.5 else m.run_reference_speed
-		check_near(m.playback_scale(v, ref) * ref, v, 0.01, "feet match the ground at %.1f m/s" % v)
-	# Sprint: faster than walking, but the step rate grows less than the speed (eased cadence).
-	var walk_rate: float = m.playback_scale(4.4, m.run_reference_speed)
-	var sprint_rate: float = m.playback_scale(6.6, m.run_reference_speed)
-	check(sprint_rate > walk_rate, "sprint steps faster than the walk")
-	check(sprint_rate / walk_rate < 6.6 / 4.4, "step rate grows slower than speed at sprint (%.2f vs %.2f)" % [sprint_rate / walk_rate, 6.6 / 4.4])
+	var tuning: GameTuning = load("res://data/config/game_tuning.tres") as GameTuning
+	var walk: float = tuning.player_walk_speed / tuning.character_scale
+	var sprint: float = tuning.sprint_speed() / tuning.character_scale
+	var fleet_walk: float = walk * 1.4
+	check(not m.runs_at(walk, false) and not m.runs_at(walk, true), "walking (%.2f m/s at scale 1) plays the walk clip" % walk)
+	check(m.runs_at(sprint, false) and m.runs_at(sprint, true), "sprinting (%.2f m/s at scale 1) plays the run clip" % sprint)
+	# A speed between the two thresholds keeps whichever clip is playing (no flicker).
+	var in_band: float = (m.walk_below_speed + m.run_above_speed) * 0.5
+	check(not m.runs_at(in_band, false) and m.runs_at(in_band, true), "inside the hysteresis band the legs keep their current clip")
+	check(m.run_above_speed < sprint, "a plain sprint is above the run switch")
+	check_near(m.playback_scale(m.walk_reference_speed, m.walk_reference_speed), 1.0, 0.01, "walk clip at its reference pace is not sped up")
+	check_near(m.playback_scale(m.walk_reference_speed * 0.5, m.walk_reference_speed), 0.5, 0.01, "slow walking slows the walk clip")
+	check_near(m.playback_scale(m.run_reference_speed, m.run_reference_speed), 1.0, 0.01, "run clip at its reference pace is not sped up")
+	# Foot planted speed = clip speed * playback scale must equal the ground speed at every speed the player really uses.
+	for v: float in [walk, sprint, fleet_walk, sprint * 1.4]:
+		var ref: float = m.run_reference_speed if m.runs_at(v, false) else m.walk_reference_speed
+		check_near(m.playback_scale(v, ref) * ref, v, 0.01, "playback matches the ground at %.2f m/s" % v)
+	# The generated loops repeat their first pose for a frame; it is dropped so the planted foot never stops mid-stride.
+	var source: Animation = load("res://art/models/characters/player/clips/run.res") as Animation
+	check(m.clip_length(&"run") < source.length - 0.02, "run loop without its held first frame (%.3f s)" % m.clip_length(&"run"))
+	check(source.length > 0.66, "the shared clip resource is not modified")
 	m.queue_free()
+
+
+## Drives a scaled model at a ground speed with the real playback rules and measures its planted feet in world space.
+func _slip_at(world_speed: float, size: float) -> float:
+	var holder: Node3D = Node3D.new()
+	holder.scale = Vector3.ONE * size
+	add_child(holder)
+	var m: PlayerModel = (load("res://world/player/player_model.tscn") as PackedScene).instantiate() as PlayerModel
+	holder.add_child(m)
+	await wait_frames(1)
+	m.set_physics_process(false)
+	var t: AnimationTree = m._tree
+	t.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	var skel: Skeleton3D = m.find_first("Skeleton3D") as Skeleton3D
+	var advance: Callable = func(dt: float) -> void:
+		m.update_motion(world_speed, false)
+		m._physics_process(dt)
+		t.advance(dt)
+	var slip: float = FootSlip.worst_planted_speed(skel, holder, world_speed, advance)
+	holder.queue_free()
+	return slip
+
+
+func test_9_planted_feet_do_not_slide_at_walk_and_sprint() -> void:
+	var tuning: GameTuning = load("res://data/config/game_tuning.tres") as GameTuning
+	# Plain walk, a walk with four Fleet Foot (between the walk and run switch speeds) and a plain sprint.
+	for v: float in [tuning.player_walk_speed, tuning.player_walk_speed * 1.4, tuning.sprint_speed()]:
+		var slip: float = await _slip_at(v, tuning.character_scale)
+		check(slip < 0.4, "planted foot stays put at %.2f m/s, scale %.2f (slides %.2f m/s)" % [v, tuning.character_scale, slip])
+	# The same speed on a model at scale 1 needs a different playback: the scale is taken into account.
+	var unscaled: float = await _slip_at(tuning.sprint_speed(), 1.0)
+	check(unscaled < 0.4, "planted foot stays put at scale 1 too (slides %.2f m/s)" % unscaled)

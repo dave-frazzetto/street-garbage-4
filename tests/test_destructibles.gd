@@ -45,6 +45,21 @@ func test_2_bullets_damage_car() -> void:
 	check_eq(d.health, d.max_health - 25.0, "bullet damaged the car")
 
 
+func test_2b_player_gun_hits_a_fire_barrel() -> void:
+	# Fired from the real player's gun: its height must stay within the 1 m barrel, whatever the character scale.
+	var p: Player = flow.level.player
+	var d: Destructible = barrel.get_node("Body/Destructible") as Destructible
+	# North of the barrel: Cross Street runs north-south, so east of it is building frontage.
+	p.global_position = barrel.global_position + Vector3(0, 0, -4.0)
+	await wait_frames(2)
+	var hp0: float = d.health
+	p.weapon._cooldown = 0.0
+	p.weapon._fire(Vector3.BACK)
+	await wait_frames(20)
+	check(d.health < hp0, "a shot from the player's gun damaged the barrel (%.0f -> %.0f, gun at %.2f m)" % [hp0, d.health, p.weapon.global_position.y])
+	d.health = hp0
+
+
 func test_3_explosion_hurts_zombies_and_player_and_chains() -> void:
 	var p: Player = flow.level.player
 	p.global_position = car.global_position + Vector3(-2.0, 0, 3.0)

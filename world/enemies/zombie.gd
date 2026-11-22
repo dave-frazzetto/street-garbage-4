@@ -38,13 +38,17 @@ const WALL_LAYER: int = 1
 @export_range(0, 1, 0.05) var blocked_speed_fraction: float = 0.3
 ## Seconds of being blocked before it starts to walk along the wall instead of into it.
 @export_range(0.05, 3, 0.05) var blocked_seconds: float = 0.3
-## Longest it keeps walking along a wall before it tries the straight way again (it also stops as soon as it sees the
-## target again; 0 = never gets around walls).
-@export_range(0, 10, 0.5) var wall_follow_seconds: float = 4.0
+## Longest distance in metres it walks along a wall before it tries the straight way again (it also stops as soon as it
+## sees the target again; 0 = never gets around walls). A distance, not a time, so slow zombies still reach the corner
+## of a building.
+@export_range(0, 60, 0.5) var wall_follow_distance: float = 15.0
 ## Blocked zombies closer than this to the target are just crowding it, not stuck behind a wall.
 @export_range(0, 10, 0.25) var wall_follow_min_distance: float = 2.5
 ## After this many walk-along-the-wall attempts in a row it turns the other way round the obstacle.
 @export_range(1, 10) var wall_follow_flip_after: int = 3
+## With a flow field: seconds a blocked zombie walks the street round a small obstacle (car, barrier) before it tries
+## the straight way again.
+@export_range(0, 10, 0.5) var route_around_seconds: float = 4.0
 ## With a flow field (the level injects one), a zombie whose walk to the target is longer than this many times the
 ## straight distance, plus route_detour_slack metres, follows the street instead of heading straight for the target.
 @export_range(1.0, 3.0, 0.05) var route_detour_ratio: float = 1.15
@@ -73,6 +77,9 @@ static var _corpses: Array[Node3D] = []
 
 var target: Node3D
 var target_radius: float = 0.35
+## Collision radius in metres and model size after GameTuning.character_scale (set in _ready; the hurtbox reads them).
+var body_radius: float = 0.33
+var body_scale: float = 1.0
 ## Walking distances toward the player (injected by the level; null = straight chase and wall following only).
 var flow: FlowField
 var is_dead: bool = false
@@ -125,15 +132,17 @@ func _ready() -> void:
 	_contact_damage = tuning.zombie_contact_damage(data)
 	_xp_reward = tuning.zombie_xp(data, _spawn_elapsed)
 	_intercept = tuning.zombie_intercept * randf_range(intercept_spread_min, 1.0)
+	body_radius = tuning.zombie_radius(data)
+	body_scale = tuning.zombie_size(data)
 	var shape_node: CollisionShape3D = $CollisionShape3D as CollisionShape3D
 	var shape: CylinderShape3D = shape_node.shape as CylinderShape3D
-	shape.radius = data.radius
-	shape.height *= data.size_scale
-	shape_node.position.y *= data.size_scale
+	shape.radius = body_radius
+	shape.height *= body_scale
+	shape_node.position.y *= body_scale
 	if data.model_scene != null:
 		_swap_model(data.model_scene)
-	_visual.scale = Vector3.ONE * data.size_scale
-	_bar.position.y *= data.size_scale
+	_visual.scale = Vector3.ONE * body_scale
+	_bar.position.y *= body_scale
 	_model.set_tint(data.tint)
 	_bar.visible = data.always_show_health_bar
 	_cull_timer = randf() * CULL_CHECK_SECONDS
@@ -230,7 +239,7 @@ func _physics_process(delta: float) -> void:
 				dir = _follow_direction(delta)
 			elif route != Vector3.ZERO:
 				dir = route
-			if dist <= data.radius + target_radius + 0.15 and _attack_cooldown <= 0.0:
+			if dist <= body_radius + target_radius + 0.15 and _attack_cooldown <= 0.0:
 				_attack_cooldown = data.attack_interval
 				_model.play_attack()
 				attacked.emit(_contact_damage)
@@ -305,7 +314,7 @@ func _route_direction(delta: float) -> Vector3:
 ## the obstacle the same way, so a crowd behind a building finds the corner instead of standing there.
 func _track_blocked(delta: float, dir: Vector3) -> void:
 	var chasing: bool = _aware and _stun <= 0.0 and dir.length_squared() > 0.01 and _target_dist > wall_follow_min_distance
-	if not chasing or wall_follow_seconds <= 0.0:
+	if not chasing or wall_follow_distance <= 0.0:
 		_blocked_time = 0.0
 		return
 	var real: Vector3 = get_real_velocity()
@@ -316,16 +325,20 @@ func _track_blocked(delta: float, dir: Vector3) -> void:
 			if _route_time <= 0.0 and _can_route() and _since_route_start > route_retry_seconds:
 				# Something small (a car, a barrier) is in the way: walk the street round it for a while.
 				_blocked_time = 0.0
-				_route_time = wall_follow_seconds
+				_route_time = route_around_seconds
 				_since_route_start = 0.0
 			else:
 				_start_wall_follow()
 	else:
 		_blocked_time = 0.0
 		_unblocked_time += delta
-		if _unblocked_time > 2.0 and _follow_time <= 0.0:
-			_follow_side = 0.0
-			_follow_count = 0
+		if _unblocked_time > 2.0 and _follow_time <= 0.0 and _follow_side != 0.0:
+			# Sliding along the same wall does not count as free: keep going round the same way until the target is in sight.
+			if _wall_in_the_way():
+				_unblocked_time = 0.0
+			else:
+				_follow_side = 0.0
+				_follow_count = 0
 
 
 func _can_route() -> bool:
@@ -346,7 +359,7 @@ func _start_wall_follow() -> void:
 		_follow_side = -_follow_side
 		_follow_count = 1
 	_follow_normal = normal
-	_follow_time = wall_follow_seconds
+	_follow_time = wall_follow_distance / maxf(_speed, 0.1)
 
 
 ## While walking along a wall: along it, hugging it a little, until the target is in sight again or the time is up.

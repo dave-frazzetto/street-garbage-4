@@ -47,7 +47,8 @@ func test_2_model_is_a_human_sized_character() -> void:
 		var m: MeshInstance3D = mesh as MeshInstance3D
 		var aabb: AABB = m.global_transform * m.get_aabb()
 		top = maxf(top, aabb.end.y)
-	check(top > 1.5 and top < 2.2, "model height %.2f m is about 1.8 m" % top)
+	var size: float = GameTuning.fallback().character_scale
+	check(top > 1.5 * size and top < 2.25 * size, "model height %.2f m is about 1.8 m x character scale %.2f" % [top, size])
 	zombie.queue_free()
 
 
@@ -120,7 +121,9 @@ func test_6_zombie_types_use_their_own_model() -> void:
 	var player: AnimationPlayer = _player_of(armoured)
 	for clip: StringName in [&"walk", &"run", &"attack", &"die"]:
 		check(player.has_animation(clip), "armoured clip '%s' present" % clip)
-	check_eq(armoured.get_node("Visual").scale, Vector3.ONE, "own-model zombies are not stretched by radius")
+	var size: float = GameTuning.fallback().character_scale
+	check((armoured.get_node("Visual") as Node3D).scale.is_equal_approx(Vector3.ONE * size), "own-model zombies are only scaled by the character scale, not stretched by radius")
+	check(is_equal_approx(armoured.body_radius, armoured.data.radius * size), "body radius follows the character scale (%.3f)" % armoured.body_radius)
 	walker.queue_free()
 	armoured.queue_free()
 
@@ -133,16 +136,50 @@ func test_7_playback_matches_ground_speed_and_size() -> void:
 	var bm: ZombieModel = boss.get_node("Visual/Model") as ZombieModel
 	var wp: AnimationPlayer = _player_of(walker)
 	var bp: AnimationPlayer = _player_of(boss)
-	wm.set_move_speed(1.4)
+	# A zombie at character scale s takes s times longer strides, so its reference pace in the world is s times higher.
+	var size: float = walker.body_scale
+	wm.set_move_speed(wm.walk_reference_speed * size)
 	check_eq(wp.current_animation, "walk", "walking pace plays the walk clip")
 	check(absf(wp.speed_scale - 1.0) < 0.02, "walk clip at its reference pace is not sped up (%.2f)" % wp.speed_scale)
-	wm.set_move_speed(3.5)
+	wm.set_move_speed(wm.run_reference_speed * size)
 	check_eq(wp.current_animation, "run", "fast pace plays the run clip")
 	check(absf(wp.speed_scale - 1.0) < 0.02, "run clip at its reference pace is not sped up (%.2f)" % wp.speed_scale)
-	wm.set_move_speed(5.2)
-	check(wp.speed_scale > 1.3 and wp.speed_scale < 1.6, "fastest late zombie runs about 1.5x (%.2f)" % wp.speed_scale)
-	# A boss is 1.2x larger, so its stride is longer: the same ground speed needs slower playback.
-	bm.set_move_speed(3.5 * 1.2)
-	check(absf(bp.speed_scale - 1.0) < 0.03, "boss at 1.2x the reference pace plays at normal speed (%.2f)" % bp.speed_scale)
+	# A boss is 1.2x larger again, so its stride is longer: the same ground speed needs slower playback.
+	check(is_equal_approx(boss.body_scale, boss.data.size_scale * size), "boss size is its size_scale x the character scale")
+	bm.set_move_speed(bm.walk_reference_speed * boss.body_scale)
+	check(absf(bp.speed_scale - 1.0) < 0.03, "boss at its own reference pace plays at normal speed (%.2f)" % bp.speed_scale)
 	walker.queue_free()
 	boss.queue_free()
+
+
+## Drives a scaled zombie model at a ground speed with its real playback rules and measures its planted feet.
+func _slip_at(world_speed: float, size: float) -> float:
+	var holder: Node3D = Node3D.new()
+	holder.scale = Vector3.ONE * size
+	root.add_child(holder)
+	var m: ZombieModel = (load("res://world/enemies/zombie_model.tscn") as PackedScene).instantiate() as ZombieModel
+	holder.add_child(m)
+	await wait_frames(1)
+	var player: AnimationPlayer = _player_of(m)
+	player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	var skel: Skeleton3D = m.find_first("Skeleton3D") as Skeleton3D
+	var advance: Callable = func(dt: float) -> void:
+		m.set_move_speed(world_speed)
+		player.advance(dt)
+	var slip: float = FootSlip.worst_planted_speed(skel, holder, world_speed, advance)
+	holder.queue_free()
+	return slip
+
+
+func test_8_planted_feet_do_not_slide_at_real_speeds() -> void:
+	var tuning: GameTuning = load("res://data/config/game_tuning.tres") as GameTuning
+	var walker: EnemyData = load("res://data/enemies/walker.tres") as EnemyData
+	var boss: EnemyData = load("res://data/enemies/boss.tres") as EnemyData
+	var cases: Array[Array] = [
+		["standard zombie at the start", tuning.zombie_speed(walker, 0.0), tuning.zombie_size(walker)],
+		["fastest late zombie", tuning.zombie_speed(walker, tuning.ramp_seconds) * (1.0 + walker.speed_variance), tuning.zombie_size(walker)],
+		["boss", tuning.zombie_speed(boss, tuning.ramp_seconds), tuning.zombie_size(boss)],
+	]
+	for c: Array in cases:
+		var slip: float = await _slip_at(float(c[1]), float(c[2]))
+		check(slip < 0.3, "%s: planted foot stays put at %.2f m/s, scale %.2f (slides %.2f m/s)" % [c[0], c[1], c[2], slip])

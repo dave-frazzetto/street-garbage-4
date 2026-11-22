@@ -2,9 +2,9 @@ class_name PlayerInput
 extends Node
 ## Merges mouse+keyboard, twin-stick gamepad and touch sticks into world-space move / aim / fire intents.
 ## Directions are screen-relative through the IsoCamera ("up" moves up the screen). The last used device decides
-## where aim comes from. See ADR unified-player-input-component.
+## where aim comes from. Sprint is held (the "sprint" action: Shift, LB or L3); touch has no sprint, phones walk only.
+## See ADR unified-player-input-component and hold-to-sprint-walk-only-on-touch.
 
-signal sprint_toggled
 signal device_changed(device: Device)
 
 enum Device { MOUSE_KEYBOARD, GAMEPAD, TOUCH }
@@ -42,13 +42,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		_set_device(Device.GAMEPAD)
 	elif event is InputEventScreenTouch or event is InputEventScreenDrag:
 		_set_device(Device.TOUCH)
-	if event.is_action_pressed("sprint_toggle"):
-		sprint_toggled.emit()
+	elif event is InputEventKey and event.pressed and not event.is_echo() and device == Device.TOUCH:
+		# A touchscreen laptop or a tablet with a keyboard: pressing a key hands control back to the keyboard, so Shift
+		# sprints again without the mouse having to move first. Only from touch: a gamepad player tapping a media key
+		# must keep stick aim and stick fire.
+		_set_device(Device.MOUSE_KEYBOARD)
 
 
-## Called by touch controls' sprint button.
-func request_sprint_toggle() -> void:
-	sprint_toggled.emit()
+## True while the sprint input is held (keyboard or gamepad). Touch play has no sprint: it always walks.
+func is_sprint_held() -> bool:
+	return device != Device.TOUCH and Input.is_action_pressed("sprint")
 
 
 ## Fed every frame with the on-screen stick vectors (length 0..1). Using a stick switches to touch aim.

@@ -184,7 +184,7 @@ func _usable(pos: Vector3, data: EnemyData) -> bool:
 	if flow != null and flow.is_ready() and config.spawn_max_walk_distance > 0.0:
 		if flow.distance_at(Vector2(p.x, p.z)) > config.spawn_max_walk_distance:
 			return false
-	return _is_free(p, data.radius)
+	return _is_free(p, tuning.zombie_radius(data))
 
 
 ## `pos` moved to the nearest free spot connected to the player start (within 2 m), or unchanged without a walk grid.
