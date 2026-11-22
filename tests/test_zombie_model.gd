@@ -59,8 +59,8 @@ func test_3_moving_plays_walk_and_contact_plays_attack() -> void:
 	zombie.target = target
 	await wait_frames(6)
 	var player: AnimationPlayer = _player_of(zombie)
-	check_eq(player.current_animation, "walk", "chasing zombie walks")
-	check(player.is_playing(), "walk is playing")
+	check_eq(player.current_animation, "run", "a chasing zombie moves fast enough to run")
+	check(player.is_playing(), "run is playing")
 	target.global_position = Vector3(0, 0, -0.6)
 	await wait_frames(12)
 	check_eq(player.current_animation, "attack", "zombie in contact plays attack")

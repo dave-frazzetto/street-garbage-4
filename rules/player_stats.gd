@@ -66,12 +66,18 @@ var _base: Dictionary = {}
 var _flat: Dictionary = {}
 var _percent: Dictionary = {}
 var _flags: Dictionary = {}
+## Out-of-combat recovery (GameTuning): seconds without damage before it starts, and health per second while it runs.
+var calm_regen_delay: float = 5.0
+var calm_regen_per_second: float = 0.0
 
 
-func _init(config: PlayerConfig = null) -> void:
+func _init(config: PlayerConfig = null, tuning: GameTuning = null) -> void:
 	if config == null:
 		config = PlayerConfig.new()
-	_base = config.to_base_stats()
+	_base = config.to_base_stats(tuning)
+	var t: GameTuning = tuning if tuning != null else GameTuning.fallback()
+	calm_regen_delay = t.calm_regen_delay
+	calm_regen_per_second = t.calm_regen_per_second
 	for stat: int in Stat.values():
 		_flat[stat] = 0.0
 		_percent[stat] = 0.0

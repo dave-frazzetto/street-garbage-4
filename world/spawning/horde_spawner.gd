@@ -39,6 +39,10 @@ class Slot extends RefCounted:
 	var position: Vector3
 	var zombie: Zombie
 
+## Balance numbers for the zombies this horde wakes (the level injects them; null uses GameTuning defaults).
+var tuning: GameTuning
+## Callable() -> float giving run time elapsed, so a horde woken late is as tough as the zombies around it.
+var elapsed_provider: Callable
 var _slots: Array[Slot] = []
 var _target: Node3D
 var _container: Node
@@ -109,7 +113,7 @@ func _refresh() -> void:
 
 func _wake(slot: Slot) -> void:
 	var z: Zombie = zombie_scene.instantiate() as Zombie
-	z.setup(slot.enemy, _target, aggro_radius)
+	z.setup(slot.enemy, _target, aggro_radius, tuning, float(elapsed_provider.call()) if elapsed_provider.is_valid() else 0.0)
 	z.position = slot.position
 	slot.zombie = z
 	z.died.connect(func(_z: Zombie, _xp: float, _at: Vector3) -> void: _slots.erase(slot))

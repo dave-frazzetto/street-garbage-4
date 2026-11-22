@@ -40,6 +40,8 @@ signal prop_destroyed(at: Vector3, explosive: bool)
 @export_range(0, 2, 0.05) var chain_delay: float = 0.15
 @export var default_run_config: RunConfig
 @export var default_player_config: PlayerConfig
+## Balance numbers used when the level runs on its own (game flow injects its own).
+@export var default_tuning: GameTuning
 ## Playable area on the ground plane in metres: x = world X, y = world Z.
 @export var bounds: Rect2 = Rect2(0, 0, 100, 100)
 
@@ -47,6 +49,7 @@ signal prop_destroyed(at: Vector3, explosive: bool)
 @onready var projectiles: Node3D = $Projectiles
 @onready var effects: Node3D = $Effects
 @onready var director: ZombieDirector = $ZombieDirector
+@onready var population: WorldPopulation = $WorldPopulation
 @onready var extraction: ExtractionZone = $ExtractionZone
 @onready var arrow: ObjectiveArrow = $ObjectiveArrow
 @onready var camera_rig: IsoCamera = $IsoCamera
@@ -54,6 +57,7 @@ signal prop_destroyed(at: Vector3, explosive: bool)
 
 var player: Player
 var stats: PlayerStats
+var tuning: GameTuning
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _gears: Array[GearPickup] = []
 var _started: bool = false
@@ -77,16 +81,17 @@ func _ready() -> void:
 	extraction.player_entered.connect(func() -> void: extraction_entered.emit())
 	if get_parent() == get_tree().root:
 		# Launched on its own: run with defaults.
-		start.call_deferred(PlayerStats.new(default_player_config), default_run_config, RandomNumberGenerator.new(), Callable())
+		start.call_deferred(PlayerStats.new(default_player_config, default_tuning), default_run_config, RandomNumberGenerator.new(), Callable(), default_tuning)
 
 
 ## Call down: spawn the player, gears and hordes and start the director.
-func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumberGenerator, elapsed_provider: Callable) -> void:
+func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumberGenerator, elapsed_provider: Callable, game_tuning: GameTuning = null) -> void:
 	if _started:
 		return
 	_started = true
 	stats = player_stats
 	rng = random
+	tuning = game_tuning if game_tuning != null else (default_tuning if default_tuning != null else GameTuning.fallback())
 	var cfg: RunConfig = run_config if run_config != null else RunConfig.new()
 	Zombie.max_corpses = director.config.max_corpses
 	_spawn_player()
@@ -97,13 +102,17 @@ func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumbe
 			spawner.zombie_spawned.connect(_on_zombie_spawned)
 			spawner.activation_radius = director.config.horde_activation_radius
 			spawner.deactivation_radius = director.config.horde_deactivation_radius
+			spawner.tuning = tuning
+			spawner.elapsed_provider = elapsed_provider
 			spawner.spawn(player, entities, rng)
 	for node: Node in find_children("Destructible", "", true, false):
 		var prop: Destructible = node as Destructible
 		if prop != null:
 			prop.destroyed.connect(_on_prop_destroyed)
 	director.zombie_spawned.connect(_on_zombie_spawned)
-	director.start(player, entities, bounds, rng, elapsed_provider)
+	director.start(player, entities, bounds, rng, elapsed_provider, tuning)
+	population.zombie_spawned.connect(_on_zombie_spawned)
+	population.start(player, entities, bounds, rng, elapsed_provider, tuning, player_start_position())
 	arrow.follow = player
 	_update_objective()
 
@@ -144,6 +153,7 @@ func player_start_position() -> Vector3:
 func apply_graphics(profile: GraphicsProfile) -> void:
 	_graphics = profile
 	director.population_scale = profile.zombie_population_scale
+	population.population_scale = profile.zombie_population_scale
 	var env_node: WorldEnvironment = get_node_or_null("WorldEnvironment") as WorldEnvironment
 	if env_node != null and env_node.environment != null:
 		env_node.environment = env_node.environment.duplicate() as Environment
@@ -233,7 +243,10 @@ func _spawn_player() -> void:
 	player.died.connect(func() -> void: player_died.emit())
 	player.weapon_changed.connect(func(n: String, t: float) -> void: weapon_changed.emit(n, t))
 	player.sprint_changed.connect(func(on: bool) -> void: player_sprint_changed.emit(on))
-	player.fired.connect(func(w: WeaponData) -> void: player_fired.emit(w))
+	player.fired.connect(func(w: WeaponData) -> void:
+		player_fired.emit(w)
+		get_tree().call_group(Zombie.GROUP, "alert", player.global_position, tuning.gunfire_alert_radius)
+	)
 	player.hit_landed.connect(func(_a: float) -> void: zombie_hit.emit())
 
 

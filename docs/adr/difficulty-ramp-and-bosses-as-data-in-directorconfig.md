@@ -28,3 +28,5 @@ DirectorConfig holds node-free ramp functions (max_alive_at, batch_at, interval_
 ## Consequences
 
 Designers retune pressure and bosses in director_default.tres and boss.tres. Ramps apply at spawn only, not to zombies already alive. First-minute fairness was not hand-played yet.
+
+Update: the ramp functions and numbers described here were superseded by ADR 26 (GameTuning); the boss-as-data idea still stands.

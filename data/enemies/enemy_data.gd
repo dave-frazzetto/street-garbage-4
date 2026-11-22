@@ -1,12 +1,18 @@
 class_name EnemyData
 extends Resource
-## A zombie type.
+## A zombie type. Health, speed and XP are relative to a standard zombie; the absolute numbers come from GameTuning.
+
+## Which share of the spawn mix a type belongs to (GameTuning sets how big each share is over a run).
+enum Tier { STANDARD, ELITE, BOSS }
 
 @export var display_name: String = "Walker"
-@export_range(1, 2000) var max_health: float = 20.0
-## Chase speed in metres per second. Each zombie varies it by speed_variance.
-@export_range(0.2, 10, 0.05) var speed: float = 1.75
-@export_range(0, 1, 0.01) var speed_variance: float = 0.2
+@export var tier: Tier = Tier.STANDARD
+## Health relative to a standard zombie (GameTuning.zombie_health): 2 = twice as tough.
+@export_range(0.1, 50, 0.05) var health_scale: float = 1.0
+## Chase speed relative to a standard zombie (GameTuning.zombie_speed_ratio x the player's walking speed).
+@export_range(0.1, 2.5, 0.01) var speed_scale: float = 1.0
+## Each zombie varies its speed by up to this fraction, so a crowd stretches out.
+@export_range(0, 1, 0.01) var speed_variance: float = 0.15
 @export_range(0, 200) var contact_damage: float = 10.0
 ## Seconds between contact hits.
 @export_range(0.1, 5, 0.05) var attack_interval: float = 0.8
@@ -14,6 +20,7 @@ extends Resource
 @export_range(0, 0.95, 0.01) var armour: float = 0.0
 ## Fraction of the hit stagger ignored (1 = never staggers). Bosses shrug hits off more.
 @export_range(0, 1, 0.01) var stagger_resistance: float = 0.0
+## XP relative to a standard zombie kill (GameTuning.xp_per_standard_kill).
 @export_range(0, 100) var xp: float = 1.0
 ## Body radius in metres (collision). Keep it at 0.33 x size_scale so hit boxes match the visible body.
 @export_range(0.1, 1.5, 0.01) var radius: float = 0.33

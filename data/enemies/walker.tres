@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_p5ltb")
-max_health = 60.0
-contact_damage = 15.0
+contact_damage = 6.0
+attack_interval = 1.0
