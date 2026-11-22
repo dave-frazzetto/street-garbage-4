@@ -47,12 +47,12 @@ interval), the non-weapon events are slots on `audio/sfx_bank_default.tres`, and
 ## Web build (itch.io)
 
 ```sh
-scripts/build_web.sh            # exports build/web/ and build/street-garbage-web.zip (single-threaded)
+scripts/build_web.sh            # exports build/web/ and build/street-garbage-web_YYYYMMDD-HHMMSS.zip (single-threaded)
 node scripts/serve_web.js       # serves build/web on http://localhost:8060/ (phones on the LAN: use the PC's IP)
 node scripts/web_smoke.js       # headless Chrome: loads the build, taps START, drives both touch sticks
 ```
 
-Upload `build/street-garbage-web.zip` to itch.io as an HTML project ("This file will be played in the browser").
+Upload `build/street-garbage-web_YYYYMMDD-HHMMSS.zip` to itch.io as an HTML project ("This file will be played in the browser").
 Leave "SharedArrayBuffer support" off, turn on "Mobile friendly" with landscape orientation, and add a fullscreen button.
 The page shell is `web/shell.html` (set as the custom HTML shell in the Web preset). It pins the canvas to the dynamic viewport so no black band is left under it, and adds an in-page Fullscreen button (Android/desktop; iPhone Safari has no Fullscreen API, so it shows "Add to Home Screen" instructions, and the page is iOS standalone-capable).
 
