@@ -2,64 +2,75 @@
 
 [ext_resource type="Script" path="res://world/effects/flame_effect.gd" id="1_flame"]
 [ext_resource type="Script" path="res://world/effects/vfx_burst.gd" id="2_burst"]
-[ext_resource type="QuadMesh" path="res://world/effects/shared/quad_add.tres" id="3_add"]
-[ext_resource type="QuadMesh" path="res://world/effects/shared/quad_alpha.tres" id="4_alpha"]
+[ext_resource type="QuadMesh" path="res://world/effects/shared/quad_unit.tres" id="3_quad"]
+[ext_resource type="Material" path="res://world/effects/shared/mat_fire.tres" id="4_fire"]
+[ext_resource type="Material" path="res://world/effects/shared/mat_ember.tres" id="5_ember"]
+[ext_resource type="Material" path="res://world/effects/shared/mat_smoke.tres" id="6_smoke"]
 
 [sub_resource type="Gradient" id="Gradient_flame"]
 offsets = PackedFloat32Array(0, 0.3, 0.65, 1)
-colors = PackedColorArray(1, 0.8, 0.3, 0.55, 1, 0.45, 0.08, 0.5, 0.7, 0.15, 0.03, 0.3, 0.3, 0.05, 0.02, 0)
+colors = PackedColorArray(1, 0.75, 0.25, 0.48, 1, 0.4, 0.06, 0.45, 0.7, 0.15, 0.03, 0.3, 0.3, 0.05, 0.02, 0)
+
+[sub_resource type="GradientTexture1D" id="GradTex_flame"]
+gradient = SubResource("Gradient_flame")
 
 [sub_resource type="Curve" id="Curve_flame"]
-_data = [Vector2(0, 0.7), 0.0, 0.0, 0, 0, Vector2(0.35, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.1), 0.0, 0.0, 0, 0]
+_data = [Vector2(0, 0.7), 0.0, 0.0, 0, 0, Vector2(0.35, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.15), 0.0, 0.0, 0, 0]
 point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTex_flame"]
+curve = SubResource("Curve_flame")
 
 [sub_resource type="Gradient" id="Gradient_ember"]
 offsets = PackedFloat32Array(0, 0.6, 1)
 colors = PackedColorArray(1, 0.85, 0.4, 1, 1, 0.4, 0.08, 0.9, 0.6, 0.1, 0.02, 0)
 
+[sub_resource type="GradientTexture1D" id="GradTex_ember"]
+gradient = SubResource("Gradient_ember")
+
 [sub_resource type="Curve" id="Curve_shrink"]
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.3), 0.0, 0.0, 0, 0]
 point_count = 2
 
+[sub_resource type="CurveTexture" id="CurveTex_shrink"]
+curve = SubResource("Curve_shrink")
+
 [sub_resource type="Gradient" id="Gradient_smoke"]
 offsets = PackedFloat32Array(0, 0.25, 1)
-colors = PackedColorArray(0.2, 0.19, 0.18, 0, 0.18, 0.17, 0.16, 0.45, 0.08, 0.08, 0.08, 0)
+colors = PackedColorArray(0.2, 0.19, 0.18, 0, 0.18, 0.17, 0.16, 0.5, 0.08, 0.08, 0.08, 0)
+
+[sub_resource type="GradientTexture1D" id="GradTex_smoke"]
+gradient = SubResource("Gradient_smoke")
 
 [sub_resource type="Curve" id="Curve_grow"]
 _data = [Vector2(0, 0.4), 0.0, 1.2, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
 point_count = 2
 
-[node name="FlameEffect" type="Node3D"]
-script = ExtResource("1_flame")
+[sub_resource type="CurveTexture" id="CurveTex_grow"]
+curve = SubResource("Curve_grow")
 
-[node name="Flame" type="CPUParticles3D" parent="."]
-cast_shadow = 0
-amount = 22
-lifetime = 0.7
+[sub_resource type="ParticleProcessMaterial" id="Proc_flame"]
 lifetime_randomness = 0.3
-local_coords = false
-mesh = ExtResource("3_add")
+angle_min = -25.0
+angle_max = 25.0
 emission_shape = 1
 emission_sphere_radius = 0.22
 direction = Vector3(0, 1, 0)
 spread = 14.0
-initial_velocity_min = 1.3
-initial_velocity_max = 2.5
-gravity = Vector3(0, 0.6, 0)
-scale_amount_min = 0.8
-scale_amount_max = 1.2
-scale_amount_curve = SubResource("Curve_flame")
-color_ramp = SubResource("Gradient_flame")
-script = ExtResource("2_burst")
-free_when_done = false
+initial_velocity_min = 1.6
+initial_velocity_max = 2.8
+gravity = Vector3(0, 0.8, 0)
+scale_min = 0.5
+scale_max = 0.8
+scale_curve = SubResource("CurveTex_flame")
+color_ramp = SubResource("GradTex_flame")
+turbulence_enabled = true
+turbulence_noise_strength = 0.35
+turbulence_noise_scale = 3.0
+turbulence_noise_speed = Vector3(0, -1, 0)
 
-[node name="Embers" type="CPUParticles3D" parent="."]
-cast_shadow = 0
-amount = 6
-lifetime = 1.8
+[sub_resource type="ParticleProcessMaterial" id="Proc_ember"]
 lifetime_randomness = 0.5
-local_coords = false
-mesh = ExtResource("3_add")
 emission_shape = 1
 emission_sphere_radius = 0.2
 direction = Vector3(0, 1, 0)
@@ -67,21 +78,18 @@ spread = 35.0
 initial_velocity_min = 1.0
 initial_velocity_max = 2.4
 gravity = Vector3(0.3, 0.4, 0)
-scale_amount_min = 0.05
-scale_amount_max = 0.1
-scale_amount_curve = SubResource("Curve_shrink")
-color_ramp = SubResource("Gradient_ember")
-script = ExtResource("2_burst")
-free_when_done = false
+scale_min = 0.06
+scale_max = 0.11
+scale_curve = SubResource("CurveTex_shrink")
+color_ramp = SubResource("GradTex_ember")
+turbulence_enabled = true
+turbulence_noise_strength = 1.0
+turbulence_noise_scale = 1.5
 
-[node name="Smoke" type="CPUParticles3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
-cast_shadow = 0
-amount = 6
-lifetime = 2.2
+[sub_resource type="ParticleProcessMaterial" id="Proc_smoke"]
 lifetime_randomness = 0.2
-local_coords = false
-mesh = ExtResource("4_alpha")
+angle_min = -180.0
+angle_max = 180.0
 emission_shape = 1
 emission_sphere_radius = 0.2
 direction = Vector3(0, 1, 0)
@@ -89,10 +97,55 @@ spread = 12.0
 initial_velocity_min = 0.9
 initial_velocity_max = 1.4
 gravity = Vector3(0.4, 0.3, 0)
-scale_amount_min = 1.2
-scale_amount_max = 1.8
-scale_amount_curve = SubResource("Curve_grow")
-color_ramp = SubResource("Gradient_smoke")
+scale_min = 1.2
+scale_max = 1.9
+scale_curve = SubResource("CurveTex_grow")
+color_ramp = SubResource("GradTex_smoke")
+turbulence_enabled = true
+turbulence_noise_strength = 0.4
+turbulence_noise_scale = 2.0
+
+[node name="FlameEffect" type="Node3D"]
+script = ExtResource("1_flame")
+
+[node name="Flame" type="GPUParticles3D" parent="."]
+cast_shadow = 0
+amount = 24
+lifetime = 0.7
+preprocess = 0.8
+fixed_fps = 60
+visibility_aabb = AABB(-2, -1, -2, 4, 6, 4)
+process_material = SubResource("Proc_flame")
+material_override = ExtResource("4_fire")
+draw_pass_1 = ExtResource("3_quad")
+script = ExtResource("2_burst")
+free_when_done = false
+
+[node name="Embers" type="GPUParticles3D" parent="."]
+cast_shadow = 0
+amount = 8
+lifetime = 1.8
+preprocess = 1.8
+fixed_fps = 60
+visibility_aabb = AABB(-3, -1, -3, 6, 8, 6)
+process_material = SubResource("Proc_ember")
+material_override = ExtResource("5_ember")
+draw_pass_1 = ExtResource("3_quad")
+script = ExtResource("2_burst")
+free_when_done = false
+
+[node name="Smoke" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+cast_shadow = 0
+amount = 7
+lifetime = 2.2
+preprocess = 2.2
+fixed_fps = 30
+draw_order = 2
+visibility_aabb = AABB(-3, -1, -3, 6, 9, 6)
+process_material = SubResource("Proc_smoke")
+material_override = ExtResource("6_smoke")
+draw_pass_1 = ExtResource("3_quad")
 script = ExtResource("2_burst")
 free_when_done = false
 

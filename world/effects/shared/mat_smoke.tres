@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://world/effects/shared/fx_blob.gdshader" id="1_sh"]
+[ext_resource type="Texture2D" path="res://world/effects/shared/fx_noise.tres" id="2_noise"]
+
+[resource]
+shader = ExtResource("1_sh")
+shader_parameter/noise_tex = ExtResource("2_noise")
+shader_parameter/additive = 0.0
+shader_parameter/intensity = 1.0
+shader_parameter/noise_strength = 0.9
+shader_parameter/noise_scale = 1.3
+shader_parameter/noise_scroll = Vector2(0.02, -0.12)
+shader_parameter/erosion = 0.55
+shader_parameter/edge_softness = 0.6
+shader_parameter/soft_distance = 1.0

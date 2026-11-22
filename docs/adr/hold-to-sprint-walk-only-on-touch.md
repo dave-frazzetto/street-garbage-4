@@ -42,9 +42,6 @@ can still walk away from every zombie, so sprint is not essential there.
 
 ## Consequences
 
-- Touch players can still draw sprint perks (Double Sprint) from the pool, which do nothing for them, and the stamina bar
-  stays on the HUD. Accepted for now; filtering sprint-only perks by input device is a follow-up.
-
 - Sprint is a deliberate, short burst that ends the moment the key is let go, which matches how the stamina bar is
   tuned (6 s of sprint, 6.5 s to refill).
 - The input contract is a polled state instead of a signal, so no event can be missed between frames and tests drive it
@@ -52,3 +49,5 @@ can still walk away from every zombie, so sprint is not essential there.
 - Phones lose the sprint escape. If later tuning makes zombies faster than walking, touch play needs a sprint control
   again (for example pushing the move stick to its rim), and this ADR should be superseded.
 - Holding L3 while steering with the same stick is awkward, which is why LB is bound too.
+- Touch players can still draw sprint perks (Double Sprint) from the pool, which do nothing for them, and the stamina bar
+  stays on the HUD. Accepted for now; filtering sprint-only perks by input device is a follow-up.

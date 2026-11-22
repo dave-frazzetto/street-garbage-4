@@ -42,9 +42,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_set_device(Device.GAMEPAD)
 	elif event is InputEventScreenTouch or event is InputEventScreenDrag:
 		_set_device(Device.TOUCH)
-	elif event is InputEventKey and event.pressed and not event.is_echo():
+	elif event is InputEventKey and event.pressed and not event.is_echo() and device == Device.TOUCH:
 		# A touchscreen laptop or a tablet with a keyboard: pressing a key hands control back to the keyboard, so Shift
-		# sprints again without the mouse having to move first.
+		# sprints again without the mouse having to move first. Only from touch: a gamepad player tapping a media key
+		# must keep stick aim and stick fire.
 		_set_device(Device.MOUSE_KEYBOARD)
 
 

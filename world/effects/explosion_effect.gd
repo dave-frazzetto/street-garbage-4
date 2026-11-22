@@ -1,7 +1,7 @@
 class_name ExplosionEffect
 extends Node3D
-## Explosion: a white-hot flash puff, a fireball, a smoke puff, flying sparks and a short light. Each part is a child
-## VfxBurst (tune amount, speed, colours in its Inspector). `radius` scales the whole thing relative to
+## Explosion: a white-hot flash puff, a ground shockwave ring, a fireball, a smoke puff, streaking sparks, lingering
+## embers and a short light. Each part is a child VfxBurst (tune amount, speed, colours in its Inspector). `radius` scales the whole thing relative to
 ## `reference_radius`, so a barrel blast and a small explosive round use the same scene.
 
 ## Blast radius this effect is drawn for. Prop blasts and explosive rounds set it when they spawn the effect.
@@ -25,12 +25,9 @@ func _ready() -> void:
 		var burst: VfxBurst = child as VfxBurst
 		if burst == null:
 			continue
-		burst.initial_velocity_min *= factor
-		burst.initial_velocity_max *= factor
-		burst.scale_amount_min *= factor
-		burst.scale_amount_max *= factor
-		burst.emission_sphere_radius *= factor
-		_free_after = maxf(_free_after, burst.lifetime * (1.0 + burst.lifetime_randomness))
+		if not is_equal_approx(factor, 1.0):
+			burst.scale_by(factor)
+		_free_after = maxf(_free_after, burst.total_lifetime())
 	_free_after = maxf(_free_after, lifetime) + 0.1
 	_light.light_color = color
 	_light.omni_range = maxf(radius * 3.0, 3.0)

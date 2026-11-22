@@ -264,3 +264,11 @@ func test_8_keyboard_after_touch_can_sprint() -> void:
 	check(player.input.is_sprint_held(), "Shift sprints after touch play without moving the mouse")
 	_key(KEY_SHIFT, false)
 	await wait_frames(1)
+
+
+func test_9_key_press_does_not_take_over_from_the_gamepad() -> void:
+	player.input._set_device(PlayerInput.Device.GAMEPAD)
+	_key(KEY_VOLUMEUP, true)
+	await wait_frames(1)
+	_key(KEY_VOLUMEUP, false)
+	check_eq(player.input.device, PlayerInput.Device.GAMEPAD, "a key press leaves gamepad aim and fire alone")

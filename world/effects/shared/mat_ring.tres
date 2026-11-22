@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://world/effects/shared/fx_ring.gdshader" id="1_sh"]
+
+[resource]
+shader = ExtResource("1_sh")
+shader_parameter/additive = 1.0
+shader_parameter/intensity = 1.4
+shader_parameter/thickness = 0.1
