@@ -7,16 +7,30 @@
 [ext_resource type="Animation" path="res://art/models/characters/player/clips/run_and_shoot.res" id="6_shoot"]
 [ext_resource type="Animation" path="res://art/models/characters/player/clips/walk.res" id="7_walk"]
 [ext_resource type="Animation" path="res://art/models/characters/player/clips/die.res" id="8_die"]
+[ext_resource type="Animation" path="res://art/models/characters/player/clips/walk_back.res" id="9_walk_back"]
+[ext_resource type="Animation" path="res://art/models/characters/player/clips/walk_left.res" id="10_walk_left"]
+[ext_resource type="Animation" path="res://art/models/characters/player/clips/walk_right.res" id="11_walk_right"]
+[ext_resource type="Animation" path="res://art/models/characters/player/clips/run_back.res" id="12_run_back"]
+[ext_resource type="Animation" path="res://art/models/characters/player/clips/run_left.res" id="13_run_left"]
+[ext_resource type="Animation" path="res://art/models/characters/player/clips/run_right.res" id="14_run_right"]
+[ext_resource type="Resource" path="res://data/config/player_locomotion.tres" id="15_locomotion"]
 
 [node name="PlayerModel" type="Node3D"]
 script = ExtResource("1_model")
 weapon_rotation_degrees = Vector3(21, -136, -94)
+locomotion = ExtResource("15_locomotion")
 clips = {
 &"die": ExtResource("8_die"),
 &"idle": ExtResource("4_idle"),
 &"run": ExtResource("5_run"),
+&"run_back": ExtResource("12_run_back"),
+&"run_left": ExtResource("13_run_left"),
+&"run_right": ExtResource("14_run_right"),
 &"shoot": ExtResource("6_shoot"),
-&"walk": ExtResource("7_walk")
+&"walk": ExtResource("7_walk"),
+&"walk_back": ExtResource("9_walk_back"),
+&"walk_left": ExtResource("10_walk_left"),
+&"walk_right": ExtResource("11_walk_right")
 }
 
 [node name="Facing" type="Node3D" parent="."]

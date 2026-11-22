@@ -1,9 +1,11 @@
 class_name PlayerModel
 extends CharacterModel
 ## Visual of the survivor: layered animation plus the weapon model held in the right hand.
-## The legs play idle or run; while firing, the upper body overlays the shoot pose, so standing still and shooting aims
-## properly and starting or stopping a run blends instead of snapping. Presentation only: the player scene calls
-## update_motion() every physics frame and never reaches into the model.
+## The legs play idle or a directional walk/run: forward, backward and strafe clips mixed by the angle between the movement
+## and where the body faces (LocomotionBlend), so moving left while aiming right looks like a sidestep, not a moonwalk.
+## While firing, the upper body overlays the shoot pose, so standing still and shooting aims properly and starting or
+## stopping a run blends instead of snapping. Presentation only: the player scene calls update_motion() every physics
+## frame and never reaches into the model.
 
 ## Bone of the Meshy skeleton the weapon is attached to.
 @export var hand_bone: StringName = &"RightHand"
@@ -12,12 +14,10 @@ extends CharacterModel
 @export var weapon_rotation_degrees: Vector3 = Vector3.ZERO
 ## All speeds below are for the model at scale 1: the ground speed is divided by the model's world scale first, because
 ## a bigger model takes proportionally longer strides (GameTuning.character_scale).
-## Ground speed in m/s the walk clip covers at normal playback: the planted foot's backward speed in the character's
-## space (median over the stance, measured on the clip; the clips have no root motion). Playing the clip at
-## speed / this value keeps the planted foot still on the ground.
-@export_range(0.3, 6.0, 0.05) var walk_reference_speed: float = 1.45
-## Same for the run clip (5.1 m/s: lowest foot slip on the slice-17 hero rig; its stride is long, so a 3.5 m/s sprint plays it at about 0.6x).
-@export_range(0.5, 12.0, 0.05) var run_reference_speed: float = 5.1
+## Ground speed each directional walk and run clip covers at normal playback (the planted foot's backward speed in the
+## character's space, measured on the clip with art/tools/measure_clips.gd), and how fast the leg direction follows the
+## movement. Playing a clip at speed / its reference speed keeps the planted foot still on the ground.
+@export var locomotion: LocomotionProfile
 ## The legs switch from the walk clip to the run clip above run_above_speed and back below walk_below_speed; in between
 ## they keep the clip they have, so a steady speed always plays one clip (the two clips are not phase matched, and a
 ## blend of them makes the feet slide). Each switch cross-fades at blend_rate. The usual speeds at character scale 1.15,
@@ -27,7 +27,7 @@ extends CharacterModel
 @export_range(0.0, 8.0, 0.05) var run_above_speed: float = 2.9
 ## Playback speed ratio (speed / reference) above which the step rate grows only by cadence_excess_share of the extra.
 ## Above it the feet slide on purpose (a very fast perk-boosted run would otherwise need a blur of steps). At 2 no speed
-## the player can reach eases: the walk clip stops at run_above_speed / walk_reference_speed (2x).
+## the player can reach eases: the walk clip stops at run_above_speed / the walk reference speed (2x).
 @export_range(1.0, 3.0, 0.05) var cadence_soft_limit: float = 2.0
 ## Share of the ratio above the soft limit that is still applied (1 = exact foot matching, 0 = cadence stops growing).
 @export_range(0.0, 1.0, 0.05) var cadence_excess_share: float = 0.5
@@ -47,6 +47,13 @@ extends CharacterModel
 	"LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand", "RightShoulder", "RightArm", "RightForeArm", "RightHand",
 ]
 
+const _WALK_SPACE: String = "parameters/walk_space/blend_position"
+const _RUN_SPACE: String = "parameters/run_space/blend_position"
+const _SIDES: Array[StringName] = [&"forward", &"back", &"left", &"right"]
+## Where each clip sits in a blend space: x to the character's right, y forward.
+const _SIDE_POSITIONS: Dictionary = {
+	&"forward": Vector2(0, 1), &"back": Vector2(0, -1), &"left": Vector2(-1, 0), &"right": Vector2(1, 0),
+}
 const _LOCO: String = "parameters/loco/blend_amount"
 const _AIM: String = "parameters/aim/blend_amount"
 const _RUN_SPEED: String = "parameters/run_speed/scale"
@@ -58,6 +65,9 @@ var _weapon_holder: BoneAttachment3D
 var _held: WeaponData
 var _tree: AnimationTree
 var _ground_speed: float = 0.0
+var _velocity: Vector3 = Vector3.ZERO
+## Smoothed movement direction in the body's frame (x right, y forward) that drives the blend spaces.
+var _direction: Vector2 = Vector2(0.0, 1.0)
 var _fire_hold: float = 0.0
 var _moving: bool = false
 var _loco_blend: float = 0.0
@@ -68,6 +78,8 @@ var _gait_blend: float = 0.0
 
 func _ready() -> void:
 	super._ready()
+	if locomotion == null:
+		locomotion = LocomotionProfile.new()
 	_build_tree()
 	_attach_weapon()
 
@@ -78,9 +90,11 @@ func hold_weapon(weapon: WeaponData) -> void:
 	_attach_weapon()
 
 
-## Call every physics frame with the player's ground speed (m/s, world units) and whether the fire input is held.
-func update_motion(ground_speed: float, firing: bool) -> void:
-	_ground_speed = ground_speed
+## Call every physics frame with the player's world velocity (m/s, world units) and whether the fire input is held. Which
+## way the legs play comes from the velocity relative to this node's own facing, so rotate the model (or its parent) to aim.
+func update_motion(velocity: Vector3, firing: bool) -> void:
+	_velocity = velocity
+	_ground_speed = Vector2(velocity.x, velocity.z).length()
 	if firing:
 		_fire_hold = fire_hold_time
 
@@ -88,6 +102,11 @@ func update_motion(ground_speed: float, firing: bool) -> void:
 ## True while the upper body is (or is blending into) the aim pose.
 func is_aiming() -> bool:
 	return _fire_hold > 0.0
+
+
+## The smoothed movement direction relative to the facing (x right, y forward) that the legs are playing.
+func move_direction() -> Vector2:
+	return _direction
 
 
 ## True while the legs are running (with hysteresis).
@@ -115,6 +134,7 @@ func _physics_process(delta: float) -> void:
 		_moving = false
 	elif not _moving and _ground_speed > move_start_speed:
 		_moving = true
+	_update_direction(delta)
 	_loco_blend = move_toward(_loco_blend, 1.0 if _moving else 0.0, blend_rate * delta)
 	_aim_blend = move_toward(_aim_blend, 1.0 if _fire_hold > 0.0 else 0.0, blend_rate * delta)
 	_tree.set(_LOCO, _loco_blend)
@@ -123,8 +143,26 @@ func _physics_process(delta: float) -> void:
 	_running_gait = runs_at(unit_speed, _running_gait)
 	_gait_blend = move_toward(_gait_blend, 1.0 if _running_gait else 0.0, blend_rate * delta)
 	_tree.set(_GAIT, _gait_blend)
-	_tree.set(_WALK_SPEED, playback_scale(unit_speed, walk_reference_speed))
-	_tree.set(_RUN_SPEED, playback_scale(unit_speed, run_reference_speed))
+	var position: Vector2 = LocomotionBlend.blend_position(_direction)
+	_tree.set(_WALK_SPACE, position)
+	_tree.set(_RUN_SPACE, position)
+	_tree.set(_WALK_SPEED, playback_scale(unit_speed, locomotion.reference_speed(&"walk", _direction)))
+	_tree.set(_RUN_SPEED, playback_scale(unit_speed, locomotion.reference_speed(&"run", _direction)))
+
+
+## Follows the movement direction. While the legs are idle the direction snaps (nothing visible to swing), so a start
+## from standing never sweeps from a stale direction; while moving it turns at locomotion.turn_rate_degrees.
+func _update_direction(delta: float) -> void:
+	var target: Vector2 = LocomotionBlend.local_direction(_velocity, _facing_yaw())
+	if not _moving or _loco_blend < 0.05:
+		_direction = target if target != Vector2.ZERO else _direction
+	else:
+		_direction = LocomotionBlend.turn_toward(_direction, target, deg_to_rad(locomotion.turn_rate_degrees) * delta)
+
+
+func _facing_yaw() -> float:
+	var forward: Vector3 = -global_basis.z
+	return atan2(-forward.x, -forward.z)
 
 
 ## True when the legs play the run clip at this ground speed (m/s at model scale 1), given whether they play it now.
@@ -146,19 +184,20 @@ func playback_scale(ground_speed: float, reference_speed: float) -> float:
 	return clampf(ratio, min_playback_scale, max_playback_scale)
 
 
-# Layers: locomotion = idle blended into a walk/run gait; upper body = that, overlaid with the shoot pose on the upper-body bones.
+# Layers: locomotion = idle blended into a walk/run gait, each gait a blend space of forward, backward and strafe clips;
+# upper body = that, overlaid with the shoot pose on the upper-body bones.
 func _build_tree() -> void:
 	if _player == null or not (has_clip(&"idle") and has_clip(&"run") and has_clip(&"shoot")):
 		return
 	var graph: AnimationNodeBlendTree = AnimationNodeBlendTree.new()
-	var names: Array = [["idle", &"idle"], ["run", &"run"], ["shoot", &"shoot"]]
 	var with_walk: bool = has_clip(&"walk")
-	if with_walk:
-		names.append(["walk", &"walk"])
-	for pair: Array in names:
+	for pair: Array in [["idle", &"idle"], ["shoot", &"shoot"]]:
 		var clip_node: AnimationNodeAnimation = AnimationNodeAnimation.new()
 		clip_node.animation = pair[1]
 		graph.add_node(pair[0], clip_node)
+	graph.add_node("run_space", _build_space(&"run"))
+	if with_walk:
+		graph.add_node("walk_space", _build_space(&"walk"))
 	graph.add_node("run_speed", AnimationNodeTimeScale.new())
 	graph.add_node("walk_speed", AnimationNodeTimeScale.new())
 	graph.add_node("gait", AnimationNodeBlend2.new())
@@ -170,10 +209,10 @@ func _build_tree() -> void:
 	for bone: String in upper_body_bones:
 		aim.set_filter_path(NodePath("%s:%s" % [skeleton_path, bone]), true)
 	graph.add_node("aim", aim)
-	graph.connect_node("run_speed", 0, "run")
+	graph.connect_node("run_speed", 0, "run_space")
 	graph.connect_node("loco", 0, "idle")
 	if with_walk:
-		graph.connect_node("walk_speed", 0, "walk")
+		graph.connect_node("walk_speed", 0, "walk_space")
 		graph.connect_node("gait", 0, "walk_speed")
 	else:
 		graph.connect_node("gait", 0, "run_speed")
@@ -189,6 +228,23 @@ func _build_tree() -> void:
 	_player.get_parent().add_child(_tree)
 	_tree.anim_player = _tree.get_path_to(_player)
 	_tree.active = true
+
+
+## A blend space with the gait's forward, backward, left and right clips at the corners of the unit diamond. A direction
+## without its own clip plays the forward one, so a character with only walk and run still works.
+func _build_space(gait: StringName) -> AnimationNodeBlendSpace2D:
+	var space: AnimationNodeBlendSpace2D = AnimationNodeBlendSpace2D.new()
+	space.min_space = Vector2(-1, -1)
+	space.max_space = Vector2(1, 1)
+	space.blend_mode = AnimationNodeBlendSpace2D.BLEND_MODE_INTERPOLATED
+	# Keep every clip advancing so a clip fading in is not stuck at the pose where it last stopped.
+	space.sync = true
+	for side: StringName in _SIDES:
+		var clip_node: AnimationNodeAnimation = AnimationNodeAnimation.new()
+		var wanted: StringName = LocomotionBlend.clip_name(gait, side)
+		clip_node.animation = wanted if has_clip(wanted) else gait
+		space.add_blend_point(clip_node, _SIDE_POSITIONS[side], -1, side)
+	return space
 
 
 func _attach_weapon() -> void:

@@ -27,7 +27,7 @@ func _aim() -> float:
 ## Feeds the model like Player does, one call per physics frame.
 func _drive(frames: int, speed: float, firing: bool) -> void:
 	for i: int in frames:
-		model.update_motion(speed, firing)
+		model.update_motion(Vector3(0.0, 0.0, -speed), firing)
 		await get_tree().physics_frame
 
 
@@ -139,12 +139,12 @@ func test_8_gait_and_playback_match_ground_speed() -> void:
 	var in_band: float = (m.walk_below_speed + m.run_above_speed) * 0.5
 	check(not m.runs_at(in_band, false) and m.runs_at(in_band, true), "inside the hysteresis band the legs keep their current clip")
 	check(m.run_above_speed < sprint, "a plain sprint is above the run switch")
-	check_near(m.playback_scale(m.walk_reference_speed, m.walk_reference_speed), 1.0, 0.01, "walk clip at its reference pace is not sped up")
-	check_near(m.playback_scale(m.walk_reference_speed * 0.5, m.walk_reference_speed), 0.5, 0.01, "slow walking slows the walk clip")
-	check_near(m.playback_scale(m.run_reference_speed, m.run_reference_speed), 1.0, 0.01, "run clip at its reference pace is not sped up")
+	check_near(m.playback_scale(m.locomotion.walk_forward, m.locomotion.walk_forward), 1.0, 0.01, "walk clip at its reference pace is not sped up")
+	check_near(m.playback_scale(m.locomotion.walk_forward * 0.5, m.locomotion.walk_forward), 0.5, 0.01, "slow walking slows the walk clip")
+	check_near(m.playback_scale(m.locomotion.run_forward, m.locomotion.run_forward), 1.0, 0.01, "run clip at its reference pace is not sped up")
 	# Foot planted speed = clip speed * playback scale must equal the ground speed at every speed the player really uses.
 	for v: float in [walk, sprint, fleet_walk, sprint * 1.4]:
-		var ref: float = m.run_reference_speed if m.runs_at(v, false) else m.walk_reference_speed
+		var ref: float = m.locomotion.run_forward if m.runs_at(v, false) else m.locomotion.walk_forward
 		check_near(m.playback_scale(v, ref) * ref, v, 0.01, "playback matches the ground at %.2f m/s" % v)
 	# The generated loops repeat their first pose for a frame; it is dropped so the planted foot never stops mid-stride.
 	var source: Animation = load("res://art/models/characters/player/clips/run.res") as Animation
@@ -166,7 +166,7 @@ func _slip_at(world_speed: float, size: float) -> float:
 	t.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	var skel: Skeleton3D = m.find_first("Skeleton3D") as Skeleton3D
 	var advance: Callable = func(dt: float) -> void:
-		m.update_motion(world_speed, false)
+		m.update_motion(Vector3(0.0, 0.0, -world_speed), false)
 		m._physics_process(dt)
 		t.advance(dt)
 	var slip: float = FootSlip.worst_planted_speed(skel, holder, world_speed, advance)
