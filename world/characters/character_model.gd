@@ -13,11 +13,6 @@ signal clip_finished(clip: StringName)
 ## Self-lit share of the texture, so characters stay readable away from any lamp (0 = none).
 @export_range(0.0, 2.0, 0.05) var glow: float = 0.2
 
-## Silhouette outline colour so the character reads from the high camera (alpha 0 = no outline).
-@export var outline_color: Color = Color(0, 0, 0, 0)
-## Outline thickness in metres.
-@export_range(0.0, 0.5, 0.005) var outline_width: float = 0.04
-
 var _player: AnimationPlayer
 var _meshes: Array[MeshInstance3D] = []
 var _overlay: StandardMaterial3D = StandardMaterial3D.new()
@@ -32,7 +27,7 @@ func _ready() -> void:
 	_overlay.albedo_color = Color(1, 1, 1, 0)
 	for mesh: MeshInstance3D in _meshes:
 		mesh.material_overlay = _overlay
-		ModelLook.lift(mesh, brightness, glow, outline_color, outline_width)
+		ModelLook.lift(mesh, brightness, glow)
 	if _player != null:
 		_install_clips()
 		_player.animation_finished.connect(func(clip: StringName) -> void: clip_finished.emit(clip))

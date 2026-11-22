@@ -10,8 +10,6 @@
 
 [node name="PlayerModel" type="Node3D"]
 script = ExtResource("1_model")
-outline_color = Color(0.1, 0.9, 1, 1)
-outline_width = 0.05
 weapon_rotation_degrees = Vector3(21, -136, -94)
 clips = {
 &"die": ExtResource("8_die"),
