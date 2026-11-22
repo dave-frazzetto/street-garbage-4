@@ -69,3 +69,18 @@ data-driven design guides, and the "Godot 4 Best Practices" book (data-driven de
 
 Every build (web zip, exports) is tagged with its build date and time, `YYYYMMDD-HHMMSS`, in the artifact file name,
 so builds are easy to tell apart. `scripts/build_web.sh` does this; never overwrite an untagged build artifact.
+
+## Pull request review
+
+When a PR is ready to merge, do not merge it straight away. Have it reviewed by a fresh subsession first:
+
+1. Spawn a new subagent (Agent tool, not a fork) as the reviewer. Give it clear, self-contained context: the PR number or
+   branch, what the change is for, the files to read, and the project rules (`.claude/CLAUDE.md`, `.claude/rules/project.md`).
+   Ask for correctness bugs, broken project rules, missing tests/docs and risky side effects, ranked by severity. Give it the
+   diff, not your conclusion about it.
+2. Be critical of the feedback. Verify each point against the code, drop false positives and nitpicks, and decide which
+   findings are a priority. Fix those, and say briefly which you skipped and why.
+3. If you fixed anything, push and have the reviewer (or a new one) look again. Repeat until a review round has no findings
+   worth fixing.
+4. Then approve and merge the PR yourself, and clean up the branch and worktree. Put a short review summary (rounds, what
+   was fixed, what was skipped) in the PR description or a PR comment.
