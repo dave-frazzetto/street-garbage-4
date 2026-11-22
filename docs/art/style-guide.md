@@ -47,7 +47,8 @@ Keep her consistent across every asset that shows her: same hair, same implant c
 - Units are metres, +Y up, model faces -Z (Godot forward). Pivot at the feet (characters) or the base centre (props).
 - Humanoids: A-pose, neutral expression, nothing held in front of the body, so Meshy can rig them.
 - Textures 1k or 2k. The camera is far away and the web build must stay small.
-- Triangle budgets (smart topology): player 6k, zombies 6k to 8k, hero props 5k, small props 2k, pickups 1.5k.
+- Triangle budgets (smart topology): player 15k, zombies 12k, buildings 10k, car 8k, other hero props 5k, small props 2k, pickups 1.5k (hero assets raised on 2026-11-22, see ADR `hero-art-upgrade-and-silhouette-outlines`).
+- Hero assets (characters, buildings, car) keep their 2048 px textures; only small props are shrunk to 1024 px with `shrink_textures.gd`.
 - Format GLB, saved under `art/models/<group>/<name>.glb`; clips extracted with `art/tools/extract_clips.gd`.
 - Collision stays the hand-made shapes already in each scene; generated meshes are visual only.
 - Each generated model is wrapped in a scene `Visual` child. The gameplay scene keeps its script, collision and data Resources.

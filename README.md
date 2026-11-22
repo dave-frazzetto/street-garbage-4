@@ -108,6 +108,7 @@ explained in [docs/reference/tuning-guide.md](docs/reference/tuning-guide.md); z
 | 19 | 2026-11-21 | [difficulty-ramp-and-bosses-as-data-in-directorconfig](docs/adr/difficulty-ramp-and-bosses-as-data-in-directorconfig.md) | Difficulty ramp and bosses as data in DirectorConfig |
 | 20 | 2026-11-21 | [lazy-horde-activation-and-far-zombie-despawn](docs/adr/lazy-horde-activation-and-far-zombie-despawn.md) | Lazy horde activation and far zombie despawn |
 | 21 | 2026-11-21 | [procedural-street-ground-fences-and-skyline-backdrop](docs/adr/procedural-street-ground-fences-and-skyline-backdrop.md) | Procedural street ground, fences and skyline backdrop |
+| 22 | 2026-11-22 | [hero-art-upgrade-and-silhouette-outlines](docs/adr/hero-art-upgrade-and-silhouette-outlines.md) | Hero art upgrade and silhouette outlines |
 | 22 | 2026-11-21 | [cpuparticles3d-effects-with-capped-effect-spawner](docs/adr/cpuparticles3d-effects-with-capped-effect-spawner.md) | CPUParticles3D effects with capped effect spawner (superseded by 28) |
 | 23 | 2026-11-21 | [real-cc0-audio-samples-with-synthesised-layers](docs/adr/real-cc0-audio-samples-with-synthesised-layers.md) | Real CC0 audio samples with synthesised layers (refines 12) |
 | 24 | 2026-11-21 | [survival-style-combat-rooted-shooting-hitscan-line-tougher-zombies](docs/adr/survival-style-combat-rooted-shooting-hitscan-line-tougher-zombies.md) | Survival-style combat: rooted shooting, hitscan line, tougher zombies |
