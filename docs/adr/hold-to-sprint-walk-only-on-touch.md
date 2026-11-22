@@ -32,7 +32,7 @@ can still walk away from every zombie, so sprint is not essential there.
   whether it is held; it returns false while the touch device is active. The `sprint_toggled` signal and
   `request_sprint_toggle()` are removed.
 - `Player` polls the held state every physics frame: holding starts a sprint if stamina is above `GameTuning.min_sprint_stamina` of the bar (0.15, at least 1 point),
-  releasing ends it. Any key press switches the input device back to keyboard, so a touchscreen laptop can sprint.
+  releasing ends it. A key press while touch is the active device switches back to keyboard (a gamepad player keeps stick aim and fire), so a touchscreen laptop can sprint.
   When the bar runs dry mid-sprint the sprint ends and stays off until the input is released and held again (no flicker
   while the bar refills under a held key).
 - Touch controls have no sprint button. `TouchControls`, `GameFlow` and `Level` lose the sprint plumbing
