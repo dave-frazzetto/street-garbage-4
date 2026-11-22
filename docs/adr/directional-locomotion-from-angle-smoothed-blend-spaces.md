@@ -6,7 +6,7 @@ tags: []
 generated:
   by: arkouda/0.8.0
   at: 2026-11-22T21:29:20Z
-status: draft
+status: stable
 lifecycle: accepted
 deciders: []
 ---
