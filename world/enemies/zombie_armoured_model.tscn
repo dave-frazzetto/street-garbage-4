@@ -9,6 +9,8 @@
 
 [node name="ZombieArmouredModel" type="Node3D"]
 script = ExtResource("1_model")
+outline_color = Color(1, 0.12, 0.08, 1)
+outline_width = 0.06
 clips = {
 &"attack": ExtResource("5_attack"),
 &"die": ExtResource("6_die"),
