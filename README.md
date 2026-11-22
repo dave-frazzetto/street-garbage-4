@@ -24,7 +24,7 @@ set off nearby props.
 | Move | WASD / arrows | Left stick | Drag on the left half |
 | Aim | Mouse | Right stick | Drag on the right half |
 | Shoot | Hold left mouse button | Push right stick (or hold RT) | Push the right stick past half |
-| Toggle sprint (drains stamina) | Shift | L3 | SPRINT button |
+| Sprint while held (drains stamina) | Hold Shift | Hold LB or L3 | None: touch play walks only |
 | Perk: select / confirm | Left/Right, A/D or mouse / Enter or click | D-pad or stick / A | Tap a card |
 | Perk: redraw / skip | R / Esc or X | Y / B | Tap REDRAW / SKIP |
 | Start / restart | Enter or Space | A or Start | Tap the button |
@@ -116,6 +116,8 @@ explained in [docs/reference/tuning-guide.md](docs/reference/tuning-guide.md); z
 | 26 | 2026-11-22 | [central-gametuning-resource-for-the-main-balance-knobs](docs/adr/central-gametuning-resource-for-the-main-balance-knobs.md) | Central GameTuning resource for the main balance knobs (refines 19 and 24) |
 | 27 | 2026-11-22 | [world-anchored-zombie-population](docs/adr/world-anchored-zombie-population.md) | World-anchored zombie population (generalises 20) |
 | 28 | 2026-11-22 | [gpu-particle-effects-with-shader-driven-look](docs/adr/gpu-particle-effects-with-shader-driven-look.md) | GPU particle effects with shader-driven look, desktop first (supersedes 22) |
+| 29 | 2026-11-22 | [hold-to-sprint-walk-only-on-touch](docs/adr/hold-to-sprint-walk-only-on-touch.md) | Hold to sprint, walk only on touch (refines 8) |
+| 30 | 2026-11-22 | [one-character-scale-for-player-and-zombies](docs/adr/one-character-scale-for-player-and-zombies.md) | One character scale for player and zombies |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),

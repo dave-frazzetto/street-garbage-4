@@ -4,13 +4,17 @@ extends CharacterModel
 
 signal attack_finished
 
-## Ground speed in m/s the walk clip covers at normal playback (measured from the planted foot's travel: about 1.1 to 1.9) for a
-## model at scale 1. Playing it at speed / this keeps the feet from sliding; bigger models (bosses) have a longer stride, see below.
-@export_range(0.2, 6.0, 0.05) var walk_reference_speed: float = 1.4
-## Same for the run clip (measured about 2.3 to 4.5, mean about 3.5).
-@export_range(0.5, 12.0, 0.05) var run_reference_speed: float = 3.5
-## Ground speed (at scale 1) above which the run clip is used instead of the walk clip.
-@export_range(0.5, 8.0, 0.05) var run_switch_speed: float = 2.2
+## Ground speed in m/s the walk clip covers at normal playback for a model at scale 1: the planted foot's backward speed in
+## the character's space (median over the stance, measured 1.40 to 1.57). Playing it at speed / this keeps the feet from
+## sliding; bigger models (GameTuning.character_scale, bosses) have a longer stride, so the speed is divided by the scale.
+@export_range(0.2, 6.0, 0.05) var walk_reference_speed: float = 1.45
+## Same for the run clip (measured 4.8 to 5.3 m/s: a long stride).
+@export_range(0.5, 12.0, 0.05) var run_reference_speed: float = 4.85
+## Ground speed (at scale 1) above which the run clip is used instead of the walk clip (where the walk would need about 1.9x
+## and the run about 0.55x playback).
+@export_range(0.5, 8.0, 0.05) var run_switch_speed: float = 2.7
+## Slowest and fastest playback of the walk and run clips (the playback that keeps the feet planted is clamped to this).
+@export_range(0.1, 1.0, 0.05) var min_playback_scale: float = 0.3
 @export_range(0.5, 3.0, 0.05) var max_playback_scale: float = 2.5
 ## Normal speed of the attack clip.
 @export_range(0.5, 3.0, 0.05) var attack_playback_scale: float = 1.6
@@ -44,11 +48,12 @@ func set_move_speed(speed: float) -> void:
 	if speed < 0.05:
 		hold()
 		return
-	# A model scaled up by size_scale takes proportionally longer strides, so compare against its speed at scale 1.
+	# A model scaled up (GameTuning.character_scale x EnemyData.size_scale) takes proportionally longer strides, so compare
+	# against its speed at scale 1.
 	var unit_speed: float = speed / maxf(global_transform.basis.get_scale().x, 0.1)
 	var clip: StringName = &"run" if unit_speed > run_switch_speed else &"walk"
 	var reference: float = run_reference_speed if clip == &"run" else walk_reference_speed
-	play(clip, 0.15, clampf(unit_speed / reference, 0.4, max_playback_scale))
+	play(clip, 0.15, clampf(unit_speed / reference, min_playback_scale, max_playback_scale))
 
 
 func play_attack() -> void:

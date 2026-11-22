@@ -35,6 +35,8 @@ with two on-screen touch sticks. Movement and shooting code must not care which 
   during gameplay. To keep `world/` independent of `ui/`, game flow copies the stick vectors each frame into
   `Level.set_touch_input()`, which calls `PlayerInput.set_touch()`; the button calls `Level.toggle_sprint()`.
 - Mouse events emulated from touch (`device == DEVICE_ID_EMULATION`) never switch the aim source to the mouse.
+- Sprint toggling and the touch SPRINT button were later replaced by a held `sprint` action and walk-only touch play,
+  see `hold-to-sprint-walk-only-on-touch`.
 
 ## Consequences
 

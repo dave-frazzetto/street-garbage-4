@@ -1,14 +1,13 @@
 class_name TouchControls
 extends CanvasLayer
-## On-screen twin sticks and sprint button for touch screens. Pure input view: PlayerInput reads
-## move_vector / aim_vector and listens to sprint_pressed. Hidden on devices without touch until the first touch.
+## On-screen twin sticks for touch screens. Pure input view: PlayerInput reads move_vector / aim_vector. There is no
+## sprint on touch (phones walk only, see ADR hold-to-sprint-walk-only-on-touch). Hidden on devices without touch until
+## the first touch.
 
-signal sprint_pressed
 signal first_touch
 
 @onready var move_stick: VirtualStick = %MoveStick
 @onready var aim_stick: VirtualStick = %AimStick
-@onready var sprint_button: Button = %SprintButton
 @onready var rotate_overlay: Control = %RotateOverlay
 
 ## Force visible (tests, or a settings toggle later).
@@ -25,7 +24,6 @@ var aim_vector: Vector2:
 
 func _ready() -> void:
 	touch_seen = force_visible or DisplayServer.is_touchscreen_available()
-	sprint_button.pressed.connect(func() -> void: sprint_pressed.emit())
 	get_viewport().size_changed.connect(_update_layout)
 	_update_layout()
 
@@ -38,10 +36,6 @@ func _input(event: InputEvent) -> void:
 		first_touch.emit()
 		_update_layout()
 	if not visible:
-		return
-	# The sprint button sits inside the move area; let the GUI handle touches on it.
-	if event is InputEventScreenTouch and (event as InputEventScreenTouch).pressed \
-			and sprint_button.get_global_rect().has_point((event as InputEventScreenTouch).position):
 		return
 	if move_stick.handle_touch(event) or aim_stick.handle_touch(event):
 		get_viewport().set_input_as_handled()

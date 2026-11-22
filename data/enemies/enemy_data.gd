@@ -22,9 +22,11 @@ enum Tier { STANDARD, ELITE, BOSS }
 @export_range(0, 1, 0.01) var stagger_resistance: float = 0.0
 ## XP relative to a standard zombie kill (GameTuning.xp_per_standard_kill).
 @export_range(0, 100) var xp: float = 1.0
-## Body radius in metres (collision). Keep it at 0.33 x size_scale so hit boxes match the visible body.
+## Body radius in metres (collision) for a model at scale 1. Keep it at 0.33 x size_scale so hit boxes match the visible
+## body; GameTuning.character_scale multiplies it at runtime.
 @export_range(0.1, 1.5, 0.01) var radius: float = 0.33
-## Uniform size of the model and collision body relative to a normal zombie (1.2 = 20% larger).
+## Uniform size of the model and collision body relative to a normal zombie (1.2 = 20% larger), on top of
+## GameTuning.character_scale.
 @export_range(0.5, 3.0, 0.05) var size_scale: float = 1.0
 ## Show the health bar from the start instead of after the first hit (bosses).
 @export var always_show_health_bar: bool = false

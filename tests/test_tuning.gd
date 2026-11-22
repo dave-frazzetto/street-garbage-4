@@ -6,6 +6,8 @@ const TUNING: GameTuning = preload("res://data/config/game_tuning.tres")
 const WALKER: EnemyData = preload("res://data/enemies/walker.tres")
 const ARMOURED: EnemyData = preload("res://data/enemies/armoured.tres")
 const BOSS: EnemyData = preload("res://data/enemies/boss.tres")
+const PLAYER: PlayerConfig = preload("res://data/config/player_default.tres")
+const DIRECTOR: DirectorConfig = preload("res://data/config/director_default.tres")
 const MAP: Rect2 = Rect2(0, 0, 120, 120)
 const START: Vector2 = Vector2(10, 111)
 
@@ -19,14 +21,26 @@ func _grid(run_seed: int = 4242) -> PopulationGrid:
 
 
 func test_1_speed_ratio_makes_zombies_a_threat() -> void:
+	# The design (user tuning): zombies are clearly slower than a walking player, so walking away works and the threat is
+	# numbers and getting cornered; standing to shoot (the player is rooted while firing) lets them close in, and a held
+	# sprint is the burst that opens a real gap.
 	var walk: float = TUNING.player_walk_speed
-	var fastest_early: float = TUNING.zombie_speed(WALKER, 0.0) * (1.0 + WALKER.speed_variance)
+	var average_early: float = TUNING.zombie_speed(WALKER, 0.0)
+	var slowest_early: float = average_early * (1.0 - WALKER.speed_variance)
 	var fastest_late: float = TUNING.zombie_speed(WALKER, TUNING.ramp_seconds) * (1.0 + WALKER.speed_variance)
-	check(TUNING.zombie_speed(WALKER, 0.0) < walk, "an average zombie is slower than a walking player")
-	check(TUNING.zombie_speed(WALKER, 0.0) > walk * 0.7, "but not by much (%.2f vs %.2f)" % [TUNING.zombie_speed(WALKER, 0.0), walk])
-	check(fastest_late >= walk, "the fastest late zombies catch a walking player (%.2f vs %.2f)" % [fastest_late, walk])
+	check(average_early < walk, "an average zombie is slower than a walking player (%.2f vs %.2f)" % [average_early, walk])
+	check(average_early > walk * 0.45, "but keeps up a chase: more than 45%% of walking speed (%.2f vs %.2f)" % [average_early, walk])
+	# A player who stops to shoot moves at walk x firing_move_multiplier (0 in the shipped file: rooted). Even the slowest
+	# zombie must close the widest top-up spawn distance on such a player within half a minute, or standing still is safe.
+	var firing_speed: float = walk * PLAYER.firing_move_multiplier
+	var closing: float = slowest_early - firing_speed
+	check(closing > 0.0, "every zombie gains on a player who stops to shoot (%.2f vs %.2f m/s)" % [slowest_early, firing_speed])
+	var reach_seconds: float = DIRECTOR.spawn_distance_max / maxf(closing, 0.001)
+	check(reach_seconds < 30.0, "the slowest zombie spawned %.0f m away reaches a shooting player in %.1f s (< 30 s)" % [DIRECTOR.spawn_distance_max, reach_seconds])
+	# Growth alone, without the per-zombie variance.
+	var growth: float = TUNING.zombie_speed(WALKER, TUNING.ramp_seconds) / average_early
+	check(growth >= 1.15, "late zombies are clearly faster than early ones (x%.2f without variance)" % growth)
 	check(TUNING.sprint_speed() > fastest_late * 1.25, "sprinting clearly outruns even those (%.2f vs %.2f)" % [TUNING.sprint_speed(), fastest_late])
-	check(fastest_early < TUNING.sprint_speed(), "sprinting always opens a gap")
 	check(TUNING.zombie_speed(BOSS, 0.0) < TUNING.zombie_speed(WALKER, 0.0), "bosses are slower than standard zombies")
 	var gap_per_sprint: float = (TUNING.sprint_speed() - TUNING.zombie_speed(WALKER, 450.0)) * TUNING.sprint_seconds
 	check(gap_per_sprint > 5.0 and gap_per_sprint < 25.0, "one full sprint opens a gap of %.1f m" % gap_per_sprint)
@@ -47,6 +61,14 @@ func test_2_player_stats_come_from_tuning() -> void:
 	stats.add_modifier(PlayerStats.Stat.MOVE_SPEED, PlayerStats.Mode.PERCENT, 0.4)
 	var late_fast_zombie: float = TUNING.zombie_speed(WALKER, TUNING.ramp_seconds) * (1.0 + WALKER.speed_variance)
 	check(stats.get_value(PlayerStats.Stat.MOVE_SPEED) > late_fast_zombie * 1.1, "four Fleet Foots outpace zombies by a clear margin")
+
+
+func test_2b_character_scale_sizes_every_zombie() -> void:
+	check(TUNING.character_scale > 1.0, "characters are larger than the generated models (%.2f)" % TUNING.character_scale)
+	check(is_equal_approx(TUNING.zombie_size(WALKER), TUNING.character_scale), "a standard zombie is the character scale")
+	check(is_equal_approx(TUNING.zombie_size(BOSS), BOSS.size_scale * TUNING.character_scale), "a boss keeps its size_scale on top")
+	check(is_equal_approx(TUNING.zombie_radius(WALKER), WALKER.radius * TUNING.character_scale), "radius follows the scale")
+	check(is_equal_approx(TUNING.zombie_radius(BOSS) / TUNING.zombie_size(BOSS), TUNING.zombie_radius(WALKER) / TUNING.zombie_size(WALKER)), "boss radius stays 0.33 x size")
 
 
 func test_3_health_xp_and_shots_to_kill() -> void:
@@ -222,7 +244,8 @@ func test_7b_a_zombie_that_chased_far_is_found_where_it_sleeps() -> void:
 
 
 ## Moves a player along a straight line and wakes/sleeps slots the way WorldPopulation does; returns the fewest world
-## zombies within `near` metres seen at any sample after the first two seconds.
+## zombies within `near` metres seen at any sample once the player is 12 m along the line (the lines start next to the
+## fence, where half the circle is outside the map; measured by distance so the check does not depend on the speed).
 func _fewest_near(from: Vector2, to: Vector2, speed: float, seconds: float, elapsed0: float, near: float) -> int:
 	var g: PopulationGrid = _grid(77)
 	var fewest: int = 1 << 20
@@ -240,13 +263,13 @@ func _fewest_near(from: Vector2, to: Vector2, speed: float, seconds: float, elap
 		for s: PopulationGrid.Slot in g.awake_slots():
 			if Vector2(s.live_position.x, s.live_position.z).distance_to(pos2) <= near:
 				count += 1
-		if i >= 8:
+		if pos2.distance_to(from) >= 12.0:
 			fewest = mini(fewest, count)
 	return fewest
 
 
 func test_8_running_across_the_map_never_leaves_an_empty_street() -> void:
-	# Fixed seed, deterministic. Sprinting in four directions, early and late in the run.
+	# Fixed seed, deterministic. Sprinting in four directions the whole way across, early and late in the run.
 	var lines: Array = [
 		[Vector2(10, 100), Vector2(10, 10)],
 		[Vector2(15, 60), Vector2(110, 60)],
@@ -255,6 +278,7 @@ func test_8_running_across_the_map_never_leaves_an_empty_street() -> void:
 	]
 	for line: Array in lines:
 		for elapsed0: float in [0.0, 600.0]:
-			var fewest: int = _fewest_near(line[0], line[1], TUNING.sprint_speed(), 20.0, elapsed0, 40.0)
+			var seconds: float = (line[0] as Vector2).distance_to(line[1]) / TUNING.sprint_speed()
+			var fewest: int = _fewest_near(line[0], line[1], TUNING.sprint_speed(), seconds, elapsed0, 40.0)
 			print("  fewest world zombies within 40 m, %s -> %s at %.0f s: %d" % [line[0], line[1], elapsed0, fewest])
 			check(fewest >= 3, "at least 3 world zombies within 40 m along %s -> %s at %.0f s (fewest %d)" % [line[0], line[1], elapsed0, fewest])
