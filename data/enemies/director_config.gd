@@ -19,6 +19,12 @@ extends Resource
 ## Spawn distance from the player in metres (just off-screen).
 @export_range(5, 80, 0.5) var spawn_distance_min: float = 24.0
 @export_range(5, 80, 0.5) var spawn_distance_max: float = 28.0
+## A top-up zombie only spawns where it can walk to the player within this many metres (so it arrives down a street
+## instead of pressing against the back of a block). 0 = no limit.
+@export_range(0, 200, 1) var spawn_max_walk_distance: float = 50.0
+## Spots tried per top-up zombie; the one whose direction from the player is farthest from the other chasers' is used,
+## so zombies come from both ends of the street and out of the alleys instead of all from one side. 1 = first usable spot.
+@export_range(1, 12) var spawn_flank_candidates: int = 4
 ## Top-up zombies farther than this from the player are freed (the director spawns fresh ones near the player).
 @export_range(10, 150) var despawn_distance: float = 48.0
 ## World and horde zombies exist as nodes only within this distance of the player (see WorldPopulation and HordeSpawner).

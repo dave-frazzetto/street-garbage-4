@@ -175,3 +175,84 @@ func test_rare_perks_are_rarer() -> void:
 	var share: float = float(rare) / float(total)
 	# 6 of 20 perks are rare; with weight 0.3 they should be well under their 30% share.
 	check(share > 0.03 and share < 0.2, "rare share %.2f" % share)
+
+
+## A 20 x 20 m map split by a wall along z = 10 with a 2 m gap at x 16..18, and a sealed 3 x 3 m box at the corner.
+func _walled_grid() -> WalkGrid:
+	var fps: Array[WalkGrid.Footprint] = [
+		WalkGrid.Footprint.box(Vector2(8, 10), Vector2(8, 0.25), 0.0),
+		WalkGrid.Footprint.box(Vector2(19, 10), Vector2(1, 0.25), 0.0),
+		WalkGrid.Footprint.box(Vector2(1.5, 18.5), Vector2(1.5, 0.1), 0.0),
+		WalkGrid.Footprint.box(Vector2(3.0, 18.5), Vector2(0.1, 1.5), 0.0),
+	]
+	return WalkGrid.build(Rect2(0, 0, 20, 20), fps, 0.5, 0.3, Vector2(5, 5))
+
+
+func test_walk_grid_finds_the_reachable_ground() -> void:
+	var g: WalkGrid = _walled_grid()
+	check(g.is_reachable(Vector2(5, 5)), "start side reachable")
+	check(g.is_reachable(Vector2(5, 15)), "far side reachable through the gap")
+	check(not g.is_open(Vector2(5, 10)), "the wall is solid")
+	check(not g.is_reachable(Vector2(0.8, 19.5)), "the boxed-in corner is sealed off")
+	check(g.is_open(Vector2(0.8, 19.5)), "but it is free ground")
+	var snapped: Vector2 = g.nearest_open(Vector2(5, 10), 2.0)
+	check(snapped.x != INF and g.is_reachable(snapped) and absf(snapped.y - 10.0) < 1.0, "nearest reachable spot next to the wall (%s)" % snapped)
+	check_eq(g.nearest_open(Vector2(0.8, 19.5), 0.4).x, INF, "nothing reachable near the sealed corner")
+	var rotated: WalkGrid = WalkGrid.build(Rect2(0, 0, 20, 20), [WalkGrid.Footprint.box(Vector2(10, 10), Vector2(4, 0.5), PI / 2)], 0.5, 0.0, Vector2(2, 2))
+	check(not rotated.is_open(Vector2(10, 13)) and rotated.is_open(Vector2(13, 10)), "a box turned 90 degrees runs along z")
+
+
+func test_flow_field_walks_round_the_wall() -> void:
+	var g: WalkGrid = _walled_grid()
+	var f: FlowField = FlowField.new(g, 100.0)
+	f.begin(Vector2(5, 5))
+	var slices: int = 0
+	while not f.step(50):
+		slices += 1
+	check(slices > 2, "computed in slices (%d)" % slices)
+	var walk: float = f.distance_at(Vector2(5, 15))
+	check(walk > 24.0 and walk < 30.0, "walking distance round the wall (%.1f m: 25 m as the crow flies through the gap, straight 10 m)" % walk)
+	var d: Vector2 = f.direction_at(Vector2(5, 15))
+	check(d.x > 0.5, "the way leads toward the gap (%s)" % d)
+	var mouth: Vector2 = f.approach_point(Vector2(5, 15), 13.0)
+	check(mouth.y > 9.0 and mouth.x > 13.0, "arrives through the gap (%s)" % mouth)
+	check_eq(f.distance_at(Vector2(0.8, 19.5)), INF, "no path into the sealed corner")
+	var pop: PopulationGrid = PopulationGrid.new(Rect2(0, 0, 20, 20), 3, 400.0, 10.0)
+	pop.walk = g
+	var all: Array[PopulationGrid.Slot] = pop.all_slots()
+	var off: int = 0
+	for s: PopulationGrid.Slot in all:
+		if not g.is_reachable(Vector2(s.position.x, s.position.z)):
+			off += 1
+	check(all.size() > 50, "population planned (%d)" % all.size())
+	check_eq(off, 0, "population slots only on reachable ground")
+
+
+func test_walk_grid_keeps_thin_poles_on_cell_corners() -> void:
+	# A 0.15 m pole on the corner of four 1 m cells, with 0.4 m clearance: no cell centre is within 0.55 m of it, but the
+	# pole itself overlaps all four cells, so they are solid; a box prop is always solid at its centre cell.
+	var g: WalkGrid = WalkGrid.build(Rect2(0, 0, 10, 10), [WalkGrid.Footprint.circle(Vector2(5, 5), 0.15), WalkGrid.Footprint.box(Vector2(2.0, 2.0), Vector2(0.05, 0.05), 0.0)], 1.0, 0.4, Vector2(8, 8))
+	for p: Vector2 in [Vector2(4.5, 4.5), Vector2(5.5, 4.5), Vector2(4.5, 5.5), Vector2(5.5, 5.5)]:
+		check(not g.is_open(p), "the cell at %s under the pole is solid" % p)
+	check(g.is_open(Vector2(6.5, 5.5)), "the cells beyond it are free")
+	check(not g.is_open(Vector2(2.2, 2.2)), "a tiny box marks its own cell")
+
+
+func test_flow_field_counts_finished_fields() -> void:
+	var f: FlowField = FlowField.new(_walled_grid(), 100.0)
+	check_eq(f.version, 0, "no field yet")
+	f.compute(Vector2(5, 5))
+	f.compute(Vector2(6, 5))
+	check_eq(f.version, 2, "two fields finished")
+
+
+func test_population_slots_sit_on_walk_cell_centres() -> void:
+	var g: WalkGrid = WalkGrid.build(Rect2(0, 0, 20, 20), [WalkGrid.Footprint.box(Vector2(10, 10), Vector2(10, 0.5), 0.0)], 1.0, 0.4, Vector2(5, 5))
+	var pop: PopulationGrid = PopulationGrid.new(Rect2(0, 0, 20, 20), 9, 300.0, 10.0)
+	pop.walk = g
+	var worst: float = 0.0
+	for s: PopulationGrid.Slot in pop.all_slots():
+		var p: Vector2 = Vector2(s.position.x, s.position.z)
+		worst = maxf(worst, p.distance_to(g.centre_of(g.cell_of(p))))
+		check(absf(p.y - 10.0) > 0.5 + 0.4, "slot at %s keeps the clearance from the wall" % p)
+	check(worst <= PopulationGrid.SNAP_JITTER * sqrt(2.0) + 0.001, "slots stay near their cell centre (%.2f m)" % worst)

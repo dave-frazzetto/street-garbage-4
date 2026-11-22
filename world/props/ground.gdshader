@@ -1,8 +1,10 @@
 shader_type spatial;
 // Night-time city street, fully procedural in world space (no textures, so it tiles forever and stays tiny).
-// Streets run along a regular grid (centre lines every `street_spacing` m from `grid_origin`); everything between
-// them is pavement. Streets get asphalt grain, cracks, repair patches, wet puddles, lane lines, crosswalks and
-// manholes; pavement gets slabs and kerbs. `detailed` = false keeps only the cheap grain for mobile and web.
+// Inside `play_area` the street layout comes from the level: `roads` are asphalt strips with lane lines, a centre line,
+// crosswalks next to crossings and manholes (the long side of a rect is its direction of travel); `lots` are asphalt
+// without markings (parking lots, yards); everything else is pavement with kerbs along the asphalt. Outside the play
+// area (the skyline backdrop) streets follow a regular grid (centre lines every `street_spacing` m from `grid_origin`),
+// and roads that leave the play area continue through it. `detailed` = false keeps only the cheap grain for mobile.
 
 group_uniforms palette;
 uniform vec4 asphalt_color : source_color = vec4(0.085, 0.085, 0.1, 1.0);
@@ -18,7 +20,15 @@ uniform vec2 grid_origin = vec2(0.0, 0.0);
 uniform float street_spacing = 20.0;
 uniform float street_width = 10.0;
 uniform float kerb_width = 0.35;
+// Roads narrower than this (metres, kerb to kerb) are painted as two lanes: centre line only, no lane dashes.
+uniform float min_four_lane_width = 9.5;
 uniform float slab_size = 1.6;
+// Level layout (x0, z0, x1, z1 per rect). Set by Ground from its exported arrays; road_count 0 = grid everywhere.
+uniform vec4 play_area = vec4(0.0, 0.0, 0.0, 0.0);
+uniform vec4 roads[16];
+uniform int road_count = 0;
+uniform vec4 lots[12];
+uniform int lot_count = 0;
 
 group_uniforms wear;
 uniform bool detailed = true;
@@ -74,6 +84,17 @@ float crack(vec2 p) {
 	return d2 - d1;
 }
 
+bool in_rect(vec2 p, vec4 r) {
+	return p.x >= r.x && p.x <= r.z && p.y >= r.y && p.y <= r.w;
+}
+
+// Distance from p to the rect (0 inside).
+float rect_dist(vec2 p, vec4 r) {
+	vec2 c = (r.xy + r.zw) * 0.5;
+	vec2 h = (r.zw - r.xy) * 0.5;
+	return length(max(abs(p - c) - h, vec2(0.0)));
+}
+
 void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
@@ -87,6 +108,77 @@ void fragment() {
 	float in_x = step(d.x, half_w); // inside a street that runs along Z
 	float in_z = step(d.y, half_w); // inside a street that runs along X
 	float street = max(in_x, in_z);
+	// Grid-mode marking coordinates (see below); the layout overrides them.
+	float straight = in_x * (1.0 - in_z) + in_z * (1.0 - in_x);
+	float straight_x = in_x * (1.0 - in_z); // street along Z: lanes depend on d.x, travel coordinate is q.y
+	float across = mix(d.y, d.x, straight_x); // distance from the street centre line
+	float across_signed = mix(local.y, local.x, straight_x);
+	float travel = mix(q.x, q.y, straight_x); // coordinate along the street
+	float cross_travel = mix(q.y, q.x, straight_x); // coordinate across the street (crosswalk bars)
+	float along_d = mix(d.x, d.y, straight_x); // distance to the cross street centre (grid) or crossing edge (layout)
+	float cw_from = 5.6;
+	float cw_to = 7.6;
+	float edge_dist = min(d.x - half_w, d.y - half_w); // pavement: distance to the nearest street edge
+	bool layout = road_count > 0;
+	bool in_play = layout && in_rect(p, play_area);
+	if (layout) {
+		int hit = -1;
+		int hits = 0;
+		for (int i = 0; i < road_count; i++) {
+			if (in_rect(p, roads[i])) {
+				hits++;
+				if (hit < 0) {
+					hit = i;
+				}
+			}
+		}
+		bool lot = false;
+		for (int i = 0; i < lot_count; i++) {
+			lot = lot || in_rect(p, lots[i]);
+		}
+		if (hit >= 0 || lot || in_play) {
+			street = (hit >= 0 || lot) ? 1.0 : 0.0;
+			straight = (hit >= 0 && hits == 1) ? 1.0 : 0.0;
+			if (hit >= 0) {
+				vec4 r = roads[hit];
+				bool along_z = (r.w - r.y) > (r.z - r.x);
+				vec2 c = (r.xy + r.zw) * 0.5;
+				half_w = along_z ? (r.z - r.x) * 0.5 : (r.w - r.y) * 0.5;
+				across_signed = along_z ? p.x - c.x : p.y - c.y;
+				across = abs(across_signed);
+				travel = along_z ? p.y : p.x;
+				cross_travel = along_z ? p.x : p.y;
+				along_d = 1000.0;
+				for (int i = 0; i < road_count; i++) {
+					vec4 b = roads[i];
+					if (i == hit || ((b.w - b.y) > (b.z - b.x)) == along_z) {
+						continue;
+					}
+					// A crossing street: how far along this road its edge is.
+					float lo = along_z ? b.y : b.x;
+					float hi = along_z ? b.w : b.z;
+					float span_lo = along_z ? b.x : b.y;
+					float span_hi = along_z ? b.z : b.w;
+					float side = along_z ? p.x : p.y;
+					if (side < span_lo - 0.5 || side > span_hi + 0.5) {
+						continue;
+					}
+					along_d = min(along_d, max(lo - travel, travel - hi));
+				}
+				cw_from = 0.6;
+				cw_to = 2.6;
+			} else if (lot) {
+				straight = 0.0;
+			}
+			edge_dist = 1000.0;
+			for (int i = 0; i < road_count; i++) {
+				edge_dist = min(edge_dist, rect_dist(p, roads[i]));
+			}
+			for (int i = 0; i < lot_count; i++) {
+				edge_dist = min(edge_dist, rect_dist(p, lots[i]));
+			}
+		}
+	}
 
 	float grain = vnoise(p * grain_scale) * 0.6 + vnoise(p * grain_scale * 3.1) * 0.4;
 	float rough = 0.55;
@@ -116,17 +208,12 @@ void fragment() {
 		// Markings on straight segments only; the junction stays clear.
 		float mark = 0.0;
 		vec3 mark_col = lane_line_color.rgb;
-		float straight_x = in_x * (1.0 - in_z); // street along Z: lanes depend on d.x, travel coordinate is q.y
-		float straight_z = in_z * (1.0 - in_x);
-		float across = mix(d.y, d.x, straight_x); // distance from the street centre line
-		float travel = mix(q.x, q.y, straight_x); // coordinate along the street
-		float cross_travel = mix(q.y, q.x, straight_x); // coordinate across the street (crosswalk bars)
-		float along_d = mix(d.x, d.y, straight_x); // distance to the cross street centre
-		if (straight_x + straight_z > 0.5) {
+		if (straight > 0.5) {
 			float dbl = step(0.1, across) * step(across, 0.28);
-			float dash = step(abs(across - half_w * 0.5), 0.07) * step(fract(travel / 3.0), 0.5);
+			// Lane dashes only on roads wide enough for two lanes each way; a narrow street keeps its centre line.
+			float dash = step(abs(across - half_w * 0.5), 0.07) * step(fract(travel / 3.0), 0.5) * step(min_four_lane_width * 0.5, half_w);
 			float edge_ln = step(abs(across - (half_w - 0.4)), 0.05);
-			float cw = step(5.6, along_d) * step(along_d, 7.6) * step(fract(cross_travel), 0.5) * step(across, half_w - 0.8);
+			float cw = step(cw_from, along_d) * step(along_d, cw_to) * step(fract(cross_travel), 0.5) * step(across, half_w - 0.8);
 			if (dbl + dash + edge_ln > 0.0) {
 				mark = 1.0;
 				mark_col = dbl > 0.0 ? centre_line_color.rgb : lane_line_color.rgb;
@@ -141,10 +228,9 @@ void fragment() {
 		col = mix(col, mark_col * (0.55 + 0.45 * grain), mark * 0.9);
 		rough = mix(rough, 0.5, mark);
 
-		// One manhole in the middle of each straight segment, off the centre line.
-		if (detailed && straight_x + straight_z > 0.5) {
-			vec2 seg = mod(q, street_spacing) - street_spacing * 0.5; // offset from the middle of the block cell
-			vec2 mh = mix(vec2(seg.x, local.y + 2.5), vec2(local.x - 2.5, seg.y), straight_x);
+		// One manhole per 20 m of straight road, off the centre line.
+		if (detailed && straight > 0.5) {
+			vec2 mh = vec2(mod(travel, street_spacing) - street_spacing * 0.5, across_signed - 2.5);
 			float md = length(mh);
 			float lid = 1.0 - smoothstep(0.42, 0.46, md);
 			float ring = smoothstep(0.36, 0.40, md) * lid;
@@ -157,8 +243,7 @@ void fragment() {
 		float joint = 1.0 - smoothstep(0.0, 0.025, 0.5 - max(sl.x, sl.y));
 		col = pavement_color.rgb * (0.75 + 0.5 * grain) * (0.9 + 0.2 * hash21(floor(q / slab_size)));
 		col = mix(col, col * 0.45, joint);
-		float edge = min(d.x - half_w, d.y - half_w); // both are positive here: distance to the nearest street edge
-		float kerb = 1.0 - smoothstep(kerb_width, kerb_width + 0.04, edge);
+		float kerb = 1.0 - smoothstep(kerb_width, kerb_width + 0.04, edge_dist);
 		col = mix(col, kerb_color.rgb * (0.8 + 0.4 * grain), kerb);
 		rough = 0.8 - grain * 0.2;
 		if (detailed) {

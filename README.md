@@ -13,8 +13,8 @@ Open the project in Godot 4.7.2 and press F5 (main scene `res://core/game_flow.t
 Godot_v4.7.2-stable_win64.exe --path .
 ```
 
-**Goal:** find the 6 blue gears scattered through the alleys of Freedom City, then reach the High-Rise in the
-quarantine zone (top right) before the 18:00 countdown ends and the city is nuked. Kill zombies for XP; each level
+**Goal:** find the 6 blue gears scattered through the yards, lots and alleys of Freedom City (a few long, fenced-off
+streets joined by narrow alleys), then reach the High-Rise in the quarantine zone at the east end of Back Street (top right) before the 18:00 countdown ends and the city is nuked. Kill zombies for XP; each level
 deals 3 perk cards (redraw 3 times per run, or skip). The arrow next to you points to the nearest gear, then to the
 High-Rise. Cars and burning barrels can be shot until they explode: the blast hurts zombies and you, and can
 set off nearby props.
@@ -59,7 +59,7 @@ The page shell is `web/shell.html` (set as the custom HTML shell in the Web pres
 ## Tests
 
 ```sh
-tests/run_tests.sh   # headless: rules, input, touch, game flow, destructibles, audio, models, difficulty, tuning, zombie pressure; about 1 minute
+tests/run_tests.sh   # headless: rules, input, touch, game flow, destructibles, audio, models, difficulty, tuning, zombie pressure, level layout, surrounded; about 1.5 minutes
 Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # windowed: saves PNGs to tests/output/
 ```
 
@@ -69,7 +69,7 @@ Godot_v4.7.2-stable_win64_console.exe --path . res://tests/screenshots.tscn   # 
 |---|---|
 | `core/` | `game_flow.tscn`: main scene; owns the run rules and wires world and UI |
 | `audio/` | Sound: `SfxCue` and `SfxBank` resources, `SfxPlayer` and `MusicPlayer` scenes, `cues/` (.tres), `sfx/` and `music/` (generated .wav) |
-| `rules/` | Node-free rules: `RunState`, `PlayerStats`, `PerkDeck`, `PopulationGrid` |
+| `rules/` | Node-free rules: `RunState`, `PlayerStats`, `PerkDeck`, `PopulationGrid`, `WalkGrid` (where bodies can stand), `FlowField` (walking distance to the player) |
 | `data/` | Resource scripts and `.tres` content: perks (`data/perks/pool/`), weapons, enemies, run/player/director config |
 | `world/` | 3D world: camera rig, player (and components), zombies, bullets, pickups, props (buildings, cars, lamps, neon, destructibles), spawners, the Freedom City level |
 | `ui/` | HUD, perk cards, title and end screens, touch sticks |
@@ -115,6 +115,7 @@ explained in [docs/reference/tuning-guide.md](docs/reference/tuning-guide.md); z
 | 25 | 2026-11-22 | [custom-web-page-shell-with-fullscreen-button-for-mobile](docs/adr/custom-web-page-shell-with-fullscreen-button-for-mobile.md) | Custom web page shell with fullscreen button for mobile |
 | 26 | 2026-11-22 | [central-gametuning-resource-for-the-main-balance-knobs](docs/adr/central-gametuning-resource-for-the-main-balance-knobs.md) | Central GameTuning resource for the main balance knobs (refines 19 and 24) |
 | 27 | 2026-11-22 | [world-anchored-zombie-population](docs/adr/world-anchored-zombie-population.md) | World-anchored zombie population (generalises 20) |
+| 28 | 2026-11-22 | [enclosed-street-layout-with-walk-grid-and-flow-field](docs/adr/enclosed-street-layout-with-walk-grid-and-flow-field.md) | Enclosed street layout with walk grid and flow field (refines 21 and 27) |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),

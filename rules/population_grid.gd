@@ -10,6 +10,9 @@ extends RefCounted
 
 enum State { DORMANT, AWAKE, DEAD }
 
+## With a walk grid, slots sit at most this share of a grid cell off their cell's centre.
+const SNAP_JITTER: float = 0.1
+
 ## One waiting zombie: where it stands, what it is (decided when it first wakes), and whether it is alive in the world.
 class Slot extends RefCounted:
 	var position: Vector3
@@ -41,6 +44,14 @@ var safe_center: Vector2
 var safe_radius: float
 ## Slots stay this far from the edge of the bounds.
 var edge_margin: float = 1.5
+## Optional: where zombies can stand. With it, slots are placed only on free ground connected to the player start, and
+## the map's total (density_max per 1000 m2 of the whole bounds) is spread over that ground: a cell gets its share in
+## proportion to its free area, so narrow streets between big blocks are as crowded as the tuning intends overall.
+var walk: WalkGrid:
+	set(value):
+		walk = value
+		_walk_share = -1.0
+var _walk_share: float = -1.0
 
 var _cells: Dictionary = {}
 var _awake: Array[Slot] = []
@@ -172,11 +183,28 @@ func _fill_cell(c: Vector2i) -> Array[Slot]:
 		return slots
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = (seed_value * 73856093) ^ (c.x * 19349663) ^ (c.y * 83492791)
-	var expected: float = density_max * area.get_area() / 1000.0
+	var open_share: float = 1.0
+	if walk != null:
+		if _walk_share < 0.0:
+			_walk_share = float(walk.reachable_cells()) * walk.cell * walk.cell / maxf(bounds.get_area(), 1.0)
+		open_share = walk.reachable_fraction(area) / maxf(_walk_share, 0.05)
+	var expected: float = density_max * area.get_area() * open_share / 1000.0
 	var count: int = floori(expected) + (1 if rng.randf() < expected - floorf(expected) else 0)
 	for i: int in count:
 		var slot: Slot = Slot.new()
 		slot.position = Vector3(rng.randf_range(area.position.x, area.end.x), 0.0, rng.randf_range(area.position.y, area.end.y))
+		if walk != null:
+			var tries: int = 0
+			while not walk.is_reachable(Vector2(slot.position.x, slot.position.z)) and tries < 12:
+				slot.position = Vector3(rng.randf_range(area.position.x, area.end.x), 0.0, rng.randf_range(area.position.y, area.end.y))
+				tries += 1
+			if tries >= 12:
+				continue
+			# Onto the centre of its walk-grid cell (with a little jitter): a free cell's centre is at least the grid's
+			# clearance from every wall, so the zombie does not start half inside a facade or a fence.
+			var centre: Vector2 = walk.centre_of(walk.cell_of(Vector2(slot.position.x, slot.position.z)))
+			var jitter: float = walk.cell * SNAP_JITTER
+			slot.position = Vector3(centre.x + rng.randf_range(-jitter, jitter), 0.0, centre.y + rng.randf_range(-jitter, jitter))
 		slot.threshold = rng.randf()
 		slot.cell = c
 		if safe_radius > 0.0 and Vector2(slot.position.x, slot.position.z).distance_to(safe_center) < safe_radius:

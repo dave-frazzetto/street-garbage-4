@@ -12,3 +12,4 @@ render_scale = 0.6
 max_static_lights = 8
 detailed_ground = false
 zombie_population_scale = 0.6
+flow_cells_per_frame = 250

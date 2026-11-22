@@ -7,7 +7,7 @@ const WALKER: EnemyData = preload("res://data/enemies/walker.tres")
 const ARMOURED: EnemyData = preload("res://data/enemies/armoured.tres")
 const BOSS: EnemyData = preload("res://data/enemies/boss.tres")
 const MAP: Rect2 = Rect2(0, 0, 120, 120)
-const START: Vector2 = Vector2(10, 111)
+const START: Vector2 = Vector2(24, 66.5)
 
 
 func _ready() -> void:

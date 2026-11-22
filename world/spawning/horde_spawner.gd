@@ -41,6 +41,9 @@ class Slot extends RefCounted:
 
 ## Balance numbers for the zombies this horde wakes (the level injects them; null uses GameTuning defaults).
 var tuning: GameTuning
+## Where zombies can stand (injected by the level; null = anywhere): slots that fall in a building or behind a fence are
+## moved to the nearest free spot connected to the player start.
+var walk_grid: WalkGrid
 ## Callable() -> float giving run time elapsed, so a horde woken late is as tough as the zombies around it.
 var elapsed_provider: Callable
 var _slots: Array[Slot] = []
@@ -65,6 +68,10 @@ func spawn(target: Node3D, container: Node, rng: RandomNumberGenerator) -> void:
 		slot.enemy = enemies[rng.randi() % enemies.size()]
 		var offset: Vector3 = Vector3.FORWARD.rotated(Vector3.UP, rng.randf() * TAU) * (2.5 + sqrt(rng.randf()) * scatter_radius)
 		slot.position = global_position + offset
+		if walk_grid != null:
+			var free: Vector2 = walk_grid.nearest_open(Vector2(slot.position.x, slot.position.z), scatter_radius + 4.0)
+			if free.x != INF:
+				slot.position = Vector3(free.x, global_position.y, free.y)
 		_slots.append(slot)
 	_refresh()
 	set_process(true)
