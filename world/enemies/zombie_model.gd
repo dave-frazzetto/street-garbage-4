@@ -4,8 +4,13 @@ extends CharacterModel
 
 signal attack_finished
 
-## Walking speed in m/s at which the walk clip plays at normal speed.
-@export_range(0.2, 6.0, 0.05) var walk_reference_speed: float = 1.1
+## Ground speed in m/s the walk clip covers at normal playback (measured from the planted foot's travel: about 1.1 to 1.9) for a
+## model at scale 1. Playing it at speed / this keeps the feet from sliding; bigger models (bosses) have a longer stride, see below.
+@export_range(0.2, 6.0, 0.05) var walk_reference_speed: float = 1.4
+## Same for the run clip (measured about 2.3 to 4.5, mean about 3.5).
+@export_range(0.5, 12.0, 0.05) var run_reference_speed: float = 3.5
+## Ground speed (at scale 1) above which the run clip is used instead of the walk clip.
+@export_range(0.5, 8.0, 0.05) var run_switch_speed: float = 2.2
 @export_range(0.5, 3.0, 0.05) var max_playback_scale: float = 2.5
 ## Normal speed of the attack clip.
 @export_range(0.5, 3.0, 0.05) var attack_playback_scale: float = 1.6
@@ -39,9 +44,11 @@ func set_move_speed(speed: float) -> void:
 	if speed < 0.05:
 		hold()
 		return
-	var clip: StringName = &"run" if speed > walk_reference_speed * 2.2 else &"walk"
-	var reference: float = walk_reference_speed * (2.6 if clip == &"run" else 1.0)
-	play(clip, 0.15, clampf(speed / reference, 0.4, max_playback_scale))
+	# A model scaled up by size_scale takes proportionally longer strides, so compare against its speed at scale 1.
+	var unit_speed: float = speed / maxf(global_transform.basis.get_scale().x, 0.1)
+	var clip: StringName = &"run" if unit_speed > run_switch_speed else &"walk"
+	var reference: float = run_reference_speed if clip == &"run" else walk_reference_speed
+	play(clip, 0.15, clampf(unit_speed / reference, 0.4, max_playback_scale))
 
 
 func play_attack() -> void:
