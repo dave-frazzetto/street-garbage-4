@@ -19,7 +19,9 @@ void vertex() {
 	float length_y = length(y_axis);
 	vec3 along = y_axis / max(length_y, 0.00001);
 	vec3 to_camera = INV_VIEW_MATRIX[3].xyz - MODEL_MATRIX[3].xyz;
-	vec3 across = normalize(cross(along, to_camera));
+	vec3 side = cross(along, to_camera);
+	// Moving straight at the camera makes the cross product vanish; fall back to the camera's right axis.
+	vec3 across = length(side) < 0.0001 ? normalize(INV_VIEW_MATRIX[0].xyz) : normalize(side);
 	vec3 depth_axis = cross(across, along);
 	float width = length(MODEL_MATRIX[0].xyz);
 	mat4 aligned = mat4(vec4(across * width, 0.0), vec4(along * length_y, 0.0), vec4(depth_axis, 0.0), MODEL_MATRIX[3]);

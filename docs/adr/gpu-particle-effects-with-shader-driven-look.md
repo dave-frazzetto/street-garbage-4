@@ -48,6 +48,10 @@ collision and attractors are not available there, so effects rely only on what C
 - Particle simulation moves off the CPU; the first use of each effect compiles its shader, which can hitch once.
   Prewarming effects at level load is not done yet.
 - Soft depth needs the depth texture. It works on Compatibility desktop; it is untested on the web and mobile builds.
+- Known gap: the soft-depth fade is baked into the shared `mat_*.tres` files, so the mobile `GraphicsProfile` cannot
+  turn it off, and effects have no quality scaling for phones. Fine while the desktop build is the target; a
+  `soft_particles` switch (for example a global shader uniform) is the fix when mobile matters again.
+- The headless tests cannot compile for the GPU (dummy renderer); the windowed preview screenshots are the real shader check.
 - Sub-emitters, trails and particle collision are not used. They would need the Forward+ or Mobile renderer, which is a
   separate decision.
 - Supersedes ADR 22 (the CPU particle choice). The EffectSpawner cap and the `Zombie.damaged` signal contract stay.

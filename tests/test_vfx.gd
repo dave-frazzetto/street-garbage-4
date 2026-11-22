@@ -168,3 +168,38 @@ func test_7_effects_are_gpu_particles_with_compiling_shaders() -> void:
 		if file.get_extension() == "gdshader":
 			var sh: Shader = load("res://world/effects/shared/" + file) as Shader
 			check(sh.get_shader_uniform_list().size() > 0, "%s compiles and has uniforms" % file)
+
+
+func test_8_scaled_explosion_keeps_particles_inside_the_cull_box() -> void:
+	var scene: PackedScene = load("res://world/effects/explosion_effect.tscn") as PackedScene
+	var base: ExplosionEffect = scene.instantiate() as ExplosionEffect
+	base.radius = 1.75
+	var big: ExplosionEffect = scene.instantiate() as ExplosionEffect
+	big.radius = 5.5
+	root3d.add_child(base)
+	root3d.add_child(big)
+	var factor: float = 5.5 / 1.75
+	for node_name: String in ["Sparks", "Smoke", "Fireball"]:
+		var a: VfxBurst = base.get_node(node_name) as VfxBurst
+		var b: VfxBurst = big.get_node(node_name) as VfxBurst
+		check_eq(b.visibility_aabb.size.x / a.visibility_aabb.size.x, factor, "%s cull box grows with the radius" % node_name)
+		# Fastest particle's straight-line travel (ignoring gravity) must stay inside the box half-width.
+		var p: ParticleProcessMaterial = b.params()
+		var travel: float = p.initial_velocity_max * b.total_lifetime()
+		check(travel < b.visibility_aabb.size.x * 0.5 * 1.5, "%s travel (%.1f m) fits its cull box" % [node_name, travel])
+	base.queue_free()
+	big.queue_free()
+
+
+func test_9_impact_tint_goes_to_a_private_material() -> void:
+	var shared: ShaderMaterial = load("res://world/effects/shared/mat_spark.tres") as ShaderMaterial
+	var before: Color = shared.get_shader_parameter("tint") as Color
+	var fx: ImpactEffect = (load("res://world/effects/impact_effect.tscn") as PackedScene).instantiate() as ImpactEffect
+	fx.color = Color(1, 0, 0)
+	root3d.add_child(fx)
+	var sparks: GPUParticles3D = fx.get_node("Sparks") as GPUParticles3D
+	var mat: ShaderMaterial = sparks.material_override as ShaderMaterial
+	check(mat != shared, "impact uses its own material copy")
+	check_eq(mat.get_shader_parameter("tint"), Color(1, 0, 0), "bullet colour reaches the shader tint")
+	check_eq(shared.get_shader_parameter("tint"), before, "the shared spark material is unchanged")
+	fx.queue_free()

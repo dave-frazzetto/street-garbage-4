@@ -21,7 +21,8 @@ func _ready() -> void:
 
 ## Seconds until the last particle of a burst has died: lifetime plus the random spread of particle lifetimes.
 func total_lifetime() -> float:
-	var spread: float = (process_material as ParticleProcessMaterial).lifetime_randomness
+	var proc: ParticleProcessMaterial = process_material as ParticleProcessMaterial
+	var spread: float = proc.lifetime_randomness if proc != null else 0.0
 	return lifetime * (1.0 + spread) / maxf(speed_scale, 0.01)
 
 
@@ -47,6 +48,8 @@ func scale_by(factor: float) -> void:
 	p.scale_min *= factor
 	p.scale_max *= factor
 	p.emission_sphere_radius *= factor
+	# GPU particles are culled by this box, so it must grow with the effect or far sparks vanish early.
+	visibility_aabb = AABB(visibility_aabb.position * factor, visibility_aabb.size * factor)
 
 
 ## Aims the burst (see [method aim]) and starts it.

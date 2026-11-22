@@ -25,7 +25,8 @@ func _ready() -> void:
 		var burst: VfxBurst = child as VfxBurst
 		if burst == null:
 			continue
-		burst.scale_by(factor)
+		if not is_equal_approx(factor, 1.0):
+			burst.scale_by(factor)
 		_free_after = maxf(_free_after, burst.total_lifetime())
 	_free_after = maxf(_free_after, lifetime) + 0.1
 	_light.light_color = color
