@@ -31,7 +31,8 @@ can still walk away from every zombie, so sprint is not essential there.
 - The Input Map action is `sprint` (keyboard Shift, gamepad LB and L3). `PlayerInput.is_sprint_held()` reports
   whether it is held; it returns false while the touch device is active. The `sprint_toggled` signal and
   `request_sprint_toggle()` are removed.
-- `Player` polls the held state every physics frame: holding starts a sprint if stamina is above 1, releasing ends it.
+- `Player` polls the held state every physics frame: holding starts a sprint if stamina is above `GameTuning.min_sprint_stamina` of the bar (0.15, at least 1 point),
+  releasing ends it. Any key press switches the input device back to keyboard, so a touchscreen laptop can sprint.
   When the bar runs dry mid-sprint the sprint ends and stays off until the input is released and held again (no flicker
   while the bar refills under a held key).
 - Touch controls have no sprint button. `TouchControls`, `GameFlow` and `Level` lose the sprint plumbing
@@ -40,6 +41,9 @@ can still walk away from every zombie, so sprint is not essential there.
 - This refines `unified-player-input-component` (everything else there still holds).
 
 ## Consequences
+
+- Touch players can still draw sprint perks (Double Sprint) from the pool, which do nothing for them, and the stamina bar
+  stays on the HUD. Accepted for now; filtering sprint-only perks by input device is a follow-up.
 
 - Sprint is a deliberate, short burst that ends the moment the key is let go, which matches how the stamina bar is
   tuned (6 s of sprint, 6.5 s to refill).

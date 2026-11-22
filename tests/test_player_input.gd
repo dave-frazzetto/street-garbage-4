@@ -253,3 +253,14 @@ func test_7_player_follows_the_character_scale() -> void:
 	var other_shape: CylinderShape3D = (other.get_node("CollisionShape3D") as CollisionShape3D).shape as CylinderShape3D
 	check(is_equal_approx(other_shape.height, 1.8), "the scene's shared collision shape is not modified")
 	other.free()
+
+
+func test_8_keyboard_after_touch_can_sprint() -> void:
+	player.input._set_device(PlayerInput.Device.TOUCH)
+	check(not player.input.is_sprint_held(), "touch play never sprints")
+	_key(KEY_SHIFT, true)
+	await wait_frames(1)
+	check_eq(player.input.device, PlayerInput.Device.MOUSE_KEYBOARD, "a key press switches back to the keyboard")
+	check(player.input.is_sprint_held(), "Shift sprints after touch play without moving the mouse")
+	_key(KEY_SHIFT, false)
+	await wait_frames(1)

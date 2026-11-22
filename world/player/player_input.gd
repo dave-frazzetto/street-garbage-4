@@ -42,6 +42,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_set_device(Device.GAMEPAD)
 	elif event is InputEventScreenTouch or event is InputEventScreenDrag:
 		_set_device(Device.TOUCH)
+	elif event is InputEventKey and event.pressed and not event.is_echo():
+		# A touchscreen laptop or a tablet with a keyboard: pressing a key hands control back to the keyboard, so Shift
+		# sprints again without the mouse having to move first.
+		_set_device(Device.MOUSE_KEYBOARD)
 
 
 ## True while the sprint input is held (keyboard or gamepad). Touch play has no sprint: it always walks.
