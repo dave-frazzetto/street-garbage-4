@@ -119,4 +119,5 @@ explained in [docs/reference/tuning-guide.md](docs/reference/tuning-guide.md); z
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),
-[slice-4-sound-effects](docs/prd/slice-4-sound-effects.md).
+[slice-4-sound-effects](docs/prd/slice-4-sound-effects.md),
+[slice-18-directional-locomotion](docs/prd/slice-18-directional-locomotion.md) (draft).
