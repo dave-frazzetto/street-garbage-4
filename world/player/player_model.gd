@@ -16,8 +16,8 @@ extends CharacterModel
 ## space (median over the stance, measured on the clip; the clips have no root motion). Playing the clip at
 ## speed / this value keeps the planted foot still on the ground.
 @export_range(0.3, 6.0, 0.05) var walk_reference_speed: float = 1.45
-## Same for the run clip (measured 4.8 to 5.1 m/s; its stride is long, so a 3.5 m/s sprint plays it at about 0.6x).
-@export_range(0.5, 12.0, 0.05) var run_reference_speed: float = 4.85
+## Same for the run clip (5.1 m/s: lowest foot slip on the slice-17 hero rig; its stride is long, so a 3.5 m/s sprint plays it at about 0.6x).
+@export_range(0.5, 12.0, 0.05) var run_reference_speed: float = 5.1
 ## The legs switch from the walk clip to the run clip above run_above_speed and back below walk_below_speed; in between
 ## they keep the clip they have, so a steady speed always plays one clip (the two clips are not phase matched, and a
 ## blend of them makes the feet slide). Each switch cross-fades at blend_rate. The usual speeds at character scale 1.15,

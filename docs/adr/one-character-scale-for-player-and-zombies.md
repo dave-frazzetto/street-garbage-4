@@ -40,7 +40,7 @@ walk and run loops repeat their first pose for one frame.
   a scaled 1.15 m bullet flew over the 1 m fire barrels. The weapon in the hand is measured in the model's own space, so it grows with the model whether
   it was attached before or after scaling.
 - `PlayerModel` and `ZombieModel` divide the ground speed by their world scale before choosing clip and playback, with
-  re-measured references (walk 1.45, run 4.85 m/s, planted-foot speed in character space), a walk-to-run switch with
+  re-measured references (walk 1.45, run 4.85 m/s, player later 5.1 m/s on the slice-17 hero rig, planted-foot speed in character space), a walk-to-run switch with
   hysteresis instead of a blend (run above 2.9, walk below 2.7 m/s at scale 1, cross-faded on a switch, so a steady
   speed such as a four Fleet Foot walk never mixes two clips) and the cadence easing moved to 2x, above any reachable
   playback. `CharacterModel` drops the held first frame of

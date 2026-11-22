@@ -151,7 +151,7 @@ speeds and the run clip at fast speeds, each at speed / reference so the planted
 | Value (at model scale 1) | Player | Zombie | How it was measured |
 |---|---|---|---|
 | `walk_reference_speed` | 1.45 m/s | 1.45 m/s | Backward speed of the planted foot in the character's space, median over the stance (clips have no root motion) |
-| `run_reference_speed` | 4.85 m/s | 4.85 m/s | Same; the run clip has a long stride, so a 3.45 m/s sprint at scale 1.15 plays it at about 0.62x |
+| `run_reference_speed` | 5.1 m/s | 4.85 m/s | Same; the run clip has a long stride, so a 3.45 m/s sprint at scale 1.15 plays it at about 0.59x. The player value was re-swept on the slice-17 hero rig (planted-foot slip 0.25 m/s at sprint, 0.34 at 4.85); re-measure it whenever the model or its clips change |
 | Walk to run | run above 2.9 m/s, walk below 2.7 m/s (`run_above_speed`, `walk_below_speed`) | switch at 2.7 m/s | Between the two speeds the legs keep the clip they have, so a steady speed always plays one clip: the clips are not phase matched and a blend of them slides. At scale 1.15 a plain walk is 2.0, a walk with four Fleet Foot 2.8 (in the band: it keeps the walk clip, or the run clip right after a sprint) and a sprint 3.0 m/s at scale 1. The walk clip looks right up to about 2x, the run clip down to about 0.55x |
 | `cadence_soft_limit` | 2.0 | none | Above this playback the step rate grows at half rate and the feet slide on purpose. At 2.0 no reachable speed triggers it (the walk clip stops at 2.9 / 1.45 = 2x) |
 
