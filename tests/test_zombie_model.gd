@@ -123,3 +123,26 @@ func test_6_zombie_types_use_their_own_model() -> void:
 	check_eq(armoured.get_node("Visual").scale, Vector3.ONE, "own-model zombies are not stretched by radius")
 	walker.queue_free()
 	armoured.queue_free()
+
+
+func test_7_playback_matches_ground_speed_and_size() -> void:
+	var walker: Zombie = _spawn("res://data/enemies/walker.tres")
+	var boss: Zombie = _spawn("res://data/enemies/boss.tres")
+	await wait_frames(2)
+	var wm: ZombieModel = walker.get_node("Visual/Model") as ZombieModel
+	var bm: ZombieModel = boss.get_node("Visual/Model") as ZombieModel
+	var wp: AnimationPlayer = _player_of(walker)
+	var bp: AnimationPlayer = _player_of(boss)
+	wm.set_move_speed(1.4)
+	check_eq(wp.current_animation, "walk", "walking pace plays the walk clip")
+	check(absf(wp.speed_scale - 1.0) < 0.02, "walk clip at its reference pace is not sped up (%.2f)" % wp.speed_scale)
+	wm.set_move_speed(3.5)
+	check_eq(wp.current_animation, "run", "fast pace plays the run clip")
+	check(absf(wp.speed_scale - 1.0) < 0.02, "run clip at its reference pace is not sped up (%.2f)" % wp.speed_scale)
+	wm.set_move_speed(5.2)
+	check(wp.speed_scale > 1.3 and wp.speed_scale < 1.6, "fastest late zombie runs about 1.5x (%.2f)" % wp.speed_scale)
+	# A boss is 1.2x larger, so its stride is longer: the same ground speed needs slower playback.
+	bm.set_move_speed(3.5 * 1.2)
+	check(absf(bp.speed_scale - 1.0) < 0.03, "boss at 1.2x the reference pace plays at normal speed (%.2f)" % bp.speed_scale)
+	walker.queue_free()
+	boss.queue_free()
