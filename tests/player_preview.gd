@@ -57,7 +57,7 @@ func _wait(s: float) -> void:
 func _drive(seconds: float, speed: float, firing: bool) -> void:
 	var frames: int = int(seconds * Engine.physics_ticks_per_second)
 	for i: int in frames:
-		model.update_motion(speed, firing)
+		model.update_motion(Vector3(0.0, 0.0, -speed), firing)
 		await get_tree().physics_frame
 
 

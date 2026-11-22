@@ -6,20 +6,21 @@ tags: []
 generated:
   by: arkouda/0.8.0
   at: 2026-11-22T20:54:18Z
-status: draft
-lifecycle: draft
+status: stable
+lifecycle: shipped
 owner: []
 decisions:
   - generated-3d-art-with-meshy
   - unified-player-input-component
   - survival-style-combat-rooted-shooting-hitscan-line-tougher-zombies
+  - directional-locomotion-from-angle-smoothed-blend-spaces
 ---
 
 # Slice 18 directional locomotion
 
 ## Status
 
-Draft
+Shipped
 
 ## Problem
 
@@ -33,8 +34,8 @@ Split movement into a local-space direction: take the ground velocity, rotate it
 
 - FR-1 **Clip set.** The player has walk and run clips for 4 directions: forward, backward, strafe left, strafe right (8 new clips, plus the 2 existing forward ones). All use the existing Meshy skeleton, loop seamlessly, and are saved as `.res` through `extract_clips.gd`. Idle stays a single clip.
 - FR-2 **Local-space movement.** `PlayerModel` receives the facing and the world velocity (or movement direction) and computes the movement vector relative to the facing. Moving along the facing plays forward, directly against it plays backward, perpendicular plays the matching strafe, and diagonals blend neighbouring clips.
-- FR-3 **2D blend space.** Locomotion is an `AnimationNodeBlendSpace2D` (one for walk, one for run) in the existing `AnimationTree`. The blend position is smoothed so that quickly flipping the aim does not snap the legs between clips. The blend space is built in code like the current tree, with the point positions exported or taken from a Resource so a designer can adjust them.
-- FR-4 **Walk and run still switch by speed.** The walk/run switch uses the same hysteresis thresholds (`walk_below_speed`, `run_above_speed`, cross-fade on a switch, no speed blend) and applies to every direction. Backward and strafe movement may have their own lower maximum speed multiplier in `PlayerConfig` (default 1.0 so behaviour is unchanged unless a designer tunes it).
+- FR-3 **2D blend space.** (Shipped: the point positions are fixed corners of the diamond; the designer tunes the turn rate and the clip reference speeds in `LocomotionProfile`.) Locomotion is an `AnimationNodeBlendSpace2D` (one for walk, one for run) in the existing `AnimationTree`. The blend position is smoothed so that quickly flipping the aim does not snap the legs between clips. The blend space is built in code like the current tree, with the point positions exported or taken from a Resource so a designer can adjust them.
+- FR-4 **Walk and run still switch by speed.** The walk/run switch uses the same hysteresis thresholds (`walk_below_speed`, `run_above_speed`, cross-fade on a switch, no speed blend) and applies to every direction. (A slower backpedal and strafe was optional and is not done: it is a gameplay change and stays an open question.)
 - FR-5 **No foot sliding.** Playback speed of each directional clip is scaled to the ground speed using a per-clip reference speed (measured as for the current forward clips). These live in a Resource (for example `LocomotionProfile`) and not as literals.
 - FR-6 **Transitions.** Idle to move, move to idle, and direction changes cross-fade without a visible pop. Start, stop and direction hysteresis are tunable (extending the existing `move_start_speed`, `move_stop_speed` and `blend_rate` knobs). Reversing from forward to backward blends through the strafe poses and does not snap.
 - FR-7 **Aim and fire layering unchanged.** The upper-body fire overlay (`run_and_shoot` on `upper_body_bones`) and the "firing roots the player" rule are unchanged. While firing the player is rooted, so only the idle legs show. The overlay must not break when the legs play a directional clip.
@@ -61,6 +62,7 @@ Split movement into a local-space direction: take the ground velocity, rotate it
 
 ## Open Questions
 
-- Meshy credit cost and quality of the backward and strafe motions on this rig: do they come out clean enough, or does some clip need hand-tuning or a fallback to a procedural lean?
-- Should the strafe and backward clips share the walk and run reference speeds, or is a per-clip measurement needed (assumed per clip in FR-5)?
+Resolved in the slice: the Meshy motions came out usable for placeholder art (backward walk from the library, the rest generated; 67 credits); reference speeds are per clip, in `LocomotionProfile`. Still open:
+
+
 - Should backward and strafe movement be slower in `PlayerConfig` (FR-4), or is that a separate balance decision for the designer?
