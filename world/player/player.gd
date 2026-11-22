@@ -166,7 +166,7 @@ func _physics_process(delta: float) -> void:
 		_model.flash(hit_color)
 	else:
 		_model.clear_flash()
-	_model.update_motion(Vector2(velocity.x, velocity.z).length(), input.is_firing())
+	_model.update_motion(velocity, input.is_firing())
 
 
 func _on_died() -> void:
