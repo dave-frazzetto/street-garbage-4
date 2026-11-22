@@ -6,12 +6,12 @@
 transform = Transform3D(0.7071067, -0.46874642, 0.5294116, 0, 0.74870116, 0.66290754, -0.7071067, -0.46874642, 0.5294116, 0, 0, 0)
 script = ExtResource("1_cam")
 pitch_degrees = 41.522
-distance = 25.585
+distance = 20.0
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1030454692]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25.585)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
 current = true
 fov = 40.0
 size = 24.0
 near = 0.5
-far = 76.755
+far = 60.0
