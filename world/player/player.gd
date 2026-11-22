@@ -33,6 +33,8 @@ signal hit_landed(amount: float)
 var stats: PlayerStats
 var sprinting: bool = false
 var _invulnerable: float = 0.0
+## Seconds since the player last took damage (calm regeneration waits for it).
+var _since_damage: float = 0.0
 var _hit_flash: float = 0.0
 
 
@@ -78,6 +80,7 @@ func take_damage(amount: float) -> void:
 	if _invulnerable > 0.0 or health.is_dead:
 		return
 	_invulnerable = hit_invulnerability
+	_since_damage = 0.0
 	_hit_flash = 0.15
 	health.take_damage(amount * stats.get_value(PlayerStats.Stat.DAMAGE_TAKEN))
 
@@ -96,6 +99,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_invulnerable = maxf(0.0, _invulnerable - delta)
 	_hit_flash = maxf(0.0, _hit_flash - delta)
+	_since_damage += delta
 	var move: Vector3 = input.get_move_vector()
 	var moving: bool = move.length() > 0.1 and not (input.is_firing() and stats.get_value(PlayerStats.Stat.FIRING_MOVE_SPEED) <= 0.0)
 	if sprinting and not stamina.update(delta, moving):
@@ -115,6 +119,8 @@ func _physics_process(delta: float) -> void:
 	weapon.rotation.y = visual.rotation.y
 	weapon.tick(delta, input.is_firing(), aim)
 	var regen: float = stats.get_value(PlayerStats.Stat.HEALTH_REGEN)
+	if _since_damage >= stats.calm_regen_delay:
+		regen += stats.calm_regen_per_second
 	if regen > 0.0:
 		health.heal(regen * delta)
 	if _hit_flash > 0.0:

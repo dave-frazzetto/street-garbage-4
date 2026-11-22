@@ -32,6 +32,8 @@
 [ext_resource type="PackedScene" path="res://world/props/traffic_light.tscn" id="29_traffic"]
 [ext_resource type="PackedScene" path="res://world/props/fence.tscn" id="30_fence"]
 [ext_resource type="PackedScene" path="res://world/props/city_backdrop.tscn" id="31_backdrop"]
+[ext_resource type="Script" path="res://world/spawning/world_population.gd" id="32_population"]
+[ext_resource type="Resource" path="res://data/config/game_tuning.tres" id="33_tuning"]
 
 [sub_resource type="Environment" id="Environment_night"]
 background_mode = 1
@@ -58,6 +60,7 @@ blood_hit_scene = ExtResource("99_bloodhit")
 blast_scene = ExtResource("26_blast")
 default_run_config = ExtResource("6_run")
 default_player_config = ExtResource("7_pcfg")
+default_tuning = ExtResource("33_tuning")
 bounds = Rect2(0, 0, 120, 120)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -1154,3 +1157,8 @@ transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, 10.00, 0
 script = ExtResource("13_director")
 config = ExtResource("14_dircfg")
 zombie_scene = ExtResource("3_zombie")
+
+[node name="WorldPopulation" type="Node" parent="."]
+script = ExtResource("32_population")
+zombie_scene = ExtResource("3_zombie")
+config = ExtResource("14_dircfg")

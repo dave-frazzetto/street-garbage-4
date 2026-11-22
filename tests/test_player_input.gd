@@ -68,7 +68,7 @@ func test_2_sprint_toggle_faster_and_drains() -> void:
 	_key(KEY_D, false)
 	var sprint_dist: float = (player.global_position - p0).length()
 	check(player.stamina.current < st0, "sprinting drains stamina")
-	check(sprint_dist > 5.25 * 20.0 / 60.0 * 1.3, "sprint is faster (%.2f m)" % sprint_dist)
+	check(sprint_dist > GameTuning.fallback().player_walk_speed * 20.0 / 60.0 * 1.3, "sprint is faster (%.2f m)" % sprint_dist)
 	_key(KEY_SHIFT, true)
 	_key(KEY_SHIFT, false)
 	await wait_frames(1)

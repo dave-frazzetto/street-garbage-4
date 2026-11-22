@@ -1,12 +1,15 @@
 class_name ZombieDirector
 extends Node
-## Spawns ambient zombies just off-screen around the target, with pressure (count, speed, health, bosses) that ramps up over the run.
-## Ambient zombies far behind the player are freed and replaced near it.
+## The top-up of the zombie population: keeps GameTuning.trickle_alive zombies chasing the target, spawned just off-screen,
+## with a type mix (armoured, bosses) that follows the run time. Top-up zombies far behind the player are freed and
+## replaced near it. The zombies waiting in the world are WorldPopulation's job.
 
 signal zombie_spawned(zombie: Zombie)
 
 @export var config: DirectorConfig
 @export var zombie_scene: PackedScene
+## Balance numbers (the level injects them; null uses GameTuning defaults).
+var tuning: GameTuning
 
 var target: Node3D
 var container: Node3D
@@ -15,7 +18,7 @@ var bounds: Rect2 = Rect2(0, 0, 100, 100)
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Callable() -> float giving run time elapsed (drives the ramp).
 var elapsed_provider: Callable
-## Scales the config's max alive count (the graphics profile lowers it on phones).
+## Scales the trickle size (the graphics profile lowers it on phones).
 var population_scale: float = 1.0
 var active: bool = false
 var _timer: float = 0.0
@@ -23,7 +26,8 @@ var _burst_pending: bool = false
 var _alive: Array[Zombie] = []
 
 
-func start(chase_target: Node3D, zombie_container: Node3D, level_bounds: Rect2, random: RandomNumberGenerator, elapsed: Callable) -> void:
+func start(chase_target: Node3D, zombie_container: Node3D, level_bounds: Rect2, random: RandomNumberGenerator, elapsed: Callable, game_tuning: GameTuning = null) -> void:
+	tuning = game_tuning if game_tuning != null else GameTuning.fallback()
 	target = chase_target
 	container = zombie_container
 	bounds = level_bounds
@@ -45,7 +49,7 @@ func _physics_process(delta: float) -> void:
 	_alive.assign(_alive.filter(func(z: Variant) -> bool: return is_instance_valid(z) and not z.is_dead))
 	_cull_far()
 	var elapsed: float = _elapsed()
-	var max_alive: int = maxi(1, roundi(config.max_alive_at(elapsed) * population_scale))
+	var max_alive: int = maxi(0, roundi(tuning.trickle_alive(elapsed) * population_scale))
 	if _burst_pending:
 		_burst_pending = false
 		for i: int in config.initial_burst:
@@ -55,8 +59,8 @@ func _physics_process(delta: float) -> void:
 	_timer -= delta
 	if _timer > 0.0:
 		return
-	_timer = config.interval_at(elapsed)
-	for i: int in config.batch_at(elapsed):
+	_timer = config.interval_at(tuning, elapsed)
+	for i: int in config.batch_at(tuning, elapsed):
 		if _alive.size() >= max_alive:
 			break
 		_spawn_one()
@@ -73,10 +77,7 @@ func alive_of(enemy: EnemyData) -> int:
 
 func _spawn_one() -> void:
 	var elapsed: float = _elapsed()
-	var counts: Dictionary = {}
-	for z: Zombie in _alive:
-		counts[z.data] = int(counts.get(z.data, 0)) + 1
-	var data: EnemyData = config.pick(elapsed, rng, counts)
+	var data: EnemyData = config.pick(elapsed, tuning, rng, Zombie.count_by_type(get_tree()))
 	if data == null:
 		return
 	var pos: Vector3 = Vector3.ZERO
@@ -91,9 +92,7 @@ func _spawn_one() -> void:
 	if not found:
 		return
 	var z: Zombie = zombie_scene.instantiate() as Zombie
-	z.setup(data, target, 100000.0)
-	z.speed_multiplier = config.speed_multiplier(elapsed)
-	z.health_multiplier = config.health_multiplier(elapsed)
+	z.setup(data, target, 100000.0, tuning, elapsed)
 	z.position = pos
 	container.add_child(z)
 	_alive.append(z)

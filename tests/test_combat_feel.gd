@@ -60,7 +60,7 @@ func test_2_player_moves_slower_while_firing() -> void:
 	var was_firing: bool = p.input.is_firing()
 	Input.action_release("shoot")
 	Input.action_release("move_right")
-	check(walk > 4.0, "walks at normal speed (%.2f)" % walk)
+	check(walk > GameTuning.fallback().player_walk_speed * 0.9, "walks at normal speed (%.2f)" % walk)
 	check(was_firing, "firing state read")
 	check_eq(snappedf(firing, 0.01), 0.0, "cannot walk while shooting (speed %.2f)" % firing)
 	p.queue_free()
@@ -103,7 +103,7 @@ func test_5_wall_blocks_and_beam_fades() -> void:
 	await wait_frames(3)
 	var b: Bullet = _shoot(Vector3(95, 1.0, 0), Vector3.RIGHT, 20.0)
 	await wait_frames(3)
-	check_eq(z.health, z.data.max_health, "wall blocks bullet")
+	check_eq(z.health, z.max_health, "wall blocks bullet")
 	check(b.global_position.x < 100.0, "bullet stopped at wall (x=%.2f)" % b.global_position.x)
 	check(is_instance_valid(b) and b._segments.size() == 1, "one static line of light")
 	check(b._segments[0][1].x < 100.0 and b._segments[0][1].x > 99.0, "line ends at the wall (x=%.2f)" % b._segments[0][1].x)
@@ -147,5 +147,5 @@ func test_7_hit_is_instant_and_zombie_flinches() -> void:
 func test_8_weapons_fire_slower_but_hit_harder() -> void:
 	check(pistol.shots_per_second <= 2.0, "pistol fire rate %.1f/s" % pistol.shots_per_second)
 	var walker: EnemyData = load("res://data/enemies/walker.tres") as EnemyData
-	var shots: int = ceili(walker.max_health / pistol.damage)
+	var shots: int = ceili(GameTuning.fallback().zombie_max_health(walker, 0.0) / pistol.damage)
 	check(shots >= 2 and shots <= 4, "walker takes %d pistol shots" % shots)

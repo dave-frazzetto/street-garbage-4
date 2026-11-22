@@ -132,7 +132,7 @@ func test_specific_perk_effects() -> void:
 	check(stats.has_flag(PlayerStats.Flag.NO_HEALTH_PICKUPS), "vampire disables health pickups")
 	check(stats.get_value(PlayerStats.Stat.LIFESTEAL) > 0.0, "vampire lifesteal")
 	_perk("double_sprint").apply(ctx)
-	check_eq(stats.get_value(PlayerStats.Stat.SPRINT_BONUS), 1.2, "double sprint doubles bonus")
+	check_eq(stats.get_value(PlayerStats.Stat.SPRINT_BONUS), stats.get_base(PlayerStats.Stat.SPRINT_BONUS) * 2.0, "double sprint doubles bonus")
 	_perk("glass_cannon").apply(ctx)
 	check_eq(stats.get_value(PlayerStats.Stat.MAX_HEALTH), 70.0, "glass cannon -30% health")
 	_perk("gear").apply(ctx)
