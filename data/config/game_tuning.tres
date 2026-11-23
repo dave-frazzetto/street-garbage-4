@@ -5,5 +5,7 @@
 [resource]
 script = ExtResource("1_tuning")
 player_walk_speed = 2.3
+sprint_seconds = 1.0
 zombie_speed_ratio = 0.56
+world_density_start = 2.2
 xp_per_standard_kill = 2.0
