@@ -5,12 +5,12 @@ extends Resource
 ## the model plays the clip at ground speed / this value so feet do not slide. Re-measure when a clip is replaced.
 
 @export_group("Walk clips")
-@export_range(0.3, 6.0, 0.05) var walk_forward: float = 1.45
-@export_range(0.3, 6.0, 0.05) var walk_back: float = 1.2
-@export_range(0.3, 6.0, 0.05) var walk_left: float = 1.2
-@export_range(0.3, 6.0, 0.05) var walk_right: float = 1.15
+@export_range(0.3, 6.0, 0.05) var walk_forward: float = 1.52
+@export_range(0.3, 6.0, 0.05) var walk_back: float = 1.37
+@export_range(0.3, 6.0, 0.05) var walk_left: float = 1.38
+@export_range(0.3, 6.0, 0.05) var walk_right: float = 1.07
 @export_group("Run clips")
-@export_range(0.5, 12.0, 0.05) var run_forward: float = 5.1
+@export_range(0.5, 12.0, 0.05) var run_forward: float = 5.24
 @export_range(0.5, 12.0, 0.05) var run_back: float = 2.4
 @export_range(0.5, 12.0, 0.05) var run_left: float = 3.0
 @export_range(0.5, 12.0, 0.05) var run_right: float = 3.0

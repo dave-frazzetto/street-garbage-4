@@ -18,3 +18,4 @@ export_credentials.cfg
 /art/models/**/*_texture_*.png
 /art/models/**/*_normal.png
 /art/models/**/*_emissive.png
+/art/models/**/*_Image_0.png

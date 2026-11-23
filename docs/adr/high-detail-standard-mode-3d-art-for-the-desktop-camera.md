@@ -33,7 +33,11 @@ desktop, where the old assets look flat and low quality. The owner asked for AAA
   triangle target per asset.
 - Triangle targets (in `assets.tsv`): weapons 25k to 50k, pickups 20k, small props 20k to 50k, poles and lamp 40k, car 100k,
   building tiles 60k to 80k. Textures are 4k for the car, lamp and buildings, 2k for the rest.
-- Characters keep their smart-topology pipeline (they are rigged); this decision does not touch them.
+- Characters (rigged, 2026-11-23 follow-up): the zombies use the same photoreal standard-mode pipeline with an A-pose, remeshed to
+  30k triangles, then Meshy rigging. The player is redesigned in a stylised cel-shaded anime look (neon pink bob, white cropped
+  jacket, high-cut black bodysuit, cut-out lavender leggings) from a text-to-image reference written in our own words (never the
+  owner's reference picture), as clean 30k smart topology with a flat base colour, then rigged. Existing clips are reused because
+  Meshy rigs share bone names; the locomotion profile speeds were re-measured with `measure_clips.gd` for the new proportions.
 - GLBs are committed exactly as Meshy delivers them (no extra compression). The PNGs Godot extracts from a GLB on import
   (`*_texture_*.png`, `*_normal.png`, `*_emissive.png`) are regenerated, so they are git-ignored.
 - `art/tools/model_sheet.gd` renders any set of GLBs under neutral light for an in-engine review.
