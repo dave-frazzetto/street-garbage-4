@@ -8,6 +8,11 @@ extends StaticBody3D
 	set(value):
 		paint = value
 		_refresh()
+## How strongly the paint colour is mixed over the model's own PBR paint (0 keeps the generated texture untouched).
+@export_range(0.0, 1.0, 0.05) var paint_strength: float = 0.15:
+	set(value):
+		paint_strength = value
+		_refresh()
 ## Headlights on (spotlights forward) and glowing tail lights.
 @export var lights_on: bool = false:
 	set(value):
@@ -45,7 +50,7 @@ func _refresh() -> void:
 			mesh.material_override = _material
 	var model: FitModel = get_node_or_null("Model") as FitModel
 	if model != null:
-		model.set_tint(Color(paint, 0.4) if not wrecked else Color(wreck_color, 0.85))
+		model.set_tint(Color(paint, paint_strength) if not wrecked else Color(wreck_color, 0.85))
 	var lights: Node3D = get_node_or_null("Lights") as Node3D
 	if lights != null:
 		lights.visible = lights_on

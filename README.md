@@ -121,6 +121,7 @@ explained in [docs/reference/tuning-guide.md](docs/reference/tuning-guide.md); z
 | 31 | 2026-11-22 | [directional-locomotion-from-angle-smoothed-blend-spaces](docs/adr/directional-locomotion-from-angle-smoothed-blend-spaces.md) | Directional locomotion from angle-smoothed blend spaces (refines 11) |
 | 32 | 2026-11-22 | [enclosed-street-layout-with-walk-grid-and-flow-field](docs/adr/enclosed-street-layout-with-walk-grid-and-flow-field.md) | Enclosed street layout with walk grid and flow field (refines 21 and 27) |
 | 33 | 2026-11-23 | [shader-warm-up-behind-the-loading-screen](docs/adr/shader-warm-up-behind-the-loading-screen.md) | Shader warm-up behind the loading screen |
+| 34 | 2026-11-23 | [high-detail-standard-mode-3d-art-for-the-desktop-camera](docs/adr/high-detail-standard-mode-3d-art-for-the-desktop-camera.md) | High-detail standard-mode 3D art for the desktop camera (refines 11 and 30) |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),

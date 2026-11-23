@@ -42,6 +42,16 @@ Read from the Doom Eternal and Doom: The Dark Ages ideation sheets (shape langua
 
 Keep her consistent across every asset that shows her: same hair, same implant colour, same jacket.
 
+## High-detail pipeline for non-rigged assets (2026-11-23)
+
+The target is Windows desktop with a closer camera, so weapons, pickups, props and buildings are photoreal PBR models (see ADR
+`high-detail-standard-mode-3d-art-for-the-desktop-camera`). The style statement for them is `art/tools/style_hq.txt`
+(photoreal, worn, one neon accent); the stylised player uses `art/tools/style_player.txt`. The per-asset prompts, triangle targets
+(20k to 100k) and texture size (2k or 4k) are in `art/tools/assets.tsv`. The pipeline is text-to-image, then image-to-3d in standard
+mode (meshy-7.1, 4k geometry, meshy-7 PBR), then remesh to the triangle target. Neither the older "chunky, hand-painted" style
+statement nor the triangle budgets and 1024 px texture shrink below apply to these assets any more. Review a batch with
+`art/tools/model_sheet.gd` (renders GLBs in engine).
+
 ## Technical rules
 
 - Units are metres, +Y up, model faces -Z (Godot forward). Pivot at the feet (characters) or the base centre (props).
