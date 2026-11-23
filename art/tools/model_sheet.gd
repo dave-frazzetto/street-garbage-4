@@ -62,6 +62,15 @@ func _make_view(path: String) -> SubViewport:
 func _bounds(node: Node) -> AABB:
 	var box: AABB = AABB()
 	var first: bool = true
+	# A rigged model: mesh boxes are in bind space, so frame it by its bones (grown a little for the body around them).
+	for skeleton: Node in node.find_children("*", "Skeleton3D", true, false):
+		var sk: Skeleton3D = skeleton as Skeleton3D
+		for bone: int in sk.get_bone_count():
+			var at: Vector3 = sk.global_transform * sk.get_bone_global_pose(bone).origin
+			box = AABB(at, Vector3.ZERO) if first else box.expand(at)
+			first = false
+	if not first:
+		return box.grow(0.15)
 	for mesh: Node in node.find_children("*", "MeshInstance3D", true, false):
 		var mi: MeshInstance3D = mesh as MeshInstance3D
 		var b: AABB = mi.global_transform * mi.get_aabb()
