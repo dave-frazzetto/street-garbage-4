@@ -331,28 +331,28 @@ color = Color(0.4, 0.22, 0.16, 1)
 roof_color = Color(0.28, 0.16, 0.12, 1)
 
 [node name="B22" parent="Buildings" unique_id=1857832595 instance=ExtResource("10_building")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.09, 0, 54)
+transform = Transform3D(1, 0, 0, 0, 2.0269885, 0, 0, 0, 1, 6.09, 0, 54)
 size = Vector3(12.18, 9, 14)
 color = Color(0.2, 0.24, 0.24, 1)
 roof_color = Color(0.13, 0.15, 0.15, 1)
 generated_facades = true
 
 [node name="B23" parent="Buildings" unique_id=1202354251 instance=ExtResource("10_building")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.26, 0, 54)
+transform = Transform3D(1, 0, 0, 0, 2.1300268, 0, 0, 0, 1, 16.26, 0, 54)
 size = Vector3(8.15, 8.5, 14)
 color = Color(0.3, 0.2, 0.17, 1)
 roof_color = Color(0.17, 0.14, 0.13, 1)
 generated_facades = true
 
 [node name="B24" parent="Buildings" unique_id=2092563516 instance=ExtResource("10_building")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 0, 54)
+transform = Transform3D(1, 0, 0, 0, 2.0443153, 0, 0, 0, 1, 26.5, 0, 54)
 size = Vector3(12.34, 8.5, 14)
 color = Color(0.24, 0.25, 0.28, 1)
 roof_color = Color(0.15, 0.15, 0.17, 1)
 generated_facades = true
 
 [node name="B25" parent="Buildings" unique_id=1048535046 instance=ExtResource("10_building")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.34, 0, 54)
+transform = Transform3D(1, 0, 0, 0, 2.3325124, 0, 0, 0, 1, 36.34, 0, 54)
 size = Vector3(7.32, 8.5, 14)
 color = Color(0.33, 0.27, 0.2, 1)
 roof_color = Color(0.18, 0.16, 0.14, 1)
@@ -462,18 +462,6 @@ color = Color(0.33, 0.27, 0.2, 1)
 roof_color = Color(0.18, 0.16, 0.14, 1)
 label = "GAS 365"
 generated_facades = true
-
-[node name="PumpIsland" parent="Buildings" unique_id=1922750783 instance=ExtResource("10_building")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0, 78)
-size = Vector3(4, 1.2, 1)
-color = Color(0.6, 0.12, 0.1, 1)
-roof_color = Color(0.5, 0.1, 0.08, 1)
-
-[node name="PumpIsland2" parent="Buildings" unique_id=2124998065 instance=ExtResource("10_building")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0, 78)
-size = Vector3(4, 1.2, 1)
-color = Color(0.6, 0.12, 0.1, 1)
-roof_color = Color(0.5, 0.1, 0.08, 1)
 
 [node name="Shed" parent="Buildings" unique_id=169573550 instance=ExtResource("10_building")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 102)
@@ -1057,6 +1045,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110, 0, 71)
 
 [node name="Lamp" parent="Props" unique_id=355355626 instance=ExtResource("21_lamp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 71.1)
+light_color = Color(0.721002, 0.698815, 0.6870207, 1)
 
 [node name="Lamp2" parent="Props" unique_id=1048289979 instance=ExtResource("21_lamp")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 30, 0, 61.9)
@@ -1153,7 +1142,7 @@ transform = Transform3D(0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, 0.7071, 71.8, 0,
 
 [node name="Neon" parent="Props" unique_id=1977203560 instance=ExtResource("22_neon")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 61.05)
-light_color = Color(1, 0.3, 0.6, 1)
+light_color = Color(0.5679448, 0.6339012, 0.52406895, 1)
 sign_text = "SMSH BRGR"
 
 [node name="Neon2" parent="Props" unique_id=585060321 instance=ExtResource("22_neon")]
@@ -1168,7 +1157,7 @@ sign_text = "VAPES"
 
 [node name="Neon4" parent="Props" unique_id=144479774 instance=ExtResource("22_neon")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 0, 61.05)
-light_color = Color(0.3, 1, 0.35, 1)
+light_color = Color(0.16507345, 0.99999994, 0.5326127, 1)
 sign_text = "YOGA STUDIO"
 
 [node name="Neon5" parent="Props" unique_id=2066041563 instance=ExtResource("22_neon")]
