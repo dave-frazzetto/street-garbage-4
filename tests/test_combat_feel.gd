@@ -136,6 +136,12 @@ func test_7_hit_is_instant_and_zombie_flinches() -> void:
 	var model: ZombieModel = z.get_node("Visual/Model") as ZombieModel
 	check(z._stun > 0.0, "zombie staggers after the hit")
 	check(model._hit_left > 0.0, "hit reaction plays")
+	# The tilt is applied in the model's _process. A slow first frame batches several physics ticks before it runs, so wait
+	# until the model has processed the hit instead of counting frames.
+	for i: int in 60:
+		if model._hit_left < model.hit_recover_seconds:
+			break
+		await get_tree().process_frame
 	var tilted: bool = not model.basis.is_equal_approx(model._rest.basis)
 	check(tilted, "model tilted by the hit")
 	await wait_seconds(model.hit_recover_seconds + 0.2)

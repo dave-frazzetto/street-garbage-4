@@ -75,7 +75,7 @@ Order is the order we generate in. Heights are in metres. **State:** *done* = ge
 |---|---|---|---|---|---|---|---|
 | 1 | Zombie walker | done | `world/enemies/zombie.tscn` (Visual) | 1.8 | 8k | walk, run, attack, die | Emaciated infected city dweller hunched forward, one oversized clawed arm, torn dirty hoodie and jeans, exposed ribs, pale grey-green skin, a cracked cybernetic implant on the temple sparking cyan, small glowing red eyes, A-pose |
 | 2 | Zombie armoured | done | `zombie.tscn` with `armoured.tres` | 1.9 | 8k | walk, attack, die | Bloated infected wearing improvised armour: scrap-metal shoulder plates, a riot-shield fragment on one arm, dead chrome prosthetic leg, rusted and scratched, red eyes, A-pose |
-| 3 | Player (female punk rocker) | done | `world/player/player.tscn` (Visual) | 1.8 | 6k | idle, run, shoot, die | Protagonist brief above. A-pose with arms slightly away from the body and empty hands, feet visible, no weapon |
+| 3 | Player (stylised anime-look woman, neon pink bob, redone 2026-11-23) | done | `world/player/player.tscn` (Visual) | 1.8 | 6k | idle, run, shoot, die | Protagonist brief above. A-pose with arms slightly away from the body and empty hands, feet visible, no weapon |
 | 4 | Pistol | done | weapon mesh in player | 0.25 | 1.5k | none | Chunky battered handgun with glowing neon-magenta circuit lines along the slide, worn dark gunmetal, taped grip |
 | 5 | Micro SMG | done | weapon mesh | 0.4 | 1.5k | none | Compact machine pistol with extended magazine, scratched black metal, cyan glowing energy-cell window |
 | 6 | Auto shotgun | done | weapon mesh | 0.9 | 2k | none | Heavy drum-fed automatic shotgun, riveted barrel shroud, chrome heat-sink fins, orange glowing chamber |
