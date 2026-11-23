@@ -35,7 +35,8 @@ walk and run loops repeat their first pose for one frame.
 - `Zombie` scales its visual, body height, health bar height and collision radius from those and exposes `body_radius`
   and `body_scale`; the hurtbox, the attack range and the spawners' free checks use them.
 - `Player.set_body_scale()` (called by `Level` with the tuning value, the fallback value when the player runs alone)
-  scales the visual, the ring, a per-instance copy of the collision cylinder, `body_radius` and the glow height. The
+  scales the visual, the ring, a per-instance copy of the collision cylinder, `body_radius` (and the glow light height; that light was removed on 2026-11-23 with the
+  character brightness lift, so characters show their original look). The
   bullet height (the `Weapon` node, 1.0 m) and the mouse aim plane stay in world units: props are sized in metres, and
   a scaled 1.15 m bullet flew over the 1 m fire barrels. The weapon in the hand is measured in the model's own space, so it grows with the model whether
   it was attached before or after scaling.

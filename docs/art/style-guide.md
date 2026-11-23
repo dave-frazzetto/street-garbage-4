@@ -53,7 +53,8 @@ Keep her consistent across every asset that shows her: same hair, same implant c
 - Collision stays the hand-made shapes already in each scene; generated meshes are visual only.
 - Each generated model is wrapped in a scene `Visual` child. The gameplay scene keeps its script, collision and data Resources.
 - Light sources (lamps, signs, implants) get a real `OmniLight3D` plus an emissive bulb in the scene. The texture alone never
-  glows. Neon accents on characters come from the texture and the shared glow setting in `CharacterModel`.
+  glows. Neon accents on characters come from the texture only: `CharacterModel` draws the assets' own materials (its
+  `brightness`/`glow` lift is optional and off by default since the level lighting makes characters readable).
 - Procedural stays procedural: ground shader, blood splats, explosion, fire, bullets, extraction zone, objective arrow, health bars.
 
 ## Asset manifest

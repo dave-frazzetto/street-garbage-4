@@ -272,5 +272,3 @@ func _attach_weapon() -> void:
 	weapon.basis = turn * Basis.from_scale(Vector3.ONE * unit)
 	# Centre the model's bounding box on the hand, then shift by the weapon's offset.
 	weapon.position = _held.held_offset / bone_space - turn * (box.get_center() * unit)
-	for mesh: MeshInstance3D in ModelLook.meshes_of(weapon):
-		ModelLook.lift(mesh, 1.3, 0.12)
