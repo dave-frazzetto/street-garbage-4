@@ -88,7 +88,10 @@ func _pick_graphics() -> GraphicsProfile:
 func start_run() -> void:
 	_clear_level()
 	_set_paused(false)
-	title_screen.visible = false
+	# The title's "LOADING..." stays up as the cover while the level compiles its shaders (first run only).
+	var covered: bool = title_screen.visible and title_screen.is_loading()
+	if not covered:
+		title_screen.visible = false
 	end_screen.visible = false
 	perk_select.close()
 	if seed_value != 0:
@@ -109,6 +112,8 @@ func start_run() -> void:
 	if graphics != null:
 		level.apply_graphics(graphics)
 		get_viewport().scaling_3d_scale = graphics.render_scale
+	await level.warm_shaders()
+	title_screen.visible = false
 	hud.visible = true
 	music.play_music()
 	ambient.play_ambient()
