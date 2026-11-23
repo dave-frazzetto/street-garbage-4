@@ -34,7 +34,7 @@ extends Node3D
 		anchor_on_base = value
 		_rebuild()
 ## Brightness multiplier and self-lit share of the texture, so props stay readable in the dark city (1 and 0 = as generated).
-@export_range(0.5, 4.0, 0.05) var brightness: float = 1.3:
+@export_range(0.5, 4.0, 0.05) var brightness: float = 1.0:
 	set(value):
 		brightness = value
 		_rebuild()

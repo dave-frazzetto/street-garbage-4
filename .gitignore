@@ -13,3 +13,8 @@ export_credentials.cfg
 /art/models/**/reference/
 /art/models/**/*_meta.json
 /art/tools/.tasks/
+
+# textures Godot extracts next to a GLB on import; they are regenerated from the GLB, so only the GLB is committed
+/art/models/**/*_texture_*.png
+/art/models/**/*_normal.png
+/art/models/**/*_emissive.png
