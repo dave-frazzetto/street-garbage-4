@@ -58,6 +58,12 @@ Always keep at the root readme.MD a table with the history of arkouda decisions 
 Standing process for every change:
 
 1. For every slice make a merge request, then you can approve and merge to main yourself
+2. **Every PR targets `main`, never another feature branch.** Do not stack PRs: a PR whose base is another slice branch lands
+   in that branch, and if that branch was already merged the work never reaches `main` (this happened with slice 7, which was
+   merged into the already-merged `slice-6-hq-assets` and had to be re-opened). If a slice depends on an unmerged one, either
+   merge the first PR before opening the second, or branch from the first and open the second PR against `main` only after the
+   first has merged. After merging, check that the work is on `main` (`git fetch && git merge-base --is-ancestor origin/<branch> origin/main`)
+   and that the PR's base was `main` before reporting it done.
 
 
 The user has given standing approval for this workflow to be performed autonomously,
