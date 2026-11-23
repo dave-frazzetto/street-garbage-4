@@ -31,7 +31,6 @@ signal hit_landed(amount: float)
 @onready var _model: PlayerModel = $Visual/Model
 @onready var _body: CollisionShape3D = $CollisionShape3D
 @onready var _ring: Node3D = $Ring
-@onready var _glow: Node3D = $Glow
 
 var stats: PlayerStats
 var sprinting: bool = false
@@ -82,14 +81,14 @@ func setup(player_stats: PlayerStats, projectile_parent: Node) -> void:
 
 
 ## Call down: size relative to the generated model (GameTuning.character_scale). Scales the model, the held weapon, the
-## collision body, the glow and the ground ring together; the legs' animation follows on its own. The bullet height (the
+## collision body and the ground ring together; the legs' animation follows on its own. The bullet height (the
 ## Weapon node) and the mouse aim plane stay in world units, so shots still hit props sized in metres (1 m fire barrels).
 func set_body_scale(value: float) -> void:
 	if _base_heights.is_empty():
 		var cylinder: CylinderShape3D = (_body.shape as CylinderShape3D).duplicate() as CylinderShape3D
 		_body.shape = cylinder
 		_base_shape_height = cylinder.height
-		var scaled_parts: Array[Node3D] = [_body, _glow]
+		var scaled_parts: Array[Node3D] = [_body]
 		for part: Node3D in scaled_parts:
 			_base_heights[part] = part.position.y
 	_scale_set = true
