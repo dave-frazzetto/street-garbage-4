@@ -1,7 +1,7 @@
 class_name CharacterModel
 extends Node3D
 ## Base of every generated, rigged character visual (zombie, player). Owns what they share: merging animation clips into the
-## model's AnimationPlayer, making the texture readable at night (brightness and glow), a variant tint and a hit flash.
+## model's AnimationPlayer, making the texture readable at night (optional brightness and glow, off by default), a variant tint and a hit flash.
 ## Presentation only: gameplay tells it what to do ("call down") and never reaches into its nodes.
 
 signal clip_finished(clip: StringName)
@@ -11,10 +11,11 @@ const HELD_FRAME_DEGREES: float = 0.5
 
 ## Clip name used by the subclass (walk, run, attack, die, ...) -> Animation resource from the Meshy rig.
 @export var clips: Dictionary = {}
-## Multiplies the texture colour so characters stand out against the dark city (1 = texture as generated).
-@export_range(0.5, 4.0, 0.05) var brightness: float = 1.45
-## Self-lit share of the texture, so characters stay readable away from any lamp (0 = none).
-@export_range(0.0, 2.0, 0.05) var glow: float = 0.2
+## Multiplies the texture colour (1 = the asset's own material, untouched). Kept for night-time readability tweaks; the
+## level lighting is bright enough now, so characters show their original look.
+@export_range(0.5, 4.0, 0.05) var brightness: float = 1.0
+## Self-lit share of the texture (0 = none, the asset's own material).
+@export_range(0.0, 2.0, 0.05) var glow: float = 0.0
 ## Looping clips whose first frame is a held copy of the second one (the generated walk and run repeat their first pose
 ## for a frame, which stops a planted foot while the body moves on, at every loop). That frame is dropped on install.
 @export var trim_held_first_frame: PackedStringArray = ["walk", "run"]
@@ -35,7 +36,8 @@ func _ready() -> void:
 	_overlay.albedo_color = Color(1, 1, 1, 0)
 	for mesh: MeshInstance3D in _meshes:
 		mesh.material_overlay = _overlay
-		ModelLook.lift(mesh, brightness, glow)
+		if not is_equal_approx(brightness, 1.0) or glow > 0.0:
+			ModelLook.lift(mesh, brightness, glow)
 	if _player != null:
 		_install_clips()
 		_player.animation_finished.connect(func(clip: StringName) -> void: clip_finished.emit(clip))
