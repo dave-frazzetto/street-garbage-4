@@ -12,6 +12,10 @@ extends CharacterModel
 ## Rotation of every held weapon relative to the hand bone, in degrees. All generated weapons point the same way, so one
 ## value fits them all; each weapon's length and offset live in its WeaponData.
 @export var weapon_rotation_degrees: Vector3 = Vector3.ZERO
+## Brightness multiplier and self-lit share of the held weapon's texture, so dark gunmetal stays readable from the game
+## camera at night (see ModelLook).
+@export_range(0.5, 4.0, 0.05) var weapon_brightness: float = 1.15
+@export_range(0.0, 2.0, 0.05) var weapon_glow: float = 0.18
 ## All speeds below are for the model at scale 1: the ground speed is divided by the model's world scale first, because
 ## a bigger model takes proportionally longer strides (GameTuning.character_scale).
 ## Ground speed each directional walk and run clip covers at normal playback (the planted foot's backward speed in the
@@ -272,3 +276,5 @@ func _attach_weapon() -> void:
 	weapon.basis = turn * Basis.from_scale(Vector3.ONE * unit)
 	# Centre the model's bounding box on the hand, then shift by the weapon's offset.
 	weapon.position = _held.held_offset / bone_space - turn * (box.get_center() * unit)
+	for mesh: MeshInstance3D in ModelLook.meshes_of(weapon):
+		ModelLook.lift(mesh, weapon_brightness, weapon_glow)
