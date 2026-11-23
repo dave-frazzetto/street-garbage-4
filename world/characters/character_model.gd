@@ -1,7 +1,7 @@
 class_name CharacterModel
 extends Node3D
 ## Base of every generated, rigged character visual (zombie, player). Owns what they share: merging animation clips into the
-## model's AnimationPlayer, making the texture readable at night (optional brightness and glow, off by default), a variant tint and a hit flash.
+## model's AnimationPlayer, an optional brightness/glow lift (off by default), a variant tint and a hit flash.
 ## Presentation only: gameplay tells it what to do ("call down") and never reaches into its nodes.
 
 signal clip_finished(clip: StringName)
