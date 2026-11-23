@@ -16,4 +16,4 @@ bullet_color = Color(1, 0.8, 0.4, 1)
 bullet_radius = 0.11
 fire_sound = ExtResource("9_fire")
 held_model = ExtResource("10_held")
-held_length = 0.95
+held_length = 1.4
