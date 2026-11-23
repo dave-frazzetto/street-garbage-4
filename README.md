@@ -120,6 +120,7 @@ explained in [docs/reference/tuning-guide.md](docs/reference/tuning-guide.md); z
 | 30 | 2026-11-22 | [one-character-scale-for-player-and-zombies](docs/adr/one-character-scale-for-player-and-zombies.md) | One character scale for player and zombies |
 | 31 | 2026-11-22 | [directional-locomotion-from-angle-smoothed-blend-spaces](docs/adr/directional-locomotion-from-angle-smoothed-blend-spaces.md) | Directional locomotion from angle-smoothed blend spaces (refines 11) |
 | 32 | 2026-11-22 | [enclosed-street-layout-with-walk-grid-and-flow-field](docs/adr/enclosed-street-layout-with-walk-grid-and-flow-field.md) | Enclosed street layout with walk grid and flow field (refines 21 and 27) |
+| 33 | 2026-11-23 | [shader-warm-up-behind-the-loading-screen](docs/adr/shader-warm-up-behind-the-loading-screen.md) | Shader warm-up behind the loading screen |
 
 Product requirements: [slice-1-core-run](docs/prd/slice-1-core-run.md), [slice-2-mobile-touch-and-web-build](docs/prd/slice-2-mobile-touch-and-web-build.md),
 [slice-3-isometric-3d-presentation](docs/prd/slice-3-isometric-3d-presentation.md),

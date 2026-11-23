@@ -38,6 +38,8 @@ signal prop_destroyed(at: Vector3, explosive: bool)
 @export_range(0, 2, 0.05) var chain_damage_fraction: float = 0.6
 ## Delay before a chained prop takes its blast damage, so chains ripple instead of popping at once.
 @export_range(0, 2, 0.05) var chain_delay: float = 0.15
+## Compiles the run's shaders behind the loading screen (see ShaderWarmup). Empty = no warm-up (first effects may hitch).
+@export var shader_warmup_scene: PackedScene = preload("res://world/effects/shader_warmup.tscn")
 @export var default_run_config: RunConfig
 @export var default_player_config: PlayerConfig
 ## Balance numbers used when the level runs on its own (game flow injects its own).
@@ -122,6 +124,18 @@ func start(player_stats: PlayerStats, run_config: RunConfig, random: RandomNumbe
 	population.start(player, entities, bounds, rng, elapsed_provider, tuning, player_start_position())
 	arrow.follow = player
 	_update_objective()
+
+
+## Call after start(), while a loading screen covers the view: draws every effect and the whole map once so their
+## shaders compile now instead of freezing the first time they appear in play. Returns at once on later runs.
+func warm_shaders() -> void:
+	if shader_warmup_scene == null or ShaderWarmup.is_done() or DisplayServer.get_name() == "headless":
+		return
+	var warmup: ShaderWarmup = shader_warmup_scene.instantiate() as ShaderWarmup
+	add_child(warmup)
+	warmup.warm(camera_rig.camera, bounds)
+	await warmup.finished
+	warmup.queue_free()
 
 
 func set_extraction_unlocked(unlocked: bool) -> void:

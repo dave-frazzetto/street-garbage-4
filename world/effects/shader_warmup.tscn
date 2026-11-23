@@ -1,0 +1,26 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/effects/shader_warmup.gd" id="1_warm"]
+[ext_resource type="PackedScene" path="res://world/effects/blood_burst.tscn" id="l0"]
+[ext_resource type="PackedScene" path="res://world/effects/blood_hit.tscn" id="l1"]
+[ext_resource type="PackedScene" path="res://world/effects/blood_splat.tscn" id="l2"]
+[ext_resource type="PackedScene" path="res://world/effects/explosion_effect.tscn" id="l3"]
+[ext_resource type="PackedScene" path="res://world/effects/flame_effect.tscn" id="l4"]
+[ext_resource type="PackedScene" path="res://world/effects/impact_effect.tscn" id="l5"]
+[ext_resource type="PackedScene" path="res://world/effects/zombie_impact_effect.tscn" id="l6"]
+[ext_resource type="PackedScene" path="res://world/enemies/zombie_model.tscn" id="l7"]
+[ext_resource type="PackedScene" path="res://world/enemies/zombie_armoured_model.tscn" id="l8"]
+[ext_resource type="PackedScene" path="res://world/props/car.tscn" id="l9"]
+[ext_resource type="PackedScene" path="res://world/props/fire.tscn" id="l10"]
+[ext_resource type="PackedScene" path="res://world/projectiles/bullet.tscn" id="s0"]
+[ext_resource type="PackedScene" path="res://world/pickups/health_pickup.tscn" id="s1"]
+[ext_resource type="PackedScene" path="res://world/pickups/gear_pickup.tscn" id="s2"]
+[ext_resource type="PackedScene" path="res://art/models/weapons/pistol/pistol.glb" id="s3"]
+[ext_resource type="PackedScene" path="res://art/models/weapons/micro_smg/micro_smg.glb" id="s4"]
+[ext_resource type="PackedScene" path="res://art/models/weapons/auto_shotgun/auto_shotgun.glb" id="s5"]
+[ext_resource type="PackedScene" path="res://art/models/weapons/heavy_machine_gun/heavy_machine_gun.glb" id="s6"]
+
+[node name="ShaderWarmup" type="Node3D"]
+script = ExtResource("1_warm")
+live_scenes = Array[PackedScene]([ExtResource("l0"), ExtResource("l1"), ExtResource("l2"), ExtResource("l3"), ExtResource("l4"), ExtResource("l5"), ExtResource("l6"), ExtResource("l7"), ExtResource("l8"), ExtResource("l9"), ExtResource("l10")])
+static_scenes = Array[PackedScene]([ExtResource("s0"), ExtResource("s1"), ExtResource("s2"), ExtResource("s3"), ExtResource("s4"), ExtResource("s5"), ExtResource("s6")])
